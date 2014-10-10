@@ -19,7 +19,20 @@ span[contentEditable] {
 
 .masonry-brick {
   border: 1px solid black;
+
+  /* Shadows */
+  /* Firefox */
+  -moz-box-shadow:5px 5px 7px rgba(33,33,33,1);
+  /* Safari+Chrome */
+  -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+  /* Opera */
+  box-shadow: 5px 5px 7px rgba(33,33,33,.7);
 }
+
+h2 {
+  display:block;
+}
+
 </style>
 </head>
 <body>
@@ -37,9 +50,10 @@ span[contentEditable] {
     </div>
     <div masonry column-width: "200"; preserve-order load-images="false">
       <div class="masonry-brick" ng-repeat="todo in todos">
-        <div>
-          <img src="" ng-title="{{todo.text}}"/>
-          <span css="done-{{todo.done}}" ng-model="todo.text" contenteditable="true"></span>
+        <div style="background-color: {{todo.bgcolor}}">
+          <h2 ng-model="todo.title" contenteditable="true">The title</h2>
+          <div ng-model="todo.text" contenteditable="true">The text</div>
+          <pre ng-bind="todo.title">DEBUG: title of element</pre>
           <pre ng-bind="todo.text">DEBUG: content of element</pre>
         </div>
       </div>

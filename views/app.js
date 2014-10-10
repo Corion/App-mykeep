@@ -25,8 +25,8 @@ var myApp = angular.module('myApp', ['wu.masonry'])
 
 myApp.controller('TodoCtrl', function ($scope) {
   $scope.todos = [
-    {text:'learn angular', done:true},
-    {text:'build an angular app', done:false}
+    {text:'learn angular', bgcolor: "red", done:true, title: "(no title)"},
+    {text:'build an angular app', bgcolor: "gray", done:false, title: "(no title)"}
   ];
 
   $scope.addTodo = function() {
