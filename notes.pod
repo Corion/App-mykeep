@@ -1,0 +1,37 @@
+=head1 NAME
+
+App::mykeep
+
+=over 4
+
+=item *
+
+Use heavily cached Javascript page as "App"
+
+=item *
+
+Use AngularJS for the UI
+
+=item *
+
+Use LocalForage for local storage
+
+=item *
+
+Use Google search for "javascript background upload" for sync
+
+=item *
+
+Use camera API for attaching images
+
+L<https://developer.mozilla.org/en-US/docs/Web/Guide/API/Camera>
+
+=item *
+
+Google Keep import
+
+=item *
+
+Google Keep synchronisation
+
+=back
