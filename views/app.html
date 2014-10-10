@@ -26,8 +26,15 @@ span[contentEditable] {
 <div ng-app="myApp">
   <h2>Ideas</h2>
   <div ng-controller="TodoCtrl">
-    <span><span ng-bind="remaining()">0</span> of <span ng-bind="todos.length">0</span> remaining</span>
-    [ <a href="#" ng-click="archive()">archive</a> ]
+    <div id="toolbar">
+      <form ng-submit="addTodo()">
+        <input type="text" ng-model="todoText"  size="30"
+               placeholder="add new todo here">
+        <input class="btn-primary" type="submit" value="add">
+      </form>
+      <span><span ng-bind="remaining()">0</span> of <span ng-bind="todos.length">0</span> remaining</span>
+      [ <a href="#" ng-click="archive()">archive</a> ]
+    </div>
     <div masonry column-width: "200"; preserve-order load-images="false">
       <div class="masonry-brick" ng-repeat="todo in todos">
         <div>
@@ -37,11 +44,6 @@ span[contentEditable] {
         </div>
       </div>
     </div>
-    <form ng-submit="addTodo()">
-      <input type="text" ng-model="todoText"  size="30"
-             placeholder="add new todo here">
-      <input class="btn-primary" type="submit" value="add">
-    </form>
   </div>
 </div>
 </body>
