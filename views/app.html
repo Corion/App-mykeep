@@ -36,6 +36,11 @@ span[contentEditable] {
   margin-bottom: 16px;
 }
 
+.empty:before {
+  color: gray;
+  content: "Title";
+}
+
 h2 {
   display:block;
 }
@@ -58,7 +63,7 @@ h2 {
     <div masonry="{ gutter:16 }" preserve-order load-images="false">
       <div class="masonry-brick" ng-repeat="todo in todos" id="note-{{todo.id}}">
         <div style="background-color: {{todo.bgcolor}}">
-          <h2 ng-model="todo.title" contenteditable="true" ng-blur="saveItem(todo)">The title</h2>
+          <h2 ng-class="{empty: !todo.title}" ng-model="todo.title" contenteditable="true" ng-blur="saveItem(todo)">The title</h2>
           <a href="" ng-click="archiveItem(todo)">x</a>
           <div ng-model="todo.text" contenteditable="true" ng-blur="saveItem(todo)">The text</div>
           <pre ng-bind="todo.id">DEBUG: id of element</pre>
