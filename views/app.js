@@ -1,5 +1,5 @@
-// "use strict";
-var myApp = angular.module('myApp', ['LocalForageModule','wu.masonry'])
+"use strict";
+var myApp = angular.module('myApp', ['LocalForageModule','wu.masonry','angularUUID2'])
 .directive('contenteditable', function() {
       return {
         require: 'ngModel',
@@ -32,7 +32,8 @@ var myApp = angular.module('myApp', ['LocalForageModule','wu.masonry'])
     });
 }]);
 
-myApp.controller('TodoCtrl', ['$scope','$localForage', function ($scope, $localForage) {
+myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2',
+                     function ($scope,  $localForage,  uuid2) {
   // Load all items
   /*
   $scope.todos = [
@@ -40,7 +41,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage', function ($scope, $localF
     {text:'build an angular app', bgcolor: "gray", done:false, title: "(no title)"}
   ];
   */
-  var id= 0;
   $scope.todos= [];
   $scope.pending= [];
   /*
@@ -53,7 +53,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage', function ($scope, $localF
   var d= $localForage.driver();
   $localForage.getKeys(d).then(function(keys){
     for( var k=0; k < keys.length; k++ ) {
-      // alert("Loading " + k);
       $localForage.getItem( keys[k] ).then(function(item){
         $scope.todos.push(item);
         $localForage.bind($scope, item);
@@ -74,7 +73,12 @@ myApp.controller('TodoCtrl', ['$scope','$localForage', function ($scope, $localF
 
   $scope.addTodo = function() {
     // Fake an id
-    var item= {text:$scope.todoText, title: "", done:false, "id": id++};
+    var item= {
+        text:$scope.todoText
+      , title: ""
+      , done:false
+      , "id": uuid2.newuuid(),
+    };
     $scope.saveItem(item);
     $scope.todos.push(item);
     $scope.todoText = '';
