@@ -20,6 +20,16 @@ span[contentEditable] {
         background-color: #D0D0D0;
     }
 
+[contentEditable].empty:before {
+  color: gray;
+  content: "Title";
+}
+
+[contentEditable].empty:focus:before {
+  height: 1em;
+  content: "|"; /* Erase that placeholder text again */
+}
+
 .masonry-brick {
   border: 1px solid black;
   width: 25%;
@@ -34,11 +44,6 @@ span[contentEditable] {
   box-shadow: 5px 5px 7px rgba(33,33,33,.7);
   
   margin-bottom: 16px;
-}
-
-.empty:before {
-  color: gray;
-  content: "Title";
 }
 
 h2 {
@@ -64,11 +69,11 @@ h2 {
       <div class="masonry-brick" ng-repeat="todo in todos" id="note-{{todo.id}}">
         <div style="background-color: {{todo.bgcolor}}">
           <h2 ng-class="{empty: !todo.title}" ng-model="todo.title" contenteditable="true" ng-blur="saveItem(todo)">The title</h2>
-          <a href="" ng-click="archiveItem(todo)">x</a>
           <div ng-model="todo.text" contenteditable="true" ng-blur="saveItem(todo)">The text</div>
           <pre ng-bind="todo.id">DEBUG: id of element</pre>
           <pre ng-bind="todo.title">DEBUG: title of element</pre>
           <pre ng-bind="todo.text">DEBUG: content of element</pre>
+          <a href="" ng-click="archiveItem(todo)">x</a>
         </div>
       </div>
     </div>
