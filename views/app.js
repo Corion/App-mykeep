@@ -1,15 +1,16 @@
 // "use strict";
-var myApp = angular.module('myApp', ['wu.masonry'])
+var myApp = angular.module('myApp', ['LocalForageModule','wu.masonry'])
 .directive('contenteditable', function() {
       return {
         require: 'ngModel',
-        link: function( $scope,el,attrs, ctrl ) {
+        link: function( $scope,el,attrs,ctrl ) {
           el.bind('blur',function(){
             // save to model
             $scope.$apply(function(){
-              ctrl.$setViewValue(el.html())
+              ctrl.$setViewValue(el.html());
+              // Store in localForage
               // mark dirty
-              // hope for sync
+              // hope for sync with remote side
             });
           });
           ctrl.$render= function() {
@@ -21,22 +22,62 @@ var myApp = angular.module('myApp', ['wu.masonry'])
           //ctrl.$setViewValue(el.html());
         },
       };
-  });
+  })
+  
+// Configure the local storage
+.config(['$localForageProvider', function($localForageProvider){
+    $localForageProvider.config({
+        name: 'myApp',
+        storeName: 'items'
+    });
+}]);
 
-myApp.controller('TodoCtrl', function ($scope) {
+myApp.controller('TodoCtrl', ['$scope','$localForage', function ($scope, $localForage) {
+  // Load all items
+  /*
   $scope.todos = [
     {text:'learn angular', bgcolor: "red", done:true, title: "(no title)"},
     {text:'build an angular app', bgcolor: "gray", done:false, title: "(no title)"}
   ];
+  */
+  var id= 0;
+  $scope.todos= [];
+  $scope.pending= [];
+  /*
+  $localForage.getItem("config-order").then(function(order){
+    $scope.order= order;
+  });
+  */
+  $scope.order= [];
+   
+  var d= $localForage.driver();
+  $localForage.getKeys(d).then(function(keys){
+    for( var k=0; k < keys.length; k++ ) {
+      // alert("Loading " + k);
+      $localForage.getItem( keys[k] ).then(function(item){
+        $scope.todos.push(item);
+        $localForage.bind($scope, item);
+        
+        // Update the id
+        if(id < k) {
+          id= k+1
+        };
+      });
+    };
+  });
+  
+  $scope.saveItem= function(item) {
+    $scope.pending.push($localForage.setItem(item.id, item).then(function(){
+      //alert("Stored id " + item.id);
+    }));
+  },
 
   $scope.addTodo = function() {
-    $scope.todos.push({text:$scope.todoText, done:false});
+    // Fake an id
+    var item= {text:$scope.todoText, title: "", done:false, "id": id++};
+    $scope.saveItem(item);
+    $scope.todos.push(item);
     $scope.todoText = '';
-  };
-
-  $scope.saveItem = function() {
-    alert("Saving " + $scope.text);
-    $scope.todos.push({text: $scope.text, done:false});
   };
 
   $scope.remaining = function() {
@@ -54,4 +95,4 @@ myApp.controller('TodoCtrl', function ($scope) {
       if (!todo.done) $scope.todos.push(todo);
     });
   };
-});
+}]);

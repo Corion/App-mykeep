@@ -6,10 +6,12 @@
 <meta name="description" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="app.css">
+<script src="localforage.js"></script>
 <script src="jquery-2.1.1.min.js"></script>
 <script src="masonry.pkgd.js"></script>
 <script src="angular.js"></script>
 <script src="angular-masonry.js"></script>
+<script src="angular-localforage.js"></script>
 <script src="app.js"></script>
 <style>
 span[contentEditable] {
@@ -51,8 +53,9 @@ h2 {
     <div masonry column-width: "200"; preserve-order load-images="false">
       <div class="masonry-brick" ng-repeat="todo in todos">
         <div style="background-color: {{todo.bgcolor}}">
-          <h2 ng-model="todo.title" contenteditable="true">The title</h2>
-          <div ng-model="todo.text" contenteditable="true">The text</div>
+          <h2 ng-model="todo.title" contenteditable="true" ng-blur="saveItem(todo)">The title</h2>
+          <div ng-model="todo.text" contenteditable="true" ng-blur="saveItem(todo)">The text</div>
+          <pre ng-bind="todo.id">DEBUG: id of element</pre>
           <pre ng-bind="todo.title">DEBUG: title of element</pre>
           <pre ng-bind="todo.text">DEBUG: content of element</pre>
         </div>
