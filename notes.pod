@@ -34,4 +34,8 @@ Google Keep import
 
 Google Keep synchronisation
 
+=item *
+
+Images as data: URIs
+
 =back
