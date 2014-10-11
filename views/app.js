@@ -48,28 +48,55 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2',
     $scope.order= order;
   });
   */
-  $scope.order= [];
    
   var d= $localForage.driver();
   $localForage.getKeys(d).then(function(keys){
     for( var k=0; k < keys.length; k++ ) {
       $localForage.getItem( keys[k] ).then(function(item){
-        $scope.todos.push(item);
-        $localForage.bind($scope, item);
-        
-        // Update the id
-        if(id < k) {
-          id= k+1
+        if( undefined == item.archivedAt ) {
+          $scope.todos.push(item);
         };
       });
     };
+  }).then(function(){
+    $scope.sortItems();
   });
   
+  $scope.visibleItems= function() {
+    var result= [];
+    angular.forEach($scope.todos, function(todo) {
+      if (undefined == todo.archivedAt) {
+        result.push(todo);
+      };
+    });
+    return result
+  };
+  
   $scope.saveItem= function(item) {
+    item.modifiedAt= (new Date).getTime() / 1000;
     $scope.pending.push($localForage.setItem(item.id, item).then(function(){
-      //alert("Stored id " + item.id);
+      //alert("Stored id (title)" + item.title;
     }));
-  },
+  };
+
+  $scope.archiveItem= function(item) {
+    item.archivedAt= (new Date).getTime() / 1000;
+    $scope.saveItem( item );
+    // Trigger display update
+    $scope.todos= $scope.visibleItems();
+  };
+  
+  $scope.sortItems= function() {
+    $scope.todos.sort(function(a,b){
+      if( a.modifiedAt < b.modifiedAt ) {
+        return -1
+      } else if(a.modifiedAt > b.modifiedAt) {
+        return +1
+      } else {
+        return 0
+      };
+    });
+  };
 
   $scope.addTodo = function() {
     // Fake an id
@@ -80,7 +107,8 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2',
       , "id": uuid2.newuuid(),
     };
     $scope.saveItem(item);
-    $scope.todos.push(item);
+    // New items go to top
+    $scope.todos.unshift(item);
     $scope.todoText = '';
   };
 
