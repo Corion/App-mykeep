@@ -38,4 +38,13 @@ Google Keep synchronisation
 
 Images as data: URIs
 
+=item *
+
+Serve a placeholder image and then send the data in a second request
+if the client requests that
+
+=item *
+
+Resize images before non-fast upload
+
 =back
