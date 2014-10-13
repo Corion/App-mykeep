@@ -162,8 +162,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
         method: 'GET',
         // { headers: {} }
       }).then(function(response) {
-        // alert(response.status);
-        //alert(response.data.items);
         var knownItems= {};
         angular.forEach($scope.todos, function(i) {
           knownItems[i.id]= i;
@@ -194,8 +192,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
   $scope.syncItem= function(item) {
     var url= urlTemplate("/notes/{id}",item);
     if( !item.lastSyncedAt || item.lastSyncedAt < item.modifiedAt ) {
-      alert(item.lastSyncedAt);
-      alert(item.modifiedAt);
       // Send our new version to the server
       // Maybe this should be a PUT request. Later.
       $http({
@@ -204,10 +200,9 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
         method: 'POST',
         headers: {}
       }).then(function(response) {
-        alert("Saved new ("+response.status+")");
+        //alert("Saved new ("+response.status+")");
         // We should use the server time here...
         // item.lastSyncedAt= (new Date).getTime() / 1000;
-        // alert(response.data);
         item= response.data;
         $scope.storeItem(item);
       }).else(function(response){
@@ -216,13 +211,11 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
       //alert("Posted to " + url);
     } else {
       // Check if it is a newer version on the server
-      alert("get from "+url);
       $http({
         url: url,
         method: 'GET',
         headers: { 'If-Modified-Since' : item.lastSyncedAt }
       }).then(function(response) {
-        alert(response.status);
         item= response.data; // Ah, well...
       }).else(function(response){
         alert("uhoh " + response.status );
@@ -259,19 +252,4 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
     $scope.todoText = '';
   };
 
-  $scope.remaining = function() {
-    var count = 0;
-    angular.forEach($scope.todos, function(todo) {
-      count += todo.done ? 0 : 1;
-    });
-    return count;
-  };
-
-  $scope.archive = function() {
-    var oldTodos = $scope.todos;
-    $scope.todos = [];
-    angular.forEach(oldTodos, function(todo) {
-      if (!todo.done) $scope.todos.push(todo);
-    });
-  };
 }]);
