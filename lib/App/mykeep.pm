@@ -9,7 +9,7 @@ use File::Basename 'basename';
 our $VERSION = '0.01';
 
 use vars qw( @note_keys );
-@note_keys= qw(title text bgcolor lastModifiedAt lastSyncedAt archivedAt );
+@note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt );
 
 get '/' => sub {
     template 'app';
@@ -23,7 +23,7 @@ get '/notes/list' => sub {
     my @result=
         map { warn $_; my $i= load_item($_);
               { id => $i->{id},
-                lastModifiedAt => $i->{lastModifiedAt},
+                modifiedAt => $i->{modifiedAt},
                 archivedAt => $i->{archivedAt},
               }
         } map { s/\.json$//ir }
@@ -47,7 +47,7 @@ sub load_item {
     } else {
         # Return a fresh, empty item
         return { id => $id
-               , lastModifiedAt => undef
+               , modifiedAt => undef
                }
     }
 }
