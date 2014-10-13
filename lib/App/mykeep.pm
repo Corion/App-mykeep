@@ -75,6 +75,22 @@ get '/notes/:note' => sub {
     return encode_json($item);
 };
 
+sub last_edit_wins {
+    my( $_item, $body )= @_;
+    my $item= { %$_item };
+
+    # Really crude "last edit wins" approach    
+    if( ($body->{modifiedAt} || 0) > ($item->{modifiedAt} || 0)) {
+        for my $key (@note_keys) {
+            # Detect conflicts
+            # Merge
+            $item->{$key}= $body->{ $key };
+        };
+    };
+    
+    $item
+};
+
 # Maybe PUT instead of POST, later
 post '/notes/:note' => sub {
     my $id= clean_id( request->params("route")->{note} );
@@ -83,13 +99,10 @@ post '/notes/:note' => sub {
     warning $body;
     
     my $item= eval { load_item( $id ); };
-    warning "loaded ($@) " . Dumper $item;
-    for my $key (@note_keys) {
-        my $payload= $body->{ $key };
-        # Detect conflicts
-        # Merge
-        $item->{ $key }= $payload;
-    };
+    #warning "loaded ($@) " . Dumper $item;
+
+    # Really crude "last edit wins" approach    
+    $item= last_edit_wins( $item, $body );
 
     # Set "last-synced" timestamp
     $item->{lastSyncedAt}= time();
