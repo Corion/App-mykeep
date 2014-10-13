@@ -45,8 +45,6 @@ h2 {
                placeholder="add new todo here">
         <input class="btn-primary" type="submit" value="add">
       </form>
-      <span><span ng-bind="remaining()">0</span> of <span ng-bind="todos.length">0</span> remaining</span>
-      [ <a href="#" ng-click="archive()">archive</a> ]
     </div>
     <div masonry="{ gutter:16 }" preserve-order load-images="false">
       <div class="masonry-brick" ng-repeat="todo in todos" id="note-{{todo.id}}">
