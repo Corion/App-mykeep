@@ -42,12 +42,9 @@ sub load_item {
     my( $id, %options )= @_;
     my $fn= "notes/$id.json";
     if( -f $fn ) {
-        warning "File exists";
         my $content= do { local( @ARGV, $/) = $fn; <> };
-        warn $content;
         return decode_json($content);
     } else {
-        warning "File doesn't exist, returning new note";
         # Return a fresh, empty item
         return { id => $id
                , lastModifiedAt => undef
