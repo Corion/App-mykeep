@@ -231,7 +231,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
   };
 
   $scope.archiveItem= function(item) {
-    item.archivedAt= (new Date).getTime() / 1000;
+    item.archivedAt= Math.floor((new Date).getTime() / 1000);
     $scope.storeItem( item );
     // Trigger display update
     $scope.todos= $scope.visibleItems();
