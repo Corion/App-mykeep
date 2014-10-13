@@ -46,7 +46,32 @@ var myApp = angular.module('myApp', [
         },
       };
   })
-  
+
+// Serialize all item fetching over one connection, just to be nicer to low
+// bandwidth connections instead of bulk-fetching over multiple connections
+.factory('requestQueue', function($q,$http) {
+  var queue=[];
+  var execNext = function() {
+    var task = queue[0];
+    $http(task.c).then(function(data) {
+      queue.shift();
+      task.d.resolve(data);
+      if (queue.length>0) execNext();
+    }, function(err) {
+      queue.shift();
+      task.d.reject(err);
+      if (queue.length>0) execNext();
+    })
+    ;
+  }; 
+  return function(config) {
+    var d = $q.defer();
+    queue.push({c:config,d:d});
+    if (queue.length===1) execNext();            
+    return d.promise;
+  };
+})
+
 // Configure the local storage
 .config(['$localForageProvider', function($localForageProvider){
     $localForageProvider.config({
