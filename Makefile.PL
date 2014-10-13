@@ -9,9 +9,9 @@ $eumm_version =~ s/_//;
 
 WriteMakefile(
     NAME                => 'App::mykeep',
-    AUTHOR              => q{YOUR NAME <youremail@example.com>},
+    AUTHOR              => q{Max Maischein <corion@cpan.org>},
     VERSION_FROM        => 'lib/App/mykeep.pm',
-    ABSTRACT            => 'YOUR APPLICATION ABSTRACT',
+    ABSTRACT            => 'App::mykeep - notes kitchen',
     ($eumm_version >= 6.3001
       ? ('LICENSE'=> 'perl')
       : ()),
@@ -20,6 +20,7 @@ WriteMakefile(
         'Test::More' => 0,
         'YAML'       => 0,
         'Dancer'     => 1.3118,
+        'JSON::XS'   => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'App-mykeep-*' },
