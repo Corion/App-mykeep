@@ -5,7 +5,7 @@
 API:
 
   GET /notes/list
-      [{ id, lastModifiedAt }, ...  ]
+      [{ id, modifiedAt }, ...  ]
 
   POST /notes/{uuid}
   Store/merge note {uuid}, redirect to GET
@@ -95,45 +95,100 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
     return result
   };
   
-  $scope.saveItem= function(item) {
-    // We should only set the timestamp if we actually changed somethig...
-    item.modifiedAt= (new Date).getTime() / 1000;
+  $scope.storeItem= function(item) {
     $scope.pending.push($localForage.setItem(item.id, item).then(function(){
       //alert("Stored id (title)" + item.title;
     }));
   };
+  $scope.saveItem= function(item) {
+    // We should only set the timestamp if we actually changed somethig...
+    item.modifiedAt= (new Date).getTime() / 1000;
+    $scope.storeItem(item);
+  };
+  
+  $scope.syncItems= function() {
+      var url= "/notes/list";
+      // Check if it is a newer version on the server
+      // Also, paging?!
+      // Maybe we want a list of added/archived/changed
+      // instead of sending the full current list?!
+      var f= $http({
+        url: url,
+        method: 'GET',
+        // { headers: {} }
+      }).then(function(response) {
+        // alert(response.status);
+        //alert(response.data.items);
+        var knownItems= {};
+        angular.forEach($scope.todos, function(i) {
+          knownItems[i.id]= i;
+        });
+        angular.forEach( response.data.items, function(i) {
+          // Check if we know that item
+          if( knownItems[i.id]) {
+            // We know that item.
+            var local= knownItems[i.id];
+            // Update and check if we want to resync
+            if(    local.modifiedAt != i.modifiedAt
+                || local.archivedAt != i.archivedAt ) {
+              $scope.syncItem(local);
+            };
+          } else {
+            // A new item
+            // Add a dummy, check if we need to resync
+            $scope.todos.unshift(i);
+            $scope.storeItem(i);
+            $scope.syncItem(i);
+          };
+        });
+      }).else(function(response) {
+        alert("uhoh " + response.status )
+      });
+      $scope.pending.push(f);
+  };
 
   $scope.syncItem= function(item) {
     var url= urlTemplate("/notes/{id}",item);
-    if( !item.lastSyncedAt || item.lastSyncedAt < item.lastModifiedAt ) {
+    if( !item.lastSyncedAt || item.lastSyncedAt < item.modifiedAt ) {
+      alert(item.lastSyncedAt);
+      alert(item.modifiedAt);
       // Send our new version to the server
       // Maybe this should be a PUT request. Later.
-      $http.post(
-        url,
-        item,
-        {}
-      ).then(function(response) {
+      $http({
+        url: url,
+        data: item,
+        method: 'POST',
+        headers: {}
+      }).then(function(response) {
         alert("Saved new ("+response.status+")");
+        // We should use the server time here...
+        // item.lastSyncedAt= (new Date).getTime() / 1000;
+        // alert(response.data);
+        item= response.data;
+        $scope.storeItem(item);
       }).else(function(response){
         alert("Uhoh: "+response.status);
       });
-      alert("Posed to " + url);
+      //alert("Posted to " + url);
     } else {
       // Check if it is a newer version on the server
       alert("get from "+url);
-      $http.get(
-        url,
-        { headers: { 'If-Modified-Since' : item.lastSyncedAt } }
-      ).then(function(response) {
+      $http({
+        url: url,
+        method: 'GET',
+        headers: { 'If-Modified-Since' : item.lastSyncedAt }
+      }).then(function(response) {
         alert(response.status);
-        item= response.body; // Ah, well...
+        item= response.data; // Ah, well...
+      }).else(function(response){
+        alert("uhoh " + response.status );
       });
     };
   };
 
   $scope.archiveItem= function(item) {
     item.archivedAt= (new Date).getTime() / 1000;
-    $scope.saveItem( item );
+    $scope.storeItem( item );
     // Trigger display update
     $scope.todos= $scope.visibleItems();
   };

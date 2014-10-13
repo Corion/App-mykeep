@@ -39,6 +39,7 @@ h2 {
   <h2>Ideas</h2>
   <div ng-controller="TodoCtrl">
     <div id="toolbar" style="display: block;">
+      <a href="" ng-click="syncItems()">Sync</a>
       <form ng-submit="addTodo()">
         <input type="text" ng-model="todoText"  size="30"
                placeholder="add new todo here">
