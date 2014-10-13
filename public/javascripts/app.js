@@ -239,13 +239,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
   
   $scope.sortItems= function() {
     $scope.todos.sort(function(a,b){
-      if( a.modifiedAt < b.modifiedAt ) {
-        return -1
-      } else if(a.modifiedAt > b.modifiedAt) {
-        return +1
-      } else {
-        return 0
-      };
+        return b.modifiedAt - a.modifiedAt
     });
   };
 
