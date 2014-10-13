@@ -47,13 +47,13 @@ h2 {
       </form>
     </div>
     <div masonry="{ gutter:16 }" preserve-order load-images="false">
-      <div class="masonry-brick" ng-repeat="todo in todos" id="note-{{todo.id}}">
-        <div style="background-color: {{todo.bgcolor}}">
+      <div class="masonry-brick" ng-repeat="todo in todos" id="note-{{todo.id}}" style="background-color: {{todo.bgcolor}}">
           <h2 ng-class="{empty: !todo.title}" ng-model="todo.title" contenteditable="true" ng-blur="saveItem(todo)">The title</h2>
           <div ng-model="todo.text" contenteditable="true" ng-blur="saveItem(todo)">The text</div>
           <a href="" ng-click="archiveItem(todo)">x</a>
           <a href="" ng-click="syncItem(todo)">u</a>
-        </div>
+          <span ng-bind="needsSync(todo)">sync</span>
+          <span ng-bind="{{todo.modifiedAt}}">modifiedAt</span>
       </div>
     </div>
   </div>
