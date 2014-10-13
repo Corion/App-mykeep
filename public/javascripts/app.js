@@ -184,7 +184,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
             $scope.syncItem(i);
           };
         });
-      }).else(function(response) {
+      }, function(response) {
         alert("uhoh " + response.status )
       });
   };
@@ -205,7 +205,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
         // item.lastSyncedAt= (new Date).getTime() / 1000;
         item= response.data;
         $scope.storeItem(item);
-      }).else(function(response){
+      }, function(response){
         alert("Uhoh: "+response.status);
       });
       //alert("Posted to " + url);
@@ -217,7 +217,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
         headers: { 'If-Modified-Since' : item.lastSyncedAt }
       }).then(function(response) {
         item= response.data; // Ah, well...
-      }).else(function(response){
+      }, function(response){
         alert("uhoh " + response.status );
       });
     };
