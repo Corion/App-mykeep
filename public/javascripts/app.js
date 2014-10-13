@@ -86,8 +86,8 @@ function urlTemplate( tmpl, vars ) {
   return tmpl.replace(/{(\w+)}/, function(m,name){ return vars[name] || "{"+name+"}" }, 'y')
 };
 
-myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
-                     function ($scope,  $localForage,  uuid2,   $http) {
+myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'requestQueue',
+                     function ($scope,  $localForage,  uuid2,   $http, requestQueue) {
   // Load all items
   $scope.todos= [];
   /*
@@ -174,15 +174,26 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
             // Update and check if we want to resync
             if(    local.modifiedAt != i.modifiedAt
                 || local.archivedAt != i.archivedAt ) {
-              $scope.syncItem(local);
+              local.dirty= 1;
             };
           } else {
             // A new item
             // Add a dummy, check if we need to resync
+            //alert("New item " + i.id);
+            i.syncIncomplete= 1; // Maybe i.origin= 'remote' instead?
             $scope.todos.unshift(i);
             $scope.storeItem(i);
-            $scope.syncItem(i);
           };
+        });
+        
+        // Now queue (more) requests for all the items that need it
+        angular.forEach( $scope.pendingSync(), function(i) {
+            alert("Queuing '" + i.title + "' for sync");
+            try {
+                $scope.syncItem(i);
+            } catch (e) {
+                alert( e.message );
+            };
         });
       }, function(response) {
         alert("uhoh " + response.status )
@@ -191,10 +202,14 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
 
   $scope.syncItem= function(item) {
     var url= urlTemplate("/notes/{id}",item);
-    if( !item.lastSyncedAt || item.lastSyncedAt < item.modifiedAt ) {
+    var res;
+    if( !item.syncIncomplete
+        && (!item.lastSyncedAt || item.lastSyncedAt < item.modifiedAt )) {
+      //alert(item.lastSyncedAt);
+      //alert(item.modifiedAt);
       // Send our new version to the server
       // Maybe this should be a PUT request. Later.
-      $http({
+      res= requestQueue({
         url: url,
         data: item,
         method: 'POST',
@@ -202,27 +217,38 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
       }).then(function(response) {
         //alert("Saved new ("+response.status+")");
         // We should use the server time here...
-        // item.lastSyncedAt= (new Date).getTime() / 1000;
         item= response.data;
         $scope.storeItem(item);
+        $scope.sortItems();
       }, function(response){
         alert("Uhoh: "+response.status);
       });
       //alert("Posted to " + url);
     } else {
       // Check if it is a newer version on the server
-      $http({
+      // Items that originate from the server never have .lastSyncedAt
+      // set and thus will always download
+      res= requestQueue({
         url: url,
         method: 'GET',
         headers: { 'If-Modified-Since' : item.lastSyncedAt }
       }).then(function(response) {
-        item= response.data; // Ah, well...
+        //alert(response.status);
+        angular.forEach(["title","text","bgcolor","modifiedAt","archivedAt"], function(key) {
+            // Maybe we should filter title+text+bgcolor for Javascript...
+            item[key]= response.data[key];
+        });
+        item.syncIncomplete= 0;
+        item.dirty= 0;
+        $scope.storeItem(item);
+        $scope.sortItems();
       }, function(response){
         alert("uhoh " + response.status );
       });
     };
+    return res
   };
-
+  
   $scope.archiveItem= function(item) {
     item.archivedAt= Math.floor((new Date).getTime() / 1000);
     $scope.storeItem( item );
