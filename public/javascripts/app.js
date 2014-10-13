@@ -90,7 +90,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
                      function ($scope,  $localForage,  uuid2,   $http) {
   // Load all items
   $scope.todos= [];
-  $scope.pending= [];
   /*
   $localForage.getItem("config-order").then(function(order){
     $scope.order= order;
@@ -121,14 +120,35 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
   };
   
   $scope.storeItem= function(item) {
-    $scope.pending.push($localForage.setItem(item.id, item).then(function(){
+    //$scope.pending.push($localForage.setItem(item.id, item).then(function(){
+    $localForage.setItem(item.id, item).then(function(){
       //alert("Stored id (title)" + item.title;
-    }));
+    });
   };
+  
   $scope.saveItem= function(item) {
     // We should only set the timestamp if we actually changed somethig...
-    item.modifiedAt= (new Date).getTime() / 1000;
+    item.modifiedAt= Math.floor((new Date).getTime() / 1000);
     $scope.storeItem(item);
+    $scope.$apply();
+  };
+
+  $scope.needsSync= function(item) {
+      if( item.syncIncomplete ) return 'syncIncomplete';
+      if( !item.lastSyncedAt ) return 'new item';
+      if( item.modifiedAt > item.lastSyncedAt ) return 'Modified';
+      if( item.dirty ) return 'dirty';
+      return undefined;
+  };
+  
+  $scope.pendingSync= function() {
+      var res= [];
+      angular.forEach($scope.todos, function(item) {
+          if($scope.needsSync(item)) {
+              res.push( item )
+          };
+      });
+      return res
   };
   
   $scope.syncItems= function() {
@@ -169,7 +189,6 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http',
       }).else(function(response) {
         alert("uhoh " + response.status )
       });
-      $scope.pending.push(f);
   };
 
   $scope.syncItem= function(item) {
