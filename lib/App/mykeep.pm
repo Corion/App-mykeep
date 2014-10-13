@@ -64,7 +64,6 @@ sub save_item {
 }
 
 get '/notes/:note' => sub {
-    content_type 'application/json';
     my $id= clean_id( params->{note} );
     
     my $item= load_item( $id );
@@ -72,12 +71,12 @@ get '/notes/:note' => sub {
     # If we're newer, send response
     # otherwise, update the last-synced timestamp?!
 
-    $item
+    content_type 'application/json';
+    return encode_json($item);
 };
 
 # Maybe PUT instead of POST, later
 post '/notes/:note' => sub {
-    content_type 'application/json';
     my $id= clean_id( request->params("route")->{note} );
     
     my $body= decode_json(request->body);
@@ -106,7 +105,8 @@ post '/notes/:note' => sub {
     
     # "forward()" won't work, because we want to change
     # POST to GET
-    return redirect sprintf '/notes/%s', $item->{id}
+    content_type 'application/json';
+    return encode_json($item);
 };
 
 true;
