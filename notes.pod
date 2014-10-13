@@ -51,4 +51,8 @@ Resize images before non-fast upload
 
 Set XSRF-Token" cookie from Perl, expect it as a header
 
+=item *
+
+Sync with IMAP server-side for iDevice import/sync magic
+
 =back
