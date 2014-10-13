@@ -4,6 +4,7 @@ use 5.016; # for /r
 use Dancer ':syntax';
 use JSON::XS qw(decode_json encode_json);
 use Data::Dumper;
+use File::Basename 'basename';
 
 our $VERSION = '0.01';
 
@@ -15,14 +16,21 @@ get '/' => sub {
 };
 
 get '/notes/list' => sub {
-    my @files= glob 'notes/*.json';
+    my @files= map { basename $_ } glob 'notes/*.json';
+    # Consider paging here
+    # Also, conssider only changes since here...
     
-    content_type 'application/json';
     my @result=
-        map { my $i= load_item($_); { id => $i->{id}, lastModifiedAt => $i->{lastModifiedAt }}  }
+        map { warn $_; my $i= load_item($_);
+              { id => $i->{id},
+                lastModifiedAt => $i->{lastModifiedAt},
+                archivedAt => $i->{archivedAt},
+              }
+        } map { s/\.json$//ir }
         @files
         ;
-    return \@result;
+    content_type 'application/json';
+    return encode_json({ more => undef, items => \@result })
 };
 
 sub clean_id {
