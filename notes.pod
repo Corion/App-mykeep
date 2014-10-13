@@ -47,4 +47,8 @@ if the client requests that
 
 Resize images before non-fast upload
 
+=item *
+
+Set XSRF-Token" cookie from Perl, expect it as a header
+
 =back
