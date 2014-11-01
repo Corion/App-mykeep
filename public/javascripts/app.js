@@ -130,7 +130,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'request
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
     $scope.storeItem(item);
-    $scope.$apply();
+    //$scope.$apply();
   };
 
   $scope.needsSync= function(item) {
@@ -188,7 +188,7 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'request
         
         // Now queue (more) requests for all the items that need it
         angular.forEach( $scope.pendingSync(), function(i) {
-            alert("Queuing '" + i.title + "' for sync");
+            //alert("Queuing '" + i.title + "' for sync");
             try {
                 $scope.syncItem(i);
             } catch (e) {
@@ -258,7 +258,10 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'request
   
   $scope.sortItems= function() {
     $scope.todos.sort(function(a,b){
-        return b.modifiedAt - a.modifiedAt
+        return    b.modifiedAt - a.modifiedAt
+               || (  b.id < a.id ? -1
+                   : b.id > a.id ?  1
+                   : 0)
     });
   };
 
