@@ -42,9 +42,9 @@ h2 {
      Javascript which is compiled from the templates -->
 <!-- later -->
 <script id="tmplItem" type="text/x-handlebars-template">
-      <div class="mybrick masonry-brick" id="note-\{\{\id}}" style="background-color: \{\{bgcolor}}">
-          <h2 class="empty" contenteditable="true" onblur="saveItem(note)">The title</h2>
-          <div contenteditable="true" onblur="saveItem(note)">The text</div>
+      <div class="mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
+          <h2 class="empty" contenteditable="true" onblur="saveItem(note)">\{\{title}}</h2>
+          <div contenteditable="true" onblur="saveItem(note)">\{\{text}}</div>
           <a href="" onclick="archiveItem(note)">x</a>
           <a href="" onclick="syncItem(note)">u</a>
           <span id="sync-\{\{id}}">sync</span>
@@ -53,11 +53,32 @@ h2 {
 </script>
 
 <script id="tmplItems" type="text/x-handlebars-template">
-    \{\{#list notes}}
+    \{\{#each notes}}
         \{\{> tmplItem note=this }}
     \{\{else}}
         <p>Nothing to see here</p>
-    \{\{/list}}
+    \{\{/each}}
+</script>
+
+<script>
+// Compile all our templates, until we can do that statically
+$('script[type="text/x-handlebars-template"').each(function(i, item) {
+    //console.log([$(item).attr('id'), $(item).html()]);
+    // We should unescape the template here, later
+    var html = $(item).html();
+    html = html.replace(/\\{\\{/g, "{"+"{"); // Goddamn Text::Handlebars
+    
+    Handlebars.registerPartial($(item).attr('id'), html );
+});
+
+var html = $("#tmplItems").html();
+html = html.replace(/\\{\\{/g, "{"+"{"); // Goddamn Text::Handlebars
+var tmplItems = Handlebars.compile(html);
+
+// XXX This should move to the DOM differ, later
+function repaintItems(items) {
+    $('#items').html(tmplItems(items));
+};
 </script>
 
 <div>
@@ -71,7 +92,14 @@ h2 {
       </form>
     </div>
     <div id="items">
-    {{> tmplItems items }}
     </div>
   </div>
 </div>
+
+<script>
+// Move to async/service worker instead
+repaintItems({notes:[
+{"id":1,"title":"Test title","bgcolor":"#ffff00","modifiedAt":0,"text":"Test text"},
+{"id":2,"title":"Test title 2","bgcolor":"#ffff00","modifiedAt":0,"text":"Test text 2"}
+]});
+</script>
