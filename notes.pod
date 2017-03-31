@@ -6,6 +6,12 @@ App::mykeep
 
 =item *
 
+Create manifest.json
+
+https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+
+=item *
+
 Use heavily cached Javascript page as "App"
 
 =item *
