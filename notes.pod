@@ -10,7 +10,7 @@ Use heavily cached Javascript page as "App"
 
 =item *
 
-Use AngularJS for the UI
+Use Handlebars and MorphDOM for the UI
 
 =item *
 
@@ -18,7 +18,13 @@ Use LocalForage for local storage
 
 =item *
 
-Use Google search for "javascript background upload" for sync
+Use HTTP::Upload::FlowJs for sync, with web worker
+
+=item *
+
+Statically compile the templates to Javascript
+
+If all else fails, use Javascript::Duktape
 
 =item *
 
@@ -50,6 +56,10 @@ Resize images before non-fast upload
 =item *
 
 Set XSRF-Token" cookie from Perl, expect it as a header
+
+=item *
+
+Make the cookie token HTTP-only
 
 =item *
 
