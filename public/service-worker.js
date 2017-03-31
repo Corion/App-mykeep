@@ -1,18 +1,43 @@
 // https://bitsofco.de/bitsofcode-pwa-part-1-offline-first-with-service-worker/
 // Import the Service Worker Toolbox file
-WorkerGlobalScope.importScripts('javascripts/sw-toolbox.js');
+'use strict';
+importScripts('javascripts/sw-toolbox.js');
 
 const precacheFiles = [  
     './',
     './index.html',
-    './js/app.js',
-    './css/reset.css',
-    './css/style.css'
+    './javascripts/jquery-3.1.1.min.js',
+    './javascripts/handlebars-v4.0.5.js',
+    './javascripts/app.js'
 ];
 
 // Precache the files
 toolbox.precache(precacheFiles);
 
+var cannedNotes = {notes:[
+{"id":1,"title":"Test title","bgcolor":"#FFE040","modifiedAt":0,"text":"Test text (sw)"},
+{"id":2,"title":"Test title 2","bgcolor":"#FFE040","modifiedAt":0,"text":"Test text 3 (sw)"}
+]};
+
+toolbox.router.get("/notes/list", function(request, values,options) {
+    //return Promise.resolve(cannedNotes);
+    return new Response(JSON.encode(cannedNoted), {
+        headers: { 'Content-Type': 'application/json' }
+    });
+}, {});
+
+/*
+self.addEventListener('message', function(event) {
+    console.log("sw command: " + event.data.command );
+    if( event.data.command == 'notes' ) {
+        return Promise.resolve(cannedNotes);
+    }
+});
+*/
+
+//console.log("sw loaded );
+
+/*
 self.addEventListener('fetch', function(event) {  
     // Respond to the document with what is returned from 
     event.respondWith(
@@ -29,19 +54,4 @@ self.addEventListener('fetch', function(event) {
         })
     );
 });
-
-if (navigator.serviceWorker) {
-    console.log("ServiceWorkers are supported");
-
-    navigator.serviceWorker.register('sw.js', {
-            scope: './'
-        })
-        .then(function(reg) {
-            console.log("ServiceWorker registered", reg);
-        })
-        .catch(function(error) {
-            console.log("Failed to register ServiceWorker", error);
-        });
-} else {
-    console.log("Whoops, ServiceWorkers are not supported");
-};
+*/
