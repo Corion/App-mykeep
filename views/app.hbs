@@ -38,6 +38,28 @@ h2 {
 }
 </style>
 
+<!-- these should be automagically inserted resp. converted from static
+     Javascript which is compiled from the templates -->
+<!-- later -->
+<script id="tmplItem" type="text/x-handlebars-template">
+      <div class="mybrick masonry-brick" id="note-\{{id}}" style="background-color: \{{bgcolor}}">
+          <h2 class="empty" contenteditable="true" onblur="saveItem(note)">The title</h2>
+          <div contenteditable="true" onblur="saveItem(note)">The text</div>
+          <a href="" onclick="archiveItem(note)">x</a>
+          <a href="" onclick="syncItem(note)">u</a>
+          <span id="sync-\{{id}}">sync</span>
+          <span id="modified-\{{id}}">\{{modifiedAt}}</span>
+      </div>
+</script>
+
+<script id="tmplItems" type="text/x-handlebars-template">
+    \{{#list notes}}
+        \{{> tmplItem note=this }}
+    \{{else}}
+        <p>Nothing to see here</p>
+    \{{/list}}
+</script>
+
 <div>
   <h2>Ideas</h2>
   <div>
