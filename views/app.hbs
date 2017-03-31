@@ -1,0 +1,54 @@
+<style>
+span[contentEditable] {
+        cursor: pointer;
+        background-color: #D0D0D0;
+    }
+
+[contentEditable].empty:before {
+  color: gray;
+  content: "Title";
+}
+
+[contentEditable].empty:focus:before {
+  height: 1em;
+  content: "|"; /* Erase that placeholder text again */
+}
+
+.mybrick {
+  border: 1px solid black;
+  width: 22%;
+  min-height: 3em;
+  float: left;
+
+  /* Shadows */
+  /* Firefox */
+  -moz-box-shadow:5px 5px 7px rgba(33,33,33,1);
+  /* Safari+Chrome */
+  -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+  /* Opera */
+  box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+  
+  background-color: rgba(255,220,30,1);
+  
+  margin-bottom: 16px;
+}
+
+h2 {
+  display:block;
+}
+</style>
+
+<div>
+  <h2>Ideas</h2>
+  <div>
+    <div id="toolbar" style="display: block;">
+      <a href="#" onclick="syncItems()">Sync</a>
+      <form submit="javascript:addTodo()">
+        <input type="text" size="30" placeholder="add new note here">
+        <input class="btn-primary" type="submit" value="add">
+      </form>
+    </div>
+    <div id="items">
+    \{{> tmplItems items }}
+    </div>
+</div>

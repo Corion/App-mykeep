@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Content-type" content="text/html; charset={{ settings.charset }}" />
+<title>App::mykeep</title>
+<link rel="stylesheet" href="{{ request.uri_base }}/css/style.css" />
+
+<meta name="description" content="App::mykeep">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/app.css">
+<script src="javascripts/localforage.js"></script>
+<script src="javascripts/jquery-3.1.1.min.js"></script>
+<script src="javascripts/app.js"></script>
+
+</head>
+<body>
+{{{ content }}}
+<div id="footer">
+Powered by <a href="http://perldancer.org/">Dancer</a> {{ dancer_version }}
+</div>
+</body>
+</html>
