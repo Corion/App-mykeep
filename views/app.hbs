@@ -44,7 +44,7 @@ h2 {
 <script id="tmplItem" type="text/x-handlebars-template">
       <div class="mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
           <h2 class="empty" contenteditable="true" onblur="saveItem(note)">\{\{title}}</h2>
-          <div contenteditable="true" onblur="saveItem(note)">\{\{text}}</div>
+          <div contenteditable="true" onblur="saveItem(note)">\{\{\{text}}}</div>
           <a href="" onclick="archiveItem(note)">x</a>
           <a href="" onclick="syncItem(note)">u</a>
           <span id="sync-\{\{id}}">sync</span>
@@ -66,7 +66,7 @@ $('script[type="text/x-handlebars-template"').each(function(i, item) {
     //console.log([$(item).attr('id'), $(item).html()]);
     // We should unescape the template here, later
     var html = $(item).html();
-    html = html.replace(/\\{\\{/g, "{"+"{"); // Goddamn Text::Handlebars
+    html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
     
     Handlebars.registerPartial($(item).attr('id'), html );
 });
@@ -77,8 +77,10 @@ var tmplItems = Handlebars.compile(html);
 
 // XXX This should move to the DOM differ, later
 function repaintItems(items) {
+    console.log(items);
     $('#items').html(tmplItems(items));
 };
+
 </script>
 
 <div>
