@@ -20,6 +20,25 @@ API:
 
 var localForage;
 
+// Load our service worker
+if (navigator.serviceWorker) {
+    console.log("ServiceWorkers are supported");
+
+    navigator.serviceWorker.register('./service-worker.js', {
+            scope: '.'
+        })
+        .then(function(reg) {
+            console.log("ServiceWorker registered", reg);
+            //sendMessage('notes').then(function(e){repaintItems(e)});
+        })
+        .catch(function(error) {
+            console.log("Failed to register ServiceWorker", error);
+        });
+} else {
+    console.log("Whoops, ServiceWorkers are not supported");
+};
+
+
 function noteToModel() {
     // fetch all items from the HTML and return as object
 }

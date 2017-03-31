@@ -26,10 +26,10 @@ get '/notes/list' => sub {
     
     my @result=
         map { warn $_; my $i= load_item($_);
-              { id => $i->{id},
-                modifiedAt => $i->{modifiedAt},
-                archivedAt => $i->{archivedAt},
-              }
+              #{ id => $i->{id},
+              #  modifiedAt => $i->{modifiedAt},
+              #  archivedAt => $i->{archivedAt},
+              #}
         } map { s/\.json$//ir }
         @files
         ;

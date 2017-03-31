@@ -100,8 +100,9 @@ function repaintItems(items) {
 
 <script>
 // Move to async/service worker instead
-repaintItems({notes:[
-{"id":1,"title":"Test title","bgcolor":"#FFE040","modifiedAt":0,"text":"Test text"},
-{"id":2,"title":"Test title 2","bgcolor":"#FFE040","modifiedAt":0,"text":"Test text 2"}
-]});
+Promise.resolve($.ajax('./notes/list')).then(function(json) {
+    console.log(json);
+    json['notes'] = json['items'];
+    repaintItems(json);
+});
 </script>
