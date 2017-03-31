@@ -12,6 +12,10 @@ use vars qw( @note_keys );
 @note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt );
 
 get '/' => sub {
+    redirect '/index.html';
+};
+
+get '/index.html' => sub {
     template 'app';
 };
 
@@ -92,6 +96,8 @@ sub last_edit_wins {
 };
 
 # Maybe PUT instead of POST, later
+# Also, in addition to getting+saving JSON, also allow for simple
+# CGI parameters so we could even function without Javascript
 post '/notes/:note' => sub {
     my $id= clean_id( request->params("route")->{note} );
     
