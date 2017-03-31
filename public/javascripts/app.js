@@ -18,38 +18,15 @@ API:
 
 */
 
-var myApp = angular.module('myApp', [
-    'LocalForageModule'
-   ,'wu.masonry'
-   ,'angularUUID2'
-   ])
-.directive('contenteditable', function() {
-      return {
-        require: 'ngModel',
-        link: function( $scope,el,attrs,ctrl ) {
-          el.bind('blur',function(){
-            // save to model
-            $scope.$apply(function(){
-              ctrl.$setViewValue(el.html());
-              // Store in localForage
-              // mark dirty
-              // hope for sync with remote side
-            });
-          });
-          ctrl.$render= function() {
-            // load from model
-            el.html(ctrl.$viewValue);
-          };
-          
-          // initialize
-          //ctrl.$setViewValue(el.html());
-        },
-      };
-  })
+var localForage;
+
+function noteToModel() {
+    // fetch all items from the HTML and return as object
+}
 
 // Serialize all item fetching over one connection, just to be nicer to low
 // bandwidth connections instead of bulk-fetching over multiple connections
-.factory('requestQueue', function($q,$http) {
+function requestQueue($q,$http) {
   var queue=[];
   var execNext = function() {
     var task = queue[0];
@@ -70,15 +47,7 @@ var myApp = angular.module('myApp', [
     if (queue.length===1) execNext();            
     return d.promise;
   };
-})
-
-// Configure the local storage
-.config(['$localForageProvider', function($localForageProvider){
-    $localForageProvider.config({
-        name: 'myApp',
-        storeName: 'items'
-    });
-}]);
+};
 
 // Hacky url template implementation
 // Lacks for example %-escaping
@@ -86,30 +55,21 @@ function urlTemplate( tmpl, vars ) {
   return tmpl.replace(/{(\w+)}/, function(m,name){ return vars[name] || "{"+name+"}" }, 'y')
 };
 
-myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'requestQueue',
-                     function ($scope,  $localForage,  uuid2,   $http, requestQueue) {
-  // Load all items
-  $scope.todos= [];
-  /*
-  $localForage.getItem("config-order").then(function(order){
-    $scope.order= order;
-  });
-  */
-   
-  var d= $localForage.driver();
-  $localForage.getKeys(d).then(function(keys){
+/*
+  var d= localForage.driver();
+  localForage.getKeys(d).then(function(keys){
     for( var k=0; k < keys.length; k++ ) {
-      $localForage.getItem( keys[k] ).then(function(item){
+      localForage.getItem( keys[k] ).then(function(item){
         if( undefined == item.archivedAt ) {
-          $scope.todos.push(item);
+          scope.todos.push(item);
         };
       });
     };
   }).then(function(){
-    $scope.sortItems();
+    scope.sortItems();
   });
   
-  $scope.visibleItems= function() {
+  scope.visibleItems= function() {
     var result= [];
     angular.forEach($scope.todos, function(todo) {
       if (undefined == todo.archivedAt) {
@@ -280,5 +240,4 @@ myApp.controller('TodoCtrl', ['$scope','$localForage','uuid2', '$http', 'request
     $scope.todos.unshift(item);
     $scope.todoText = '';
   };
-
-}]);
+*/
