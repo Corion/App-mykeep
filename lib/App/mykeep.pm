@@ -19,11 +19,27 @@ get '/index.html' => sub {
     template 'app';
 };
 
+=head1 Data model
+
+Currently we have the following fields
+
+  id
+  title
+  text
+  modifiedAt
+  archivedAt
+  lastSyncedAt
+  bgcolor
+
+Maybe this should be moved to its own module. Later.
+
+=cut
+
 get '/notes/list' => sub {
     my @files= map { basename $_ } glob 'notes/*.json';
     # Consider paging here
     # Also, conssider only changes since here...
-    
+
     my @result=
         map { warn $_; my $i= load_item($_);
               #{ id => $i->{id},
@@ -69,7 +85,7 @@ sub save_item {
 
 get '/notes/:note' => sub {
     my $id= clean_id( params->{note} );
-    
+
     my $item= load_item( $id );
     # Check "if-modified-since" header
     # If we're newer, send response
@@ -83,7 +99,7 @@ sub last_edit_wins {
     my( $_item, $body )= @_;
     my $item= { %$_item };
 
-    # Really crude "last edit wins" approach    
+    # Really crude "last edit wins" approach
     if( ($body->{modifiedAt} || 0) > ($item->{modifiedAt} || 0)) {
         for my $key (@note_keys) {
             # Detect conflicts
@@ -91,7 +107,7 @@ sub last_edit_wins {
             $item->{$key}= $body->{ $key };
         };
     };
-    
+
     $item
 };
 
@@ -100,20 +116,20 @@ sub last_edit_wins {
 # CGI parameters so we could even function without Javascript
 post '/notes/:note' => sub {
     my $id= clean_id( request->params("route")->{note} );
-    
+
     my $body= decode_json(request->body);
     warning $body;
-    
+
     my $item= eval { load_item( $id ); };
     #warning "loaded ($@) " . Dumper $item;
 
-    # Really crude "last edit wins" approach    
+    # Really crude "last edit wins" approach
     $item= last_edit_wins( $item, $body );
 
     # Set "last-synced" timestamp
     $item->{lastSyncedAt}= time();
     save_item( $item );
-    
+
     # Do we really want to do an external redirect here
     # instead of serving an internal redirect to the client?
     # Also, do we want to (re)deliver the known content at all?!
@@ -121,7 +137,7 @@ post '/notes/:note' => sub {
     # that is, id and lastSyncedAt unless there are changes.
     # Maybe { result: patch, { id: 123, changed: [foo:"bar"] }]
     warning "Redirecting";
-    
+
     # "forward()" won't work, because we want to change
     # POST to GET
     content_type 'application/json';
