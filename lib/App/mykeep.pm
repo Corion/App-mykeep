@@ -36,10 +36,12 @@ get '/' => sub {
 };
 
 get '/index.html' => sub {
+    headers( "Connection" => "close" );
     template 'app';
 };
 
 get '/notes/list' => sub {
+    headers( "Connection" => "close" );
     my @files= map { basename $_ } glob 'notes/*.json';
     # Consider paging here
     # Also, conssider only changes since here...
@@ -88,6 +90,7 @@ sub save_item {
 }
 
 get '/notes/:note' => sub {
+    headers( "Connection" => "close" );
     my $id= clean_id( params->{note} );
 
     my $item= load_item( $id );
@@ -119,6 +122,7 @@ sub last_edit_wins {
 # Also, in addition to getting+saving JSON, also allow for simple
 # CGI parameters so we could even function without Javascript
 post '/notes/:note' => sub {
+    headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
 
     my $body= decode_json(request->body);
