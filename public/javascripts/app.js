@@ -36,9 +36,44 @@ if (navigator.serviceWorker) {
     console.log("Whoops, ServiceWorkers are not supported");
 };
 
+// Should we keep notes[] or have it all in localforage instead?!
+// XXX: Also resolve repaintItems({"notes":notes}) vs. notes=[]
+var notes = [];
 
-function noteToModel() {
+function htmlToModel(element) {
     // fetch all items from the HTML and return as object
+    var container = $(element).parent();
+    var new_item = {
+        "id" : $('*[name="id"]', container).val(),
+        "title" : $('h2', container).text(),
+        "text" : $('div.note-text', container).html()
+    };
+    console.log("Update from HTML", new_item);
+    return new_item;
+};
+
+function itemById(id) {
+    var res = notes.filter(function(el) { return el.id == id });
+    return res[0]
+}
+
+function updateModel(element) {
+    var newItem = htmlToModel(element);
+    var oldItem = itemById(newItem.id);
+    if( oldItem ) {
+        var dirty;
+        for( var k in newItem ) {
+            if( oldItem[k] != newItem[k] ) {
+                oldItem[k] = newItem[k];
+                dirty = 1;
+            };
+        };
+        if( dirty ) {
+            repaintItems({"notes":notes});
+        };
+    } else {
+        addItem(newItem);
+    };
 }
 
 // Serialize all item fetching over one connection, just to be nicer to low
@@ -259,8 +294,6 @@ function urlTemplate( tmpl, vars ) {
   };
 */
 
-var notes = [];
-
 // XXX This should move to the DOM differ, later
 function repaintItems(items) {
     // console.log(items);
@@ -272,13 +305,14 @@ function listItems() {
     Promise.resolve($.get('/notes/list', null)).then(function(json) {
         console.log(json);
         json['notes'] = json['items'];
-        repaintItems(json);
+        notes = json['notes'];
+        repaintItems({ "notes": notes });
     }, function(r1,r2) {
         console.log([r1,r2]);
     })
 }
 
-function addTodo() {
+function addItem() {
     var entry = $('#toolbar input[type="text"]');
     var item= {
         text: entry.val()
@@ -294,14 +328,14 @@ function addTodo() {
     });
     // New items go to top
     notes.unshift(item);
-    repaintItems({"notes": notes});
     entry.val('');
+    repaintItems({"notes": notes});
 };
 
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
-    var target = "/notes/:id".replace(/:(\w+)/g, function(match,key) { console.log(key); return item[key] });
+    var target = urlTemplate( "/notes/{id}", item );
     console.log(target, item);
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later

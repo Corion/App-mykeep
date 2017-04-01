@@ -42,10 +42,10 @@ h2 {
      Javascript which is compiled from the templates -->
 <!-- later -->
 <script id="tmplItem" type="text/x-handlebars-template">
-      <div class="mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
-          <input type="hidden" value="\{\{id}}" />
+      <div class="note mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
+          <input type="hidden" name="id" value="\{\{id}}" />
           <h2 class="\{\{#unless title}}empty\{\{/unless}}" contenteditable="true" onblur="updateModel(this)">\{\{title}}</h2>
-          <div contenteditable="true" onblur="updateModel(this)">\{\{\{text}}}</div>
+          <div class="note-text" contenteditable="true" onblur="updateModel(this)">\{\{\{text}}}</div>
           <a href="#" onclick="archiveItem(note)">x</a>
           <a href="#" onclick="syncItem(note)">u</a>
           <span id="sync-\{\{id}}">sync</span>
@@ -82,7 +82,7 @@ var tmplItems = Handlebars.compile(html);
   <div>
     <div id="toolbar" style="display: block;">
       <a href="#" onclick="syncItems()">Sync</a>
-      <form action="." method="POST" onsubmit="javascript:addTodo(); return false;">
+      <form action="." method="POST" onsubmit="javascript:addItem(); return false;">
         <input type="text" size="30" placeholder="add new note here">
         <input class="btn-primary" type="submit" value="add">
       </form>
