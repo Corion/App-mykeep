@@ -40,9 +40,20 @@ if (navigator.serviceWorker) {
 // XXX: Also resolve repaintItems({"notes":notes}) vs. notes=[]
 var notes = [];
 
+function UIcontainer(element) {
+    return $(element).closest(".note");
+}
+
+function deleteItemUI(element) {
+    var item = htmlToModel(UIcontainer(element));
+    console.log("deleting",item);
+    deleteItem(item);
+    repaintItems({"notes":notes});
+}
+
 function htmlToModel(element) {
     // fetch all items from the HTML and return as object
-    var container = $(element).parent();
+    var container = UIcontainer(element);
     var new_item = {
         "id" : $('*[name="id"]', container).val(),
         "title" : $('h2', container).text(),
@@ -70,6 +81,9 @@ function updateModel(element) {
         };
         if( dirty ) {
             repaintItems({"notes":notes});
+            saveItem(oldItem).then(function(){
+                // ...
+            });
         };
     } else {
         addItem(newItem);
@@ -347,3 +361,24 @@ function saveItem(item) {
           , "processData":false
     }));
 };
+
+function deleteItem(item) {
+    notes = notes.filter(function(el) {
+        el.id != item.id
+    });
+    
+    var target = urlTemplate( "/notes/{id}/delete", item );
+    console.log(target, item);
+    // We unconditionally overwrite here and hope that the server will resolve
+    // any conflicts, later
+    delete item['text'];
+    delete item['title'];
+    return Promise.resolve($.ajax({
+            "type":"POST"
+          , "url":target
+          , "data":JSON.stringify(item)
+          , "contentType": "application/json"
+          , "processData":false
+    }));
+}
+

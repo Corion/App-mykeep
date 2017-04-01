@@ -46,10 +46,14 @@ h2 {
           <input type="hidden" name="id" value="\{\{id}}" />
           <h2 class="\{\{#unless title}}empty\{\{/unless}}" contenteditable="true" onblur="updateModel(this)">\{\{title}}</h2>
           <div class="note-text" contenteditable="true" onblur="updateModel(this)">\{\{\{text}}}</div>
-          <a href="#" onclick="archiveItem(note)">x</a>
-          <a href="#" onclick="syncItem(note)">u</a>
-          <span id="sync-\{\{id}}">sync</span>
-          <span id="modified-\{\{id}}">\{\{modifiedAt}}</span>
+          <div class="note-toolbar">
+              <!-- These URLs should be made no-Javascript-friendly -->
+              <a href="#" onclick="archiveItemUI(this)">x</a>
+              <a href="#" onclick="deleteItemUI(this)">d</a>
+              <a href="#" onclick="syncItemUI(this)">u</a>
+              <span id="sync-\{\{id}}">sync</span>
+              <span id="modified-\{\{id}}">\{\{modifiedAt}}</span>
+          </div>
       </div>
 </script>
 
