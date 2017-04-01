@@ -43,10 +43,11 @@ h2 {
 <!-- later -->
 <script id="tmplItem" type="text/x-handlebars-template">
       <div class="mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
-          <h2 class="\{\{#unless title}}empty\{\{/unless}}" contenteditable="true" onblur="saveItem(note)">\{\{title}}</h2>
-          <div contenteditable="true" onblur="saveItem(note)">\{\{\{text}}}</div>
-          <a href="" onclick="archiveItem(note)">x</a>
-          <a href="" onclick="syncItem(note)">u</a>
+          <input type="hidden" value="\{\{id}}" />
+          <h2 class="\{\{#unless title}}empty\{\{/unless}}" contenteditable="true" onblur="updateModel(this)">\{\{title}}</h2>
+          <div contenteditable="true" onblur="updateModel(this)">\{\{\{text}}}</div>
+          <a href="#" onclick="archiveItem(note)">x</a>
+          <a href="#" onclick="syncItem(note)">u</a>
           <span id="sync-\{\{id}}">sync</span>
           <span id="modified-\{\{id}}">\{\{modifiedAt}}</span>
       </div>
@@ -91,17 +92,4 @@ var tmplItems = Handlebars.compile(html);
   </div>
 </div>
 
-<button onclick="javascript:fetch(); return false;">fetch</button>
-<script>
-// Move to async/service worker instead
-function fetch() {
-    console.log("Fetching via jQuery");
-    Promise.resolve($.get('/notes/list', null)).then(function(json) {
-        console.log(json);
-        json['notes'] = json['items'];
-        repaintItems(json);
-    }, function(r1,r2) {
-        console.log([r1,r2]);
-    })
-}
-</script>
+<button onclick="javascript:listItems(); return false;">fetch</button>

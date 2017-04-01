@@ -125,6 +125,8 @@ post '/notes/:note' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
 
+    warning request->body;
+
     my $body= decode_json(request->body);
     warning $body;
 

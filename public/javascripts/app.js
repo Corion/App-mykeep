@@ -267,6 +267,17 @@ function repaintItems(items) {
     $('#items').html(tmplItems(items));
 };
 
+function listItems() {
+    console.log("Fetching via jQuery");
+    Promise.resolve($.get('/notes/list', null)).then(function(json) {
+        console.log(json);
+        json['notes'] = json['items'];
+        repaintItems(json);
+    }, function(r1,r2) {
+        console.log([r1,r2]);
+    })
+}
+
 function addTodo() {
     var entry = $('#toolbar input[type="text"]');
     var item= {
@@ -278,9 +289,27 @@ function addTodo() {
       , archivedAt: undefined
       , "id": Math.uuid(),
     };
-    //saveItem(item);
+    saveItem(item).then(function(item) {
+        // ...
+    });
     // New items go to top
     notes.unshift(item);
     repaintItems({"notes": notes});
     entry.val('');
+};
+
+function saveItem(item) {
+    // We should only set the timestamp if we actually changed somethig...
+    item.modifiedAt= Math.floor((new Date).getTime() / 1000);
+    var target = "/notes/:id".replace(/:(\w+)/g, function(match,key) { console.log(key); return item[key] });
+    console.log(target, item);
+    // We unconditionally overwrite here and hope that the server will resolve
+    // any conflicts, later
+    return Promise.resolve($.ajax({
+            "type":"POST"
+          , "url":target
+          , "data":JSON.stringify(item)
+          , "contentType": "application/json"
+          , "processData":false
+    }));
 };

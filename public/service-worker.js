@@ -43,10 +43,15 @@ function localNotes() {
         for( var k in keys ) {
             fullNotes.push( localforage.getItem(k) );
         };
+        // Sort notes by last modified resp. newest created
+        fullNotes.sort(function(a,b) { return    a["modifiedAt"]-b["modifiedAt"]
+                                              || a["createdAt"] -b["createdAt"]});
         return Promise.all(fullNotes)
     });
 }
 
+// Uuh - we shouldn't use the toolbox here but do our own cache lookup
+// in localforage.
 self.toolbox.router.get("/notes/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
     //var payload = JSON.stringify(cannedNotes);
