@@ -74,13 +74,6 @@ $('script[type="text/x-handlebars-template"').each(function(i, item) {
 var html = $("#tmplItems").html();
 html = html.replace(/\\{\\{/g, "{"+"{"); // Goddamn Text::Handlebars
 var tmplItems = Handlebars.compile(html);
-
-// XXX This should move to the DOM differ, later
-function repaintItems(items) {
-    console.log(items);
-    $('#items').html(tmplItems(items));
-};
-
 </script>
 
 <div>
@@ -88,7 +81,7 @@ function repaintItems(items) {
   <div>
     <div id="toolbar" style="display: block;">
       <a href="#" onclick="syncItems()">Sync</a>
-      <form submit="javascript:addTodo()">
+      <form action="." method="POST" onsubmit="javascript:addTodo(); return false;">
         <input type="text" size="30" placeholder="add new note here">
         <input class="btn-primary" type="submit" value="add">
       </form>
@@ -103,9 +96,6 @@ function repaintItems(items) {
 // Move to async/service worker instead
 function fetch() {
     console.log("Fetching via jQuery");
-    $.get('/notes/list', function(body,status,err) {
-        console.log([body,status,err]);
-    });
     Promise.resolve($.get('/notes/list', null)).then(function(json) {
         console.log(json);
         json['notes'] = json['items'];

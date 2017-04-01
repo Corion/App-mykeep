@@ -18,8 +18,6 @@ API:
 
 */
 
-var localForage;
-
 // Load our service worker
 if (navigator.serviceWorker) {
     console.log("ServiceWorkers are supported");
@@ -260,3 +258,29 @@ function urlTemplate( tmpl, vars ) {
     $scope.todoText = '';
   };
 */
+
+var notes = [];
+
+// XXX This should move to the DOM differ, later
+function repaintItems(items) {
+    // console.log(items);
+    $('#items').html(tmplItems(items));
+};
+
+function addTodo() {
+    var entry = $('#toolbar input[type="text"]');
+    var item= {
+        text: entry.val()
+      , title: ""
+      , done:false
+      , modifiedAt: undefined
+      , lastSyncedAt: undefined
+      , archivedAt: undefined
+      , "id": Math.uuid(),
+    };
+    //saveItem(item);
+    // New items go to top
+    notes.unshift(item);
+    repaintItems({"notes": notes});
+    entry.val('');
+};
