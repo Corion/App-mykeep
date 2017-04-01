@@ -98,11 +98,17 @@ function repaintItems(items) {
   </div>
 </div>
 
+<button onclick="javascript:fetch(); return false;">fetch</button>
 <script>
 // Move to async/service worker instead
-Promise.resolve($.ajax('./notes/list')).then(function(json) {
-    console.log(json);
-    json['notes'] = json['items'];
-    repaintItems(json);
-});
+function fetch() {
+    console.log("Fetching via jQuery");
+    Promise.resolve($.getJSON('/notes/list')).then(function(json) {
+        // console.log(json);
+        json['notes'] = json['items'];
+        repaintItems(json);
+    }, function(r1,r2) {
+        console.log([r1,r2]);
+    })
+}
 </script>
