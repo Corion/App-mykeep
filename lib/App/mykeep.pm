@@ -11,14 +11,6 @@ our $VERSION = '0.01';
 use vars qw( @note_keys );
 @note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt );
 
-get '/' => sub {
-    redirect '/index.html';
-};
-
-get '/index.html' => sub {
-    template 'app';
-};
-
 =head1 Data model
 
 Currently we have the following fields
@@ -26,14 +18,26 @@ Currently we have the following fields
   id
   title
   text
+  bgcolor
   modifiedAt
   archivedAt
   lastSyncedAt
-  bgcolor
 
 Maybe this should be moved to its own module. Later.
 
+Future keys might become
+
+  hasReminder / reminderICal - for reminders and their ICal calendar entry
+
 =cut
+
+get '/' => sub {
+    redirect '/index.html';
+};
+
+get '/index.html' => sub {
+    template 'app';
+};
 
 get '/notes/list' => sub {
     my @files= map { basename $_ } glob 'notes/*.json';
