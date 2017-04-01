@@ -1,0 +1,21 @@
+=head1 Musings on developing
+
+=head2 Moving from AngularJs to Handlebars
+
+When starting the project, it was as much an exercise in learning AngularJs
+as it was driven by my intention to move more data away from Google.
+Only when I choose to revisit the project and remove AngularJs in favour of a
+simpler if more verbose approach using plain templates driven by
+Text::Handlebars on the Perl side and Handlebars.js on the Javascript side, I
+realized that much of what I was now implementing in code I also had been
+implementing in code and directives for AngularJs.
+
+Even the repainting of components is something that I had to trigger manually
+in the end instead of having magic tied to my model data trigger the updates
+to the DOM transparently.
+
+I guess in retrospect, the only good thing about AngularJs would have been its
+ecosystem, but that was dwarfed by the dependance of magic hidden in a
+framework. I wonder if that is a property of all frameworks or a property of me
+that I inevitably run up to the limits of frameworks and then waste time working
+around these limits.
