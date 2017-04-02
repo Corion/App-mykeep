@@ -364,11 +364,10 @@ function saveItem(item) {
 
 function deleteItem(item) {
     notes = notes.filter(function(el) {
-        el.id != item.id
+        return el.id != item.id
     });
     
     var target = urlTemplate( "/notes/{id}/delete", item );
-    console.log(target, item);
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     delete item['text'];
