@@ -37,16 +37,28 @@ localforage.config({
 
 // Return full notes for the time being
 function localNotes() {
-    return localforage.keys().then(function(keys){
-        console.log(keys);
+    return localforage.keys().then(function(keys) {
+        console.log("(sw) listing keys", keys);
         var fullNotes = [];
-        for( var k in keys ) {
-            fullNotes.push( localforage.getItem(k) );
+        for( var i = 0; i < keys.length; i++ ) {
+            var k = keys[i];
+            console.log(k);
+            fullNotes.push( localforage.getItem(k).then(function(v) {console.log(k,"=>",v);return v}));
         };
+        console.log("Full of promises", fullNotes);
         // Sort notes by last modified resp. newest created
-        fullNotes.sort(function(a,b) { return    a["modifiedAt"]-b["modifiedAt"]
-                                              || a["createdAt"] -b["createdAt"]});
-        return Promise.all(fullNotes)
+        return Promise.all(fullNotes).then(function(notes) {
+            console.log("Retrieved notes",notes);
+            return Promise.resolve(
+                notes.sort(function(a,b) {
+                    console.log("Sort",a,b);
+                    return    b["modifiedAt"]-a["modifiedAt"]
+                           || b["createdAt"] -a["createdAt"]
+                })
+            );
+        }).catch(function(err) {
+            console.log("all",err);
+        });
     });
 }
 
@@ -59,7 +71,8 @@ self.toolbox.router.get("/notes/list", function(request, values,options) {
     //var payload = JSON.stringify(cannedNotes);
     
     return localNotes().then(function(cannedNotes) {
-        var payload = JSON.stringify(cannedNotes);
+        console.log(cannedNotes);
+        var payload = JSON.stringify({ "items" : cannedNotes });
         console.log("(sw): local JSON notes" + payload );
         return new Response(payload, {
             "status": 200,
@@ -74,14 +87,18 @@ self.toolbox.router.post("/notes/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
     
+    // Schedule the background sync instead of performing the HTTP stuff
+    // https://developers.google.com/web/updates/2015/12/background-sync
+
     // Store locally as object
     // What about attachments like images?!
     // What about partial uploads?! Or do we only do these here, not
     // in the client?!
     request.json().then( function(item) {
-        console.log(item.id);
-        localforage.setItem(item.id, item).then(function( value ) {
-            // stored, now trigger a sync event resp. mark for sync ...
+        console.log("(sw) Storing " + item.id);
+        localforage.setItem(item.id, item).then(function( item ) {
+            // stored, now trigger a sync event resp. mark for sync so the
+            // mothership also learns of our changes
         });
     });
     
