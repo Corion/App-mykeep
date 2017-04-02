@@ -166,6 +166,8 @@ post '/notes/:note/delete' => sub {
     my $id= clean_id( request->params("route")->{note} );
 
     # Maybe archive the item
+    # We shouldn't delete anyway, because deleting means
+    # breaking synchronization
     my $fn= "notes/$id.json";
     unlink $fn; # boom
 

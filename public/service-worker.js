@@ -87,9 +87,6 @@ self.toolbox.router.post("/notes/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
     
-    // Schedule the background sync instead of performing the HTTP stuff
-    // https://developers.google.com/web/updates/2015/12/background-sync
-
     // Store locally as object
     // What about attachments like images?!
     // What about partial uploads?! Or do we only do these here, not
@@ -99,6 +96,7 @@ self.toolbox.router.post("/notes/:id", function(request, values,options) {
         localforage.setItem(item.id, item).then(function( item ) {
             // stored, now trigger a sync event resp. mark for sync so the
             // mothership also learns of our changes
+            markForSync(item);
         });
     });
     
@@ -112,14 +110,63 @@ function urlTemplate( tmpl, vars ) {
   return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
 };
 
+// Function to (re)perform a HTTP POST to our mothership
+function httpPost(item) {
+    return fetch(Request(
+        urlTemplate("/notes/:id", item),
+    {
+        method: "POST",
+        body: JSON.stringify(item),
+        credentials: "include"
+    }))
+};
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
-
 self.toolbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called");
     return fetch(request);
 };
+
+// Mark an item as to-be-synced
+// The item must have been stored completely in localforage because we don't
+// know when we will in memory next for synchronizsation
+function markForSync(item) {
+    // Schedule the background sync instead of performing the HTTP stuff
+    // https://developers.google.com/web/updates/2015/12/background-sync
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+      navigator.serviceWorker.ready.then(function(reg) {
+        return reg.sync.register("mykeep-sync-"+item.id);
+
+      }).catch(function() {
+        // system was unable to register for a sync,
+        // this could be an OS-level restriction
+        return httpPost(item);
+      });
+
+    } else {
+      // serviceworker/sync not supported
+      // postDataFromThePage();
+      return httpPost(item);
+    }
+}
+
+// onsync handler
+// compare the two items and revert to the newer
+self.addEventListener('sync', function(event) {
+    var match = event.tag.match(/^mykeep-sync-(.*)/);
+    if (match) {
+      event.waitUntil(
+          localforage.getItem(match.group(1)).then( function(item) {
+              console.log("(sw) Synchronizing item to server",item);
+              return httpPost(item)
+              
+              // Actually, we should compare the response we get and update 
+              // our local copy if necessary, and update the UI if necessary
+          })
+      );
+  }
+});
 
 /*
 self.addEventListener('message', function(event) {
