@@ -47,6 +47,10 @@ get '/notes/list' => sub {
     # Also, conssider only changes since here...
 
     my @result=
+        sort {
+            $b->{modifiedAt} <=> $a->{modifiedAt}
+         || $b->{createdAt} <=> $a->{createdAt}
+        }
         map { warn $_; my $i= load_item($_);
               #{ id => $i->{id},
               #  modifiedAt => $i->{modifiedAt},
