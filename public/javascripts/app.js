@@ -9,11 +9,11 @@ API:
 
   POST /notes/{uuid}
   Store/merge note {uuid}, redirect to GET
-  
+
   GET /notes/{uuid}
   Return current (server)state of {uuid}
   Should have+respect If-Newer-Than headers!
-  
+
   That's all
 
 */
@@ -106,11 +106,11 @@ function requestQueue($q,$http) {
       if (queue.length>0) execNext();
     })
     ;
-  }; 
+  };
   return function(config) {
     var d = $q.defer();
     queue.push({c:config,d:d});
-    if (queue.length===1) execNext();            
+    if (queue.length===1) execNext();
     return d.promise;
   };
 };
@@ -134,7 +134,7 @@ function urlTemplate( tmpl, vars ) {
   }).then(function(){
     scope.sortItems();
   });
-  
+
   scope.visibleItems= function() {
     var result= [];
     angular.forEach($scope.todos, function(todo) {
@@ -144,14 +144,14 @@ function urlTemplate( tmpl, vars ) {
     });
     return result
   };
-  
+
   $scope.storeItem= function(item) {
     //$scope.pending.push($localForage.setItem(item.id, item).then(function(){
     $localForage.setItem(item.id, item).then(function(){
       //alert("Stored id (title)" + item.title;
     });
   };
-  
+
   $scope.saveItem= function(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
@@ -166,7 +166,7 @@ function urlTemplate( tmpl, vars ) {
       if( item.dirty ) return 'dirty';
       return undefined;
   };
-  
+
   $scope.pendingSync= function() {
       var res= [];
       angular.forEach($scope.todos, function(item) {
@@ -176,7 +176,7 @@ function urlTemplate( tmpl, vars ) {
       });
       return res
   };
-  
+
   $scope.syncItems= function() {
       var url= "/notes/list";
       // Check if it is a newer version on the server
@@ -211,7 +211,7 @@ function urlTemplate( tmpl, vars ) {
             $scope.storeItem(i);
           };
         });
-        
+
         // Now queue (more) requests for all the items that need it
         angular.forEach( $scope.pendingSync(), function(i) {
             //alert("Queuing '" + i.title + "' for sync");
@@ -274,14 +274,14 @@ function urlTemplate( tmpl, vars ) {
     };
     return res
   };
-  
+
   $scope.archiveItem= function(item) {
     item.archivedAt= Math.floor((new Date).getTime() / 1000);
     $scope.storeItem( item );
     // Trigger display update
     $scope.todos= $scope.visibleItems();
   };
-  
+
   $scope.sortItems= function() {
     $scope.todos.sort(function(a,b){
         return    b.modifiedAt - a.modifiedAt
@@ -315,7 +315,7 @@ function repaintItems(items) {
 };
 
 function UIlistItems() {
-    console.log("Fetching via jQuery");
+    console.log("Fetching '/notes/list' via jQuery");
     Promise.resolve($.get('/notes/list', null)).then(function(json) {
         console.log(json);
         json['notes'] = json['items'];
@@ -353,6 +353,7 @@ function saveItem(item) {
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
     var target = urlTemplate( "/notes/{id}", item );
     console.log(target, item);
+
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     return Promise.resolve($.ajax({
@@ -368,7 +369,7 @@ function deleteItem(item) {
     notes = notes.filter(function(el) {
         return el.id != item.id
     });
-    
+
     var target = urlTemplate( "/notes/{id}/delete", item );
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
