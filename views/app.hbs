@@ -85,8 +85,8 @@ var tmplItems = Handlebars.compile(html);
   <h2>Ideas</h2>
   <div>
     <div id="toolbar" style="display: block;">
-      <a href="#" onclick="syncItems()">Sync</a>
-      <form action="." method="POST" onsubmit="javascript:addItem(); return false;">
+      <a href="#" onclick="UIlistItems()">Sync</a>
+      <form action="." method="POST" onsubmit="javascript:UIaddItem(); return false;">
         <input type="text" size="30" placeholder="add new note here">
         <input class="btn-primary" type="submit" value="add">
       </form>
@@ -95,5 +95,3 @@ var tmplItems = Handlebars.compile(html);
     </div>
   </div>
 </div>
-
-<button onclick="javascript:listItems(); return false;">fetch</button>

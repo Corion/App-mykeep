@@ -314,7 +314,7 @@ function repaintItems(items) {
     $('#items').html(tmplItems(items));
 };
 
-function listItems() {
+function UIlistItems() {
     console.log("Fetching via jQuery");
     Promise.resolve($.get('/notes/list', null)).then(function(json) {
         console.log(json);
