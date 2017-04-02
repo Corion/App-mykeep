@@ -106,6 +106,12 @@ self.toolbox.router.post("/notes/:id", function(request, values,options) {
     return new Response();
 });
 
+// Hacky url template implementation
+// Lacks for example %-escaping
+function urlTemplate( tmpl, vars ) {
+  return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
+};
+
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later

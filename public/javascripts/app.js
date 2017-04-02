@@ -118,7 +118,7 @@ function requestQueue($q,$http) {
 // Hacky url template implementation
 // Lacks for example %-escaping
 function urlTemplate( tmpl, vars ) {
-  return tmpl.replace(/{(\w+)}/, function(m,name){ return vars[name] || "{"+name+"}" }, 'y')
+  return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
 };
 
 /*
@@ -351,7 +351,7 @@ function UIaddItem() {
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
-    var target = urlTemplate( "/notes/{id}", item );
+    var target = urlTemplate( "/notes/:id", item );
     console.log(target, item);
 
     // We unconditionally overwrite here and hope that the server will resolve
@@ -370,7 +370,7 @@ function deleteItem(item) {
         return el.id != item.id
     });
 
-    var target = urlTemplate( "/notes/{id}/delete", item );
+    var target = urlTemplate( "/notes/:id/delete", item );
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     delete item['text'];
