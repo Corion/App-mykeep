@@ -11,6 +11,10 @@ our $VERSION = '0.01';
 use vars qw( @note_keys );
 @note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt );
 
+=head1 NAME
+
+App::mykeep - notes kitchen
+
 =head1 Data model
 
 Currently we have the following fields

@@ -32,6 +32,13 @@ if (navigator.serviceWorker) {
         .catch(function(error) {
             console.log("Failed to register ServiceWorker", error);
         });
+        
+    // Refresh the list of items whenever our service worker tells us to:
+    navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log("message",event);
+        UIlistItems();
+    });
+
 } else {
     console.log("Whoops, ServiceWorkers are not supported");
 };
@@ -347,7 +354,6 @@ function UIaddItem() {
     repaintItems({"notes": notes});
 };
 
-// XXX unify urlTemplate and whatever the SW Toolbox uses, later
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
@@ -383,4 +389,3 @@ function deleteItem(item) {
           , "processData":false
     }));
 }
-

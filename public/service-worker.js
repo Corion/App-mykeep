@@ -38,12 +38,15 @@ localforage.config({
 // Return full notes for the time being
 function localNotes() {
     return localforage.keys().then(function(keys) {
-        console.log("(sw) listing keys", keys);
+        //console.log("(sw) listing keys from localStorage", keys);
         var fullNotes = [];
         for( var i = 0; i < keys.length; i++ ) {
             var k = keys[i];
             console.log(k);
-            fullNotes.push( localforage.getItem(k).then(function(v) {console.log(k,"=>",v);return v}));
+            fullNotes.push( localforage.getItem(k).then(function(v) {
+                //console.log(k,"=>",v);
+                return v
+            }));
         };
         console.log("Full of promises", fullNotes);
         // Sort notes by last modified resp. newest created
@@ -60,7 +63,7 @@ function localNotes() {
             console.log("all",err);
         });
     });
-}
+};
 
 // Consider storing as blobs, always, as we need to decode manually anyway
 
@@ -68,12 +71,12 @@ function localNotes() {
 // in localforage.
 self.toolbox.router.get("/notes/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
-    //var payload = JSON.stringify(cannedNotes);
     
+    // Also try to fetch the notes from the remote end
+    
+    // Return the local list first, and later update it
     return localNotes().then(function(cannedNotes) {
-        console.log(cannedNotes);
         var payload = JSON.stringify({ "items" : cannedNotes });
-        console.log("(sw): local JSON notes" + payload );
         return new Response(payload, {
             "status": 200,
             "headers": { 'Content-Type': 'application/json' }
@@ -112,7 +115,7 @@ function urlTemplate( tmpl, vars ) {
 
 // Function to (re)perform a HTTP POST to our mothership
 function httpPost(item) {
-    return fetch(Request(
+    return fetch(new Request(
         urlTemplate("/notes/:id", item),
     {
         method: "POST",
@@ -134,9 +137,13 @@ self.toolbox.router.default = function(request, values,options) {
 function markForSync(item) {
     // Schedule the background sync instead of performing the HTTP stuff
     // https://developers.google.com/web/updates/2015/12/background-sync
+    // This seems to be intended for the page, not for the service worker
+    // but I don't want to split the communication logic in two parts, again
+    /*
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
       navigator.serviceWorker.ready.then(function(reg) {
-        return reg.sync.register("mykeep-sync-"+item.id);
+          console.log("Background-sync event launched", item.id);
+          return reg.sync.register("mykeep-sync-"+item.id);
 
       }).catch(function() {
         // system was unable to register for a sync,
@@ -145,10 +152,15 @@ function markForSync(item) {
       });
 
     } else {
+      console.log("No service worker sync events available, using direct comm");
       // serviceworker/sync not supported
       // postDataFromThePage();
-      return httpPost(item);
-    }
+    */
+      return httpPost(item).then(function(r){
+          // ...
+          console.log("Data posted to mothership",item.id);
+      });
+    //}
 }
 
 // onsync handler
