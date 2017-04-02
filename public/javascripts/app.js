@@ -326,7 +326,7 @@ function UIlistItems() {
     })
 }
 
-function addItem() {
+function UIaddItem() {
     var entry = $('#toolbar input[type="text"]');
     var item= {
         text: entry.val()
@@ -341,11 +341,13 @@ function addItem() {
         // ...
     });
     // New items go to top
+    console.log(notes);
     notes.unshift(item);
     entry.val('');
     repaintItems({"notes": notes});
 };
 
+// XXX unify urlTemplate and whatever the SW Toolbox uses, later
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);

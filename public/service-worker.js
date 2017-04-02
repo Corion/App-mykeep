@@ -50,14 +50,13 @@ function localNotes() {
     });
 }
 
+// Consider storing as blobs, always, as we need to decode manually anyway
+
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
 self.toolbox.router.get("/notes/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
     //var payload = JSON.stringify(cannedNotes);
-    
-    // If we have a network connection, also attempt a sync to fetch the
-    // the real list
     
     return localNotes().then(function(cannedNotes) {
         var payload = JSON.stringify(cannedNotes);
@@ -68,6 +67,28 @@ self.toolbox.router.get("/notes/list", function(request, values,options) {
         });
     });
 });
+
+// Uuh - we shouldn't use the toolbox here but do our own cache lookup
+// in localforage.
+self.toolbox.router.post("/notes/:id", function(request, values,options) {
+    console.log("(sw) save note called");
+    //var payload = JSON.stringify(cannedNotes);
+    
+    // Store locally as object
+    // What about attachments like images?!
+    // What about partial uploads?! Or do we only do these here, not
+    // in the client?!
+    request.json().then( function(item) {
+        console.log(item.id);
+        localforage.setItem(item.id, item).then(function( value ) {
+            // stored, now trigger a sync event resp. mark for sync ...
+        });
+    });
+    
+    // Nothing to say here
+    return new Response();
+});
+
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
