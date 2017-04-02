@@ -158,4 +158,18 @@ post '/notes/:note' => sub {
     return encode_json($item);
 };
 
+# Maybe PUT instead of POST, later
+# Also, in addition to getting+saving JSON, also allow for simple
+# CGI parameters so we could even function without Javascript
+post '/notes/:note/delete' => sub {
+    headers( "Connection" => "close" );
+    my $id= clean_id( request->params("route")->{note} );
+
+    # Maybe archive the item
+    my $fn= "notes/$id.json";
+    unlink $fn; # boom
+
+    return "";
+};
+
 true;

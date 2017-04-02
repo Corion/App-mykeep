@@ -44,7 +44,7 @@ function UIcontainer(element) {
     return $(element).closest(".note");
 }
 
-function deleteItemUI(element) {
+function UIdeleteItem(element) {
     var item = htmlToModel(UIcontainer(element));
     console.log("deleting",item);
     deleteItem(item);
