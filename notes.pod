@@ -12,19 +12,13 @@ https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifes
 
 =item *
 
-Use heavily cached Javascript page as "App"
-
-=item *
-
-Use Handlebars and MorphDOM for the UI
-
-=item *
-
-Use LocalForage for local storage
-
-=item *
-
 Use HTTP::Upload::FlowJs for sync, with web worker
+
+=item *
+
+Encrypt data at rest, at least on the mothership?
+
+How will we share the key among the clients
 
 =item *
 
@@ -72,3 +66,21 @@ Make the cookie token HTTP-only
 Sync with IMAP server-side for iDevice import/sync magic
 
 =back
+
+=head1 FEATURES
+
+=over 4
+
+=item *
+
+Use heavily cached Javascript page as "App"
+
+=item *
+
+Use Handlebars and MorphDOM for the UI
+
+=item *
+
+Use LocalForage for local storage
+
+=cut
