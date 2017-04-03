@@ -9,7 +9,7 @@ self.toolbox.options.debug = true;
 
 const precacheFiles = [
     //'./',
-    //'./index.html',
+    './index.html',
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',
     './javascripts/app.js'
@@ -265,10 +265,12 @@ function httpPost(item) {
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
+/*
 self.toolbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called");
     return fetch(request);
 };
+*/
 
 // Mark an item as to-be-synced
 // The item must have been stored completely in localforage because we don't
