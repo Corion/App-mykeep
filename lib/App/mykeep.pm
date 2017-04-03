@@ -26,6 +26,8 @@ Currently we have the following fields
   modifiedAt
   archivedAt
   lastSyncedAt
+  deletedAt
+  status
 
 Maybe this should be moved to its own module. Later.
 
