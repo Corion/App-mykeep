@@ -32,11 +32,13 @@ if (navigator.serviceWorker) {
         .catch(function(error) {
             console.log("Failed to register ServiceWorker", error);
         });
-        
+
     // Refresh the list of items whenever our service worker tells us to:
-    navigator.serviceWorker.addEventListener('message', function(event) {
-        console.log("message",event);
-        UIlistItems();
+    navigator.serviceWorker.addEventListener('message', function(event){
+        console.log("UI Client received message: ", event.data);
+        notes = event.data.notes;
+        repaintItems(event.data);
+        event.ports[0].postMessage("Thank you!");
     });
 
 } else {
@@ -93,7 +95,7 @@ function updateModel(element) {
             });
         };
     } else {
-        addItem(newItem);
+        UIaddItem(newItem);
     };
 }
 
@@ -358,7 +360,7 @@ function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
     var target = urlTemplate( "/notes/:id", item );
-    console.log(target, item);
+    // console.log(target, item);
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
