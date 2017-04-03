@@ -48,6 +48,8 @@ if (navigator.serviceWorker) {
 
 } else {
     console.log("Whoops, ServiceWorkers are not supported");
+    // "manually" fetch whatever data we have
+    UIlistItems();
 };
 
 // Should we keep notes[] or have it all in localforage instead?!
