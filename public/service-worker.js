@@ -145,26 +145,29 @@ function fetchNotes(options) {
 
         // Merge the two
         var merged = {};
+        var unsynchronized = {}; // Things we created while offline
         for( var i = 0; i < local.length; i++ ) {
             var item = local[i];
             merged[item.id] = item;
+            unsynchronized[item.id] = item;
         };
         var local_changes = [];
         for( var i = 0; i < remote.length; i++ ) {
             var item = remote[i];
             var local_item;
             if( local_item = merged[ item.id ]) {
+                delete unsynchronized[item.id]; // the remote side knows this ID
                 var info = mergeItem( local_item, item );
 
                 if( info.storeRemote ) {
                     // Push the change to the mothership
-                    markForSync( new_item );
+                    markForSync( info.item );
                 };
 
                 if( info.storeLocal ) {
                     // Update our local storage
-                    console.log("Storing updated item locally", new_item);
-                    local_changes.push( storeItem( new_item ));
+                    console.log("Storing updated item locally", info.item );
+                    local_changes.push( storeItem( info.item ));
                 };
 
                 item = info.item;
@@ -175,6 +178,13 @@ function fetchNotes(options) {
             };
             merged[item.id] = item;
         };
+        
+        // Tell the mothership of our new things:
+        var newCreated = byLastChange( Object.values(unsynchronized));
+        newCreated.forEach(function(item){
+            markForSync(item);
+        });
+        
         // If we have written our local copy of the world, tell the UI
         // to refresh its view
         Promise.all(local_changes).then(function(changes) {
