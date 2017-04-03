@@ -40,6 +40,11 @@ if (navigator.serviceWorker) {
         repaintItems(event.data);
         event.ports[0].postMessage("Thank you!");
     });
+    
+    navigator.serviceWorker.ready.then(function() {
+        // Fetch whatever data we have
+        UIlistItems();
+    });
 
 } else {
     console.log("Whoops, ServiceWorkers are not supported");
