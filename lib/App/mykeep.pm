@@ -35,6 +35,11 @@ Future keys might become
 
   hasReminder / reminderICal - for reminders and their ICal calendar entry
 
+=head1 SECURITY
+
+We should limit the size of incoming HTTP requests as early as possible, that
+is, ideally, in the Plack handler that reads the request
+
 =cut
 
 get '/' => sub {
@@ -135,10 +140,12 @@ post '/notes/:note' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
 
-    warning request->body;
+    if( ! within_request_size_limits( config, request )) {
+        status 414;
+        return;
+    };
 
     my $body= decode_json(request->body);
-    warning $body;
 
     my $item= eval { load_item( $id ); };
     #warning "loaded ($@) " . Dumper $item;
@@ -179,5 +186,12 @@ post '/notes/:note/delete' => sub {
 
     return "";
 };
+
+sub within_request_size_limits {
+    my( $config, $request ) = @_;
+    if( $request->content_length < $config->{mykeep}->{maximum_note_size} ) {
+        return 1;
+    };
+}
 
 true;
