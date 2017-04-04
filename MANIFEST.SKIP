@@ -1,5 +1,6 @@
 ^\.git\/
 maint
+^MYMETA.*
 ^tags$
 .last_cover_stats
 Makefile$

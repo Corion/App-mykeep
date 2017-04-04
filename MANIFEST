@@ -8,8 +8,6 @@ lib/App/mykeep.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
-MYMETA.json
-MYMETA.yml
 notes.pod
 public/404.html
 public/500.html
