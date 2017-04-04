@@ -93,7 +93,7 @@ sub save_item {
     my $id= $item->{id};
     die "Have no id for item?!"
         unless $item->{id};
-    my $fn= "notes/$id.json";
+    my $fn= join "/", config->{mykeep}->{notes_dir}, "$id.json";
     open my $fh, '>', $fn
         or die "'$fn': $!";
     print { $fh } encode_json( $item )

@@ -26,3 +26,6 @@ template: "handlebars"
 #     start_tag: '[%'
 #     end_tag:   '%]'
 
+mykeep:
+  notes_dir: "notes/"
+  # Maximum size of a single note
