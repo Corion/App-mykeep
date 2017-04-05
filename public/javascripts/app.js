@@ -18,6 +18,8 @@ API:
 
 */
 
+var schemaVersion = '001.000.000';
+
 // Load our service worker
 if (navigator.serviceWorker) {
     console.log("ServiceWorkers are supported");
@@ -73,7 +75,8 @@ function htmlToModel(element) {
     var new_item = {
         "id" : $('*[name="id"]', container).val(),
         "title" : $('h2', container).text(),
-        "text" : $('div.note-text', container).html()
+        "text" : $('div.note-text', container).html(),
+        "schemaVersion" : schemaVersion // we'll force-upgrade it here
     };
     console.log("Update from HTML", new_item);
     return new_item;

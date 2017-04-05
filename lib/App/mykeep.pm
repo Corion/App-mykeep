@@ -8,8 +8,8 @@ use File::Basename 'basename';
 
 our $VERSION = '0.01';
 
-use vars qw( @note_keys );
-@note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt );
+use vars qw( @note_keys $schemaVersion );
+@note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt schemaVersion);
 
 =head1 NAME
 
@@ -28,6 +28,7 @@ Currently we have the following fields
   lastSyncedAt
   deletedAt
   status
+  schemaVersion
 
 Maybe this should be moved to its own module. Later.
 
@@ -96,6 +97,12 @@ sub load_item {
 sub save_item {
     my( $item, %options )= @_;
     my $id= $item->{id};
+    
+    $item->{schemaVersion} ||= '001.000.000';
+    if( $item->{schemaVersion} lt $schemaVersion ) {
+        # Upgrade, later
+    };
+    
     die "Have no id for item?!"
         unless $item->{id};
     my $fn= join "/", config->{mykeep}->{notes_dir}, "$id.json";
