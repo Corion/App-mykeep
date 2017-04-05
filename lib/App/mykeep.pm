@@ -112,8 +112,11 @@ sub save_item {
 }
 
 get '/notes/:note' => sub {
-    headers( "Connection" => "close" );
     my $id= clean_id( params->{note} );
+    headers( "Connection"             => "close",
+             "Content-Disposition"    => "attachment; filename=${id}.json",
+             "X-Content-Type-Options" => "nosniff",
+           );
 
     my $item= load_item( $id );
     # Check "if-modified-since" header
