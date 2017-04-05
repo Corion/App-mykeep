@@ -43,6 +43,10 @@ is, ideally, in the Plack handler that reads the request
 
 =cut
 
+sub storage_dir {
+    File::Spec->rel2abs( config->{mykeep}->{notes_dir}, config->{appdir} );
+}
+
 get '/' => sub {
     redirect '/index.html';
 };
@@ -54,7 +58,7 @@ get '/index.html' => sub {
 
 get '/notes/list' => sub {
     headers( "Connection" => "close" );
-    my @files= map { basename $_ } glob config->{mykeep} . '/*.json';
+    my @files= map { basename $_ } glob storage_dir() . '/*.json';
     # Consider paging here
     # Also, conssider only changes since here...
 
@@ -82,7 +86,7 @@ sub clean_id {
 
 sub load_item {
     my( $id, %options )= @_;
-    my $fn= "notes/$id.json";
+    my $fn= join "/", storage_dir(), "$id.json";
     if( -f $fn ) {
         my $content= do { local( @ARGV, $/) = $fn; <> };
         return decode_json($content);
@@ -105,7 +109,7 @@ sub save_item {
     
     die "Have no id for item?!"
         unless $item->{id};
-    my $fn= join "/", config->{mykeep}->{notes_dir}, "$id.json";
+    my $fn= join "/", storage_dir(), "$id.json";
     open my $fh, '>', $fn
         or die "'$fn': $!";
     print { $fh } encode_json( $item )
@@ -191,7 +195,7 @@ post '/notes/:note/delete' => sub {
     # Maybe archive the item
     # We shouldn't delete anyway, because deleting means
     # breaking synchronization
-    my $fn= config->{mykeep}->{notes_dir} . "/$id.json";
+    my $fn= storage_dir() . "/$id.json";
     unlink $fn; # boom
 
     return "";
