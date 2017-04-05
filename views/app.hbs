@@ -92,6 +92,9 @@ var tmplItems = Handlebars.compile(html);
         <input type="text" size="30" placeholder="add new note here">
         <input class="btn-primary" type="submit" value="add">
       </form>
+      <form action="." method="POST" onsubmit="javascript:UIfilterItem(); return false;">
+        <input type="text" size="30" placeholder="search" onchange="javascript:UIfilterItem(); return false;" />
+      </form>
     </div>
     <div id="items">
     </div>
