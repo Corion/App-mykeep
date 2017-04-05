@@ -334,8 +334,8 @@ function repaintItems(items) {
 };
 
 function UIlistItems() {
-    console.log("Fetching '/notes/list' via jQuery");
-    Promise.resolve($.get('/notes/list', null)).then(function(json) {
+    console.log("Fetching './notes/list' via jQuery");
+    Promise.resolve($.get('./notes/list', null)).then(function(json) {
         console.log(json);
         json['notes'] = json['items'];
         notes = json['notes'];
@@ -369,7 +369,7 @@ function UIaddItem() {
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
-    var target = urlTemplate( "/notes/:id", item );
+    var target = urlTemplate( "./notes/:id", item );
     // console.log(target, item);
 
     // We unconditionally overwrite here and hope that the server will resolve
@@ -388,7 +388,7 @@ function deleteItem(item) {
         return el.id != item.id
     });
 
-    var target = urlTemplate( "/notes/:id/delete", item );
+    var target = urlTemplate( "./notes/:id/delete", item );
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     delete item['text'];

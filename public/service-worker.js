@@ -100,7 +100,7 @@ function fetchNotes(options) {
     var remote;
     if( options.remote ) {
         console.log("(sw) Requesting notes from upstream");
-        remote = fetch("/notes/list").then( function(response) {
+        remote = fetch("./notes/list").then( function(response) {
             return response.json().then(function( json ) {
                 console.log("(sw) Mothership status received", json);
                 return json.items;
@@ -202,7 +202,7 @@ function fetchNotes(options) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.get("/notes/list", function(request, values,options) {
+self.toolbox.router.get("./notes/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
 
     // XXX determine this from the headers or the query part of the URL
@@ -226,7 +226,7 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.post("/notes/:id", function(request, values,options) {
+self.toolbox.router.post("./notes/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
 
@@ -255,7 +255,7 @@ function urlTemplate( tmpl, vars ) {
 // Function to (re)perform a HTTP POST to our mothership
 function httpPost(item) {
     return fetch(new Request(
-        urlTemplate("/notes/:id", item),
+        urlTemplate("./notes/:id", item),
     {
         method: "POST",
         body: JSON.stringify(item),
