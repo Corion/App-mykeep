@@ -30,3 +30,5 @@ mykeep:
   notes_dir: "notes/"
   # Maximum size of a single note
   maximum_note_size: 1000000
+
+
