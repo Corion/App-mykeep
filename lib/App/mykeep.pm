@@ -54,7 +54,7 @@ get '/index.html' => sub {
 
 get '/notes/list' => sub {
     headers( "Connection" => "close" );
-    my @files= map { basename $_ } glob 'notes/*.json';
+    my @files= map { basename $_ } glob config->{mykeep} . '/*.json';
     # Consider paging here
     # Also, conssider only changes since here...
 
@@ -191,7 +191,7 @@ post '/notes/:note/delete' => sub {
     # Maybe archive the item
     # We shouldn't delete anyway, because deleting means
     # breaking synchronization
-    my $fn= "notes/$id.json";
+    my $fn= config->{mykeep}->{notes_dir} . "/$id.json";
     unlink $fn; # boom
 
     return "";
