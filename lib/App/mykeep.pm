@@ -72,8 +72,13 @@ get '/index.html' => sub {
 
     if(     ! request->secure
         and config->{environment} eq 'production'   ) {
-        my $r = request->path;
-        $r =~ s!^http!https!i;
+
+        my $r = join '/', 'https:/', request->uri_base, request->path_info;
+        warn Dumper {
+            base => request->uri_base,
+            request_uri => request->request_uri,
+            path_info => request->path_info,
+        };
         return redirect $r;
     }
 
