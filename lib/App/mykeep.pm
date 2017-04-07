@@ -93,7 +93,7 @@ get '/notes/list' => sub {
 
     my @result=
         sort {
-            $b->{pinPosition} <=> $a->{pinPosition}
+            ($b->{pinPosition} || 0) <=> ($a->{pinPosition} || 0)
          || $b->{modifiedAt} <=> $a->{modifiedAt}
          || $b->{createdAt} <=> $a->{createdAt}
         }
