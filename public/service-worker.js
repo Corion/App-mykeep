@@ -77,6 +77,12 @@ function mergeItem( local, remote ) {
         "storeRemote" : false,
         "item"        : local
     };
+
+    // Check here whether one was deleted and the other one still contains
+    // changes that were made after that. If the remote item is deleted
+    // but the local one is older, wipe the local text and body to save space
+    // and later some cleanup job should be able to purge the item totally
+
     if( remote.modifiedAt > local.modifiedAt ) {
         result.item = remote;
         result.storeLocal = true;
@@ -251,6 +257,25 @@ self.toolbox.router.post("./notes/:id", function(request, values,options) {
     return new Response();
 });
 
+self.toolbox.router.post("./notes/:id/delete", function(request, values,options) {
+    console.log("(sw) delete note called");
+
+    // Store locally as object
+    // What about attachments like images?!
+    // What about partial uploads?! Or do we only do these here, not
+    // in the client?!
+    request.json().then( function(item) {
+        storeItem(item).then(function( item ) {
+            // stored, now trigger a sync event resp. mark for sync so the
+            // mothership also learns of our changes
+            markForSync(item);
+        });
+    });
+
+    // Nothing to say here
+    return new Response();
+});
+
 // Hacky url template implementation
 // Lacks for example %-escaping
 function urlTemplate( tmpl, vars ) {
@@ -327,33 +352,3 @@ self.addEventListener('sync', function(event) {
       );
   }
 });
-
-/*
-self.addEventListener('message', function(event) {
-    console.log("sw command: " + event.data.command );
-    if( event.data.command == 'notes' ) {
-        return Promise.resolve(cannedNotes);
-    }
-});
-*/
-
-//console.log("sw loaded );
-
-/*
-self.addEventListener('fetch', function(event) {
-    // Respond to the document with what is returned from
-    event.respondWith(
-        // 1. Check the cache if a file matching that request is available
-        caches.match(event.request).then( function(response) {
-            // 2. If it is, respond to the document with the file from the cache
-            if ( response ) {
-                return response;
-            };
-
-            // 3. If it isn’t, fetch the file from the network and respond to the document with the fetched file
-            return fetch(event.request);
-
-        })
-    );
-});
-*/

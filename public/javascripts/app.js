@@ -393,6 +393,7 @@ function deleteItem(item) {
     // any conflicts, later
     delete item['text'];
     delete item['title'];
+    item["status"] = 'deleted';
     return Promise.resolve($.ajax({
             "type":"POST"
           , "url":target

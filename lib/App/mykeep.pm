@@ -97,6 +97,7 @@ get '/notes/list' => sub {
               #  modifiedAt => $i->{modifiedAt},
               #  archivedAt => $i->{archivedAt},
               #}
+              ($i->{status} eq 'deleted' ? () : $i)
         } map { s/\.json$//ir }
         @files
         ;
@@ -206,8 +207,10 @@ post '/notes/:note' => sub {
         $item = {};
     };
 
-    # Really crude "last edit wins" approach
-    $item= last_edit_wins( $item, $body );
+    if( ($item->{status} || '') ne 'deleted' ) {
+        # Really crude "last edit wins" approach
+        $item= last_edit_wins( $item, $body );
+    };
 
     # Set "last-synced" timestamp
     $item->{lastSyncedAt}= time();
@@ -219,7 +222,6 @@ post '/notes/:note' => sub {
     # Maybe it's just enough to tell the client the server status
     # that is, id and lastSyncedAt unless there are changes.
     # Maybe { result: patch, { id: 123, changed: [foo:"bar"] }]
-    warning "Redirecting";
 
     # "forward()" won't work, because we want to change
     # POST to GET
@@ -237,8 +239,14 @@ post '/notes/:note/delete' => sub {
     # Maybe archive the item
     # We shouldn't delete anyway, because deleting means
     # breaking synchronization
-    my $fn= storage_dir() . "/$id.json";
-    unlink $fn; # boom
+    #my $fn= storage_dir() . "/$id.json";
+
+    my $item = load_item($id);
+    $item->{status} = 'deleted';
+    save_item( $item );
+
+    # Cleanup should be done in a cron job, and later in a real DB
+    #unlink $fn; # boom
 
     return "";
 };
