@@ -92,7 +92,8 @@ var merged;
 
 function byLastChange(items) {
     items.sort(function(a,b) {
-        return    b["modifiedAt"]-a["modifiedAt"]
+        return    b["pinPosition"]-a["pinPosition"]
+               || b["modifiedAt"]-a["modifiedAt"]
                || b["createdAt"] -a["createdAt"]
     });
     return items

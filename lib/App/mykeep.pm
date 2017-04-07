@@ -14,7 +14,16 @@ no warnings 'experimental::signatures';
 our $VERSION = '0.01';
 
 use vars qw( @note_keys $schemaVersion );
-@note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt schemaVersion);
+@note_keys= qw(
+    title
+    text
+    bgcolor
+    pinPosition
+    modifiedAt
+    lastSyncedAt
+    archivedAt
+    schemaVersion
+);
 $schemaVersion = '001.000.000';
 
 =head1 NAME
@@ -35,6 +44,7 @@ Currently we have the following fields
   deletedAt
   status
   schemaVersion
+  pinPosition
 
 Maybe this should be moved to its own module. Later.
 
@@ -70,7 +80,8 @@ get '/notes/list' => sub {
 
     my @result=
         sort {
-            $b->{modifiedAt} <=> $a->{modifiedAt}
+            $b->{pinPosition} <=> $a->{pinPosition}
+         || $b->{modifiedAt} <=> $a->{modifiedAt}
          || $b->{createdAt} <=> $a->{createdAt}
         }
         map { warn $_; my $i= load_item($_);
