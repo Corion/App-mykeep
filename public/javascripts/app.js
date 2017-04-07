@@ -350,10 +350,12 @@ function UIaddItem() {
     var item= {
         text: entry.val()
       , title: ""
+      , pinPosition: 0
       , done:false
       , modifiedAt: undefined
       , lastSyncedAt: undefined
       , archivedAt: undefined
+      , status: "active"
       , "id": Math.uuid(),
     };
     saveItem(item).then(function(item) {

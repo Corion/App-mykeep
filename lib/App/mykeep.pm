@@ -212,6 +212,10 @@ post '/notes/:note' => sub {
         $item = {};
     };
 
+    # Enforce a schema / default values
+    $item->{status} ||= 'active';
+    $item->{pinPosition} ||= 0;
+
     if( ($item->{status} || '') ne 'deleted' ) {
         # Really crude "last edit wins" approach
         $item= last_edit_wins( $item, $body );
