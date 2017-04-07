@@ -6,6 +6,11 @@ use JSON::XS qw(decode_json encode_json);
 use Data::Dumper;
 use File::Basename 'basename';
 
+use Carp qw(croak);
+use Filter::signatures;
+use feature 'signatures';
+no warnings 'experimental::signatures';
+
 our $VERSION = '0.01';
 
 use vars qw( @note_keys $schemaVersion );
@@ -85,6 +90,12 @@ sub clean_id {
     $id=~ tr/-A-Fa-f0-9//cdr;
 }
 
+sub slurp( $fn ) {
+    open my $fh, '<:raw', $fn
+        or croak "Couldn't read '$fn': $!";
+    local $/;
+    <$fh>
+}
 sub load_item {
     my( $id, %options )= @_;
     my $fn= join "/", storage_dir(), "$id.json";

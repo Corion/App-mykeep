@@ -52,6 +52,7 @@ my %module = (
         'YAML'       => 0,
         'Dancer'     => 1.3118,
         'JSON::XS'   => 0,
+        'Filter::signatures' => 0,
         'Dancer::Template::Handlebars' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
