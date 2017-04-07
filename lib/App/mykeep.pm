@@ -68,7 +68,15 @@ get '/' => sub {
 };
 
 get '/index.html' => sub {
-    headers( "Connection" => "close" );
+    #headers( "Connection" => "close" );
+
+    if(     ! request->secure
+        and config->{environment} eq 'production'   ) {
+        my $r = request->path;
+        $r =~ s!^http!https!i;
+        return redirect $r;
+    }
+
     template 'app';
 };
 
@@ -127,12 +135,12 @@ sub load_item {
 sub save_item {
     my( $item, %options )= @_;
     my $id= $item->{id};
-    
+
     $item->{schemaVersion} ||= '001.000.000';
     if( $item->{schemaVersion} lt $schemaVersion ) {
         # Upgrade, later
     };
-    
+
     die "Have no id for item?!"
         unless $item->{id};
     my $fn= join "/", storage_dir(), "$id.json";
