@@ -63,6 +63,16 @@ sub storage_dir {
     File::Spec->rel2abs( config->{mykeep}->{notes_dir}, config->{appdir} );
 }
 
+# Bring a note to the most recent schema
+# Not the most efficient approach as we always make a copy
+sub upgrade_schema( $item, $schemaVersion = $schemaVersion ) {
+    my %upgraded = %$item;
+    $upgraded{status}        ||= 'active';
+    $upgraded{schemaVersion} ||= $schemaVersion;
+    $upgraded{pinPosition}   ||= 0;
+    return \%upgraded
+}
+
 get '/' => sub {
     redirect '/index.html';
 };
@@ -97,7 +107,7 @@ get '/notes/list' => sub {
          || $b->{modifiedAt} <=> $a->{modifiedAt}
          || $b->{createdAt} <=> $a->{createdAt}
         }
-        map { warn $_; my $i= load_item($_);
+        map { my $i= load_item($_);
               #{ id => $i->{id},
               #  modifiedAt => $i->{modifiedAt},
               #  archivedAt => $i->{archivedAt},
@@ -128,12 +138,13 @@ sub load_item {
     if( -f $fn ) {
         my $content= slurp( $fn );
         my $res = decode_json($content);
-        #warn Dumper $res;
-        return $res
+        return upgrade_schema( $res )
     } else {
         # Return a fresh, empty item
         return { id => $id
                , modifiedAt => undef
+               , status => 'active'
+               , pinPostion => 0
                }
     }
 }
@@ -142,10 +153,7 @@ sub save_item {
     my( $item, %options )= @_;
     my $id= $item->{id};
 
-    $item->{schemaVersion} ||= '001.000.000';
-    if( $item->{schemaVersion} lt $schemaVersion ) {
-        # Upgrade, later
-    };
+    $item = upgrade_schema( $item );
 
     die "Have no id for item?!"
         unless $item->{id};
@@ -208,13 +216,10 @@ post '/notes/:note' => sub {
 
     my $item;
     if(not eval { $item = load_item( $id ); 1 }) {
-    #warning "loaded ($@) " . Dumper $item;
         $item = {};
     };
 
-    # Enforce a schema / default values
-    $item->{status} ||= 'active';
-    $item->{pinPosition} ||= 0;
+    $body = upgrade_schema( $body );
 
     if( ($item->{status} || '') ne 'deleted' ) {
         # Really crude "last edit wins" approach
