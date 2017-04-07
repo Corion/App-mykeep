@@ -10,6 +10,7 @@ our $VERSION = '0.01';
 
 use vars qw( @note_keys $schemaVersion );
 @note_keys= qw(title text bgcolor modifiedAt lastSyncedAt archivedAt schemaVersion);
+$schemaVersion = '001.000.000';
 
 =head1 NAME
 
@@ -75,8 +76,8 @@ get '/notes/list' => sub {
         } map { s/\.json$//ir }
         @files
         ;
-    content_type 'application/json; charset=utf-8';
-    return to_json { more => undef, items => \@result };
+    content_type 'application/json';
+    return encode_json({ more => undef, items => \@result })
 };
 
 sub clean_id {
@@ -84,21 +85,12 @@ sub clean_id {
     $id=~ tr/-A-Fa-f0-9//cdr;
 }
 
-sub slurp( $fn ) {
-    open my $fh, '<:raw', $fn
-        or croak "Couldn't read '$fn': $!";
-    local $/;
-    <$fh>
-}
-
 sub load_item {
     my( $id, %options )= @_;
     my $fn= join "/", storage_dir(), "$id.json";
     if( -f $fn ) {
-        my $content= slurp( $fn );
-        my $res = decode_json($content);
-        #warn Dumper $res;
-        return $res
+        my $content= do { local( @ARGV, $/) = $fn; <> };
+        return decode_json($content);
     } else {
         # Return a fresh, empty item
         return { id => $id
@@ -119,9 +111,9 @@ sub save_item {
     die "Have no id for item?!"
         unless $item->{id};
     my $fn= join "/", storage_dir(), "$id.json";
-    open my $fh, '>:raw', $fn
+    open my $fh, '>', $fn
         or die "'$fn': $!";
-    print $fh encode_json( $item )
+    print { $fh } encode_json( $item )
 }
 
 get '/notes/:note' => sub {
@@ -136,8 +128,8 @@ get '/notes/:note' => sub {
     # If we're newer, send response
     # otherwise, update the last-synced timestamp?!
 
-    content_type 'application/json; charset=utf-8';
-    return to_json($item);
+    content_type 'application/json';
+    return encode_json($item);
 };
 
 sub last_edit_wins {
@@ -168,18 +160,10 @@ post '/notes/:note' => sub {
         return;
     };
 
-    my $ct = request->content_type;
-    my $charset = 'utf-8';
-    if( $ct =~ /;\s*charset=(["']?)(.*)\1/ ) {
-        $charset = $2;
-    };
     my $body= decode_json(request->body);
 
-    my $item;
-    if(not eval { $item = load_item( $id ); 1 }) {
+    my $item= eval { load_item( $id ); };
     #warning "loaded ($@) " . Dumper $item;
-        $item = {};
-    };
 
     # Really crude "last edit wins" approach
     $item= last_edit_wins( $item, $body );
@@ -198,8 +182,8 @@ post '/notes/:note' => sub {
 
     # "forward()" won't work, because we want to change
     # POST to GET
-    content_type 'application/json; charset=utf-8';
-    return to_json($item);
+    content_type 'application/json';
+    return encode_json($item);
 };
 
 # Maybe PUT instead of POST, later
