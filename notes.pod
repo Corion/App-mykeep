@@ -65,6 +65,10 @@ Make the cookie token HTTP-only
 
 Sync with IMAP server-side for iDevice import/sync magic
 
+=item *
+
+Export all data as one JSON file (from /notes/list, duh)
+
 =back
 
 =head1 FEATURES
