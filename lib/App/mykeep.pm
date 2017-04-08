@@ -108,11 +108,7 @@ get '/notes/list' => sub {
          || $b->{createdAt} <=> $a->{createdAt}
         }
         map { my $i= load_item($_);
-              #{ id => $i->{id},
-              #  modifiedAt => $i->{modifiedAt},
-              #  archivedAt => $i->{archivedAt},
-              #}
-              ($i->{status} eq 'deleted' ? () : $i)
+              $i
         } map { s/\.json$//ir }
         @files
         ;
