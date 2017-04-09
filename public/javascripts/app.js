@@ -39,10 +39,10 @@ if (navigator.serviceWorker) {
     navigator.serviceWorker.addEventListener('message', function(event){
         console.log("UI Client received message: ", event.data);
         notes = event.data.notes;
-        repaintItems(event.data);
+        repaintItems(notes);
         event.ports[0].postMessage("Thank you!");
     });
-    
+
     navigator.serviceWorker.ready.then(function() {
         // Fetch whatever data we have
         UIlistItems();
@@ -330,6 +330,12 @@ function urlTemplate( tmpl, vars ) {
 // XXX This should move to the DOM differ, later
 function repaintItems(items) {
     // console.log(items);
+
+    // Filter the items:
+    items.notes = items.notes.filter(function(i) {
+        return i.status == 'active'
+    });
+
     $('#items').html(tmplItems(items));
 };
 
