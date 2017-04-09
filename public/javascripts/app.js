@@ -106,6 +106,51 @@ function UIdeleteItem(element) {
     repaintItems({"notes":notes});
 }
 
+function UItogglePinItem(element) {
+    var item = htmlToModel(UIcontainer(element));
+
+    if( item.pinPosition > 0 ) {
+        item.pinPosition = 0;
+    } else {
+        var maxPin = 1;
+        for( var i = 0; i < notes.length; i++ ) {
+            maxPin = notes[i].pinPosition > maxPin ? notes[i].pinPosition : maxPin;
+        };
+        item.pinPosition = maxPin;
+    };
+    notes = defaultOrder(items);
+    saveItem(item);
+    repaintItems({"notes":notes});
+}
+
+function UIeditItem(element) {
+    var container = UIcontainer(element);
+    var item = htmlToModel(container);
+    item.displayStyle = "edit";
+    item.edit = true;
+    console.log("Editing", item);
+    var tmplItem = Handlebars.partials['tmplItem'];
+    container = $(container).replaceWith(tmplItem(item));
+    $(container).blur(function() {
+        UIeditDone(element);
+    });
+    $("#modal-overlay").removeClass("closed");
+    $("#modal-overlay").click(function() {
+        UIeditDone(elementFromItem(item));
+    });
+}
+
+function UIeditDone(element) {
+    var container = UIcontainer(element);
+    var item = htmlToModel(container);
+    item.displayStyle = "display";
+    delete item.edit;
+    var tmplItem = Handlebars.partials['tmplItem'];
+    container = $(container).replaceWith(tmplItem(item));
+    $("#modal-overlay").addClass("closed");
+}
+
+
 function htmlToModel(element) {
     // fetch all items from the HTML and return as object
     var container = UIcontainer(element);

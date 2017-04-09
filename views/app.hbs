@@ -59,9 +59,18 @@ h2 {
 <script id="tmplItem" type="text/x-handlebars-template">
       <div class="note mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
           <input type="hidden" name="id" value="\{\{id}}" />
-          <h2 class="\{\{#unless title}}empty\{\{/unless}}" contenteditable="true" onblur="updateModel(this)">\{\{title}}</h2>
-          <div class="note-text" contenteditable="true" onblur="updateModel(this)">\{\{\{text}}}</div>
-          <div class="note-toolbar">
+      <div class="note-toolbar-top">
+              \{\{#if pinPosition}}
+          <div role="button" class="iconPin uiItem" tabindex="0" aria-label="Pin note" aria-pressed="true" style="user-select: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path d="M16 5h.99L17 3H7v2h1v7l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2V5z">
+                </path>
+                <path fill="none" d="M0 0h24v24H0z">
+                </path>
+                </svg>
+                </div>
+              \{\{/if}}
+      </div>
               <!-- These URLs should be made no-Javascript-friendly -->
               <a href="#" onclick="archiveItemUI(this)">x</a>
               <a href="#" onclick="UIdeleteItem(this)">d</a>
