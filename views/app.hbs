@@ -54,10 +54,14 @@ span[contentEditable] {
 }
 
 .note {
-    -webkit-transition: all 0.3s ease-in;
-    -moz-transition: all 0.3s ease-in;
-    -o-transition: all 0.3s ease-in;
-    transition: all 0.3s ease-in;
+    -webkit-transition: width 1s, height 1s, top 1s, left 1s, margin 1s;
+    -moz-transition: width 1s, height 1s, top 1s, left 1s, margin 1s;
+    -ms-transition: width 1s, height 1s, top 1s, left 1s, margin 1s ;
+    transition: width 1s, height 1s, top 1s, left 1s, margin 1s;
+    -webkit-transition: width 0.1s, height 0.1s, top 0.1s, left 0.1s, margin 0.1s ease-in;
+    -moz-transition:    width 0.1s, height 0.1s, top 0.1s, left 0.1s, margin 0.1s ease-in;
+    -o-transition:      width 0.1s, height 0.1s, top 0.1s, left 0.1s, margin 0.1s ease-in;
+    transition:         width 0.1s, height 0.1s, top 0.1s, left 0.1s, margin 0.1s ease-in;
 }
 
 .note-edit {
