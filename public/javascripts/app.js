@@ -85,6 +85,16 @@ Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
             return options.inverse(this);
     }
 });
+
+function defaultOrder(items) {
+    items.sort(function(a,b) {
+        return    b["pinPosition"]-a["pinPosition"]
+               || b["modifiedAt"]-a["modifiedAt"]
+               || b["createdAt"] -a["createdAt"]
+    });
+    return items
+};
+
 function UIcontainer(element) {
     return $(element).closest(".note");
 }
