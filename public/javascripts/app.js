@@ -144,7 +144,7 @@ function UIeditItem(element) {
     });
 }
 
-function UIeditDone(element) {
+function UIeditDone(element,event) {
     var container = UIcontainer(element);
     var item = htmlToModel(container);
     item.displayStyle = "display";
@@ -152,7 +152,9 @@ function UIeditDone(element) {
     var tmplItem = Handlebars.partials['tmplItem'];
     console.log(tmplItem(item));
     morph(container[0], tmplItem(item), {childrenOnly: false});
-    event.stopPropagation();
+    if( event ) {
+        event.stopPropagation();
+    };
 
     $("#modal-overlay").addClass("closed");
     console.log("edit done");
