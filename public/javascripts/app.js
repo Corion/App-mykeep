@@ -352,7 +352,7 @@ function UIlistItems() {
 }
 
 function UIaddItem() {
-    var entry = $('#toolbar input[type="text"]');
+    var entry = $('#newNoteBody');
     var item= {
         text: entry.val()
       , title: ""
