@@ -410,11 +410,20 @@ function urlTemplate( tmpl, vars ) {
 */
 
 // XXX This should move to the DOM differ, later
+
+function elementFromItem(item) {
+    return $("#note-"+item.id)
+}
+
 function repaintItems(items) {
     // console.log(items);
 
     // Filter the items:
     items.notes = items.notes.filter(function(i) {
+        // Also modify by upgrading the schema...
+        if( ! i.displayStyle ) {
+            i.displayStyle = "display";
+        };
         return i.status == 'active'
     });
 
@@ -426,7 +435,7 @@ function UIlistItems() {
     Promise.resolve($.get('./notes/list', null)).then(function(json) {
         console.log(json);
         json['notes'] = json['items'];
-        notes = json['notes'];
+        notes = defaultOrder( json['notes']);
         repaintItems({ "notes": notes });
     }, function(r1,r2) {
         console.log([r1,r2]);
@@ -444,13 +453,13 @@ function UIaddItem() {
       , lastSyncedAt: undefined
       , archivedAt: undefined
       , status: "active"
-      , "id": Math.uuid(),
+      , "id": Math.uuid()
+      , "displayStyle" : "display"
     };
     saveItem(item).then(function(item) {
         // ...
     });
     // New items go to top
-    console.log(notes);
     notes.unshift(item);
     entry.val('');
     repaintItems({"notes": notes});

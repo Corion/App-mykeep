@@ -36,10 +36,68 @@ span[contentEditable] {
   -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
   /* Opera */
   box-shadow: 5px 5px 7px rgba(33,33,33,.7);
-  
+
   background-color: rgba(255,220,30,1);
-  
+
   margin-bottom: 16px;
+}
+
+.note-display:hover {
+}
+/*BG color is a must for IE6*/
+.note-display .uiItem {
+    display:none;
+}
+.note-display:hover .uiItem {
+    display:inline;
+    /* position:absolute; */
+}
+
+.note-edit {
+    width: 600px;
+
+    /* Make it modal */
+    z-index: 1010;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    display: block;
+}
+
+.closed {
+  display: none !important;
+}
+
+#modal-overlay {
+    z-index: 1000;
+
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+
+    opacity:0.5 !important;
+}
+
+.note-toolbar-bottom {
+    height: 32px;
+    margin: 0px;
+    padding: 0px;
+  display:block;
+}
+
+.note-toolbar-top {
+    height: 32px;
+    margin: 0px;
+    padding: 0px;
+  display:block;
 }
 
 button {
@@ -51,13 +109,27 @@ button {
 h2 {
   display:block;
 }
+
+iconPin {
+    width: 20px;
+    height: 20px;
+    display: inline;
+}
+
 </style>
 
 <!-- these should be automagically inserted resp. converted from static
      Javascript which is compiled from the templates -->
 <!-- later -->
 <script id="tmplItem" type="text/x-handlebars-template">
-      <div class="note mybrick masonry-brick" id="note-\{\{id}}" style="background-color: \{\{bgcolor}}">
+<!-- Display and edit template for desktop, display template for mobile -->
+<!-- mobile doesn't have :hover ... -->
+      <div class="note note-\{\{displayStyle}} mybrick masonry-brick" id="note-\{\{id}}"
+          style="background-color: \{\{bgcolor}};"
+          \{\{#unless edit}}
+          onclick="javascript:UIeditItem(this)"
+          \{\{/unless}}
+      >
           <input type="hidden" name="id" value="\{\{id}}" />
       <div class="note-toolbar-top">
               \{\{#if pinPosition}}
@@ -71,12 +143,20 @@ h2 {
                 </div>
               \{\{/if}}
       </div>
+          \{\{#ifCond title "||" edit}}
+          <h2 contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{title}}</h2>
+          \{\{/ifCond}}
+          <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
+          <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
-              <a href="#" onclick="archiveItemUI(this)">x</a>
-              <a href="#" onclick="UIdeleteItem(this)">d</a>
-              <a href="#" onclick="syncItemUI(this)">u</a>
-              <span id="sync-\{\{id}}">sync</span>
-              <span id="modified-\{\{id}}">\{\{modifiedAt}}</span>
+              <a href="#" class="uiItem" onclick="archiveItemUI(this)">x</a>
+              <a href="#" class="uiItem" onclick="UIdeleteItem(this)">d</a>
+              <a href="#" class="uiItem" onclick="syncItemUI(this)">u</a>
+              <span class="uiItem" id="sync-\{\{id}}">sync</span>
+              <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
+              \{\{#if edit}}
+              <a href="#" class="uiItem" onclick="UIeditDone(this)">Done</a>
+              \{\{/if}}
           </div>
       </div>
 </script>
@@ -96,7 +176,7 @@ $('script[type="text/x-handlebars-template"').each(function(i, item) {
     // We should unescape the template here, later
     var html = $(item).html();
     html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
-    
+
     Handlebars.registerPartial($(item).attr('id'), html );
 });
 
@@ -128,3 +208,4 @@ var tmplItems = Handlebars.compile(html);
     </div>
   </div>
 </div>
+<div id="modal-overlay" class="closed">XXX</div>
