@@ -13,6 +13,7 @@ const precacheFiles = [
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',
     './javascripts/localforage.js',
+    './javascripts/morphdom-v2.3.2.js',
     './javascripts/Math.uuid.js',
     './service-worker.js',
     './javascripts/sw-companion.js',

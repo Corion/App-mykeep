@@ -53,6 +53,13 @@ span[contentEditable] {
     /* position:absolute; */
 }
 
+.note {
+    -webkit-transition: all 0.3s ease-in;
+    -moz-transition: all 0.3s ease-in;
+    -o-transition: all 0.3s ease-in;
+    transition: all 0.3s ease-in;
+}
+
 .note-edit {
     width: 600px;
 
@@ -121,33 +128,35 @@ iconPin {
 <!-- these should be automagically inserted resp. converted from static
      Javascript which is compiled from the templates -->
 <!-- later -->
-<script id="tmplItem" type="text/x-handlebars-template">
 <!-- Display and edit template for desktop, display template for mobile -->
 <!-- mobile doesn't have :hover ... -->
-      <div class="note note-\{\{displayStyle}} mybrick masonry-brick" id="note-\{\{id}}"
+<!-- animations will work once I move to a DOM-differ -->
+<script id="tmplItem" type="text/x-handlebars-template">
+<div class="note note-\{\{displayStyle}} mybrick masonry-brick" id="note-\{\{id}}"
           style="background-color: \{\{bgcolor}};"
           \{\{#unless edit}}
           onclick="javascript:UIeditItem(this)"
           \{\{/unless}}
-      >
+    >
+
           <input type="hidden" name="id" value="\{\{id}}" />
-      <div class="note-toolbar-top">
-              \{\{#if pinPosition}}
-          <div role="button" class="iconPin uiItem" tabindex="0" aria-label="Pin note" aria-pressed="true" style="user-select: none;">
+    <div class="note-toolbar-top">
+        \{\{#if pinPosition}}
+        <div role="button" class="iconPin uiItem" tabindex="0" aria-label="Pin note" aria-pressed="true" style="user-select: none;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <path d="M16 5h.99L17 3H7v2h1v7l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2V5z">
                 </path>
                 <path fill="none" d="M0 0h24v24H0z">
                 </path>
                 </svg>
-                </div>
-              \{\{/if}}
-      </div>
+        </div>
+        \{\{/if}}
+    </div>
           \{\{#ifCond title "||" edit}}
           <h2 contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{title}}</h2>
           \{\{/ifCond}}
-          <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
-          <div class="note-toolbar-bottom">
+    <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
+    <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
               <a href="#" class="uiItem" onclick="archiveItemUI(this)">x</a>
               <a href="#" class="uiItem" onclick="UIdeleteItem(this)">d</a>
@@ -155,18 +164,20 @@ iconPin {
               <span class="uiItem" id="sync-\{\{id}}">sync</span>
               <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
               \{\{#if edit}}
-              <a href="#" class="uiItem" onclick="UIeditDone(this)">Done</a>
+              <a href="#" class="uiItem" onclick="javascript:UIeditDone(this); return false;">Done</a>
               \{\{/if}}
-          </div>
-      </div>
+    </div>
+</div>
 </script>
 
 <script id="tmplItems" type="text/x-handlebars-template">
+<div id="items">
     \{\{#each notes}}
         \{\{> tmplItem note=this }}
     \{\{else}}
         <p>Nothing to see here</p>
     \{\{/each}}
+</div>
 </script>
 
 <script>
@@ -194,8 +205,7 @@ var tmplItems = Handlebars.compile(html);
         <svg height="24px" viewBox="0 0 24 24" width="24px" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg>
         </button>
       </form>
-      <button arial-role="Refresh" onclick="UIlistItems()" user-select="none">Refresh
-      </button>
+      <button arial-role="Refresh" onclick="UIlistItems()" user-select="none">Refresh</button>
   </div>
   <div>
     <div id="new-note-toolbar" style="display: block;">
@@ -204,7 +214,7 @@ var tmplItems = Handlebars.compile(html);
         <input class="btn-primary" type="submit" value="add">
       </form>
     </div>
-    <div id="items">
+    <div id="items"><div>...loading...</div><!-- this should be rendered server-side, some day -->
     </div>
   </div>
 </div>

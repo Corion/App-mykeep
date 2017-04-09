@@ -123,6 +123,12 @@ function UItogglePinItem(element) {
     repaintItems({"notes":notes});
 }
 
+function morph(DOM,html,options) {
+    html = html.replace(/^\s+/,'');
+    //console.log(html);
+    morphdom(DOM, html, options);
+}
+
 function UIeditItem(element) {
     var container = UIcontainer(element);
     var item = htmlToModel(container);
@@ -130,13 +136,11 @@ function UIeditItem(element) {
     item.edit = true;
     console.log("Editing", item);
     var tmplItem = Handlebars.partials['tmplItem'];
-    container = $(container).replaceWith(tmplItem(item));
-    $(container).blur(function() {
-        UIeditDone(element);
-    });
+    var newContainer = morph(container[0], tmplItem(item), {childrenOnly: false});
     $("#modal-overlay").removeClass("closed");
     $("#modal-overlay").click(function() {
-        UIeditDone(elementFromItem(item));
+        //UIeditDone(elementFromItem(item));
+        UIeditDone(container[0]);
     });
 }
 
@@ -146,8 +150,13 @@ function UIeditDone(element) {
     item.displayStyle = "display";
     delete item.edit;
     var tmplItem = Handlebars.partials['tmplItem'];
-    container = $(container).replaceWith(tmplItem(item));
+    console.log(tmplItem(item));
+    morph(container[0], tmplItem(item), {childrenOnly: false});
+    event.stopPropagation();
+
     $("#modal-overlay").addClass("closed");
+    console.log("edit done");
+    return false;
 }
 
 
@@ -427,7 +436,13 @@ function repaintItems(items) {
         return i.status == 'active'
     });
 
-    $('#items').html(tmplItems(items));
+    // $('#items').html(tmplItems(items));
+    var DOM = $('#items')[0];
+    
+    morph(DOM, tmplItems(items), {childrenOnly:true});
+    //morphdom(DOM, '<div id="items"><div class="note">a</div><div class="note">b</div></div>', {childrenOnly:true});
+    DOM = $('#items')[0];
+    console.log("#items still defined?", DOM);
 };
 
 function UIlistItems() {
