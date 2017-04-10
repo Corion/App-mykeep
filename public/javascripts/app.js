@@ -134,23 +134,39 @@ function UIeditItem(element) {
     var item = htmlToModel(container);
     item.displayStyle = "edit";
     item.edit = true;
-    console.log("Editing", item);
     var tmplItem = Handlebars.partials['tmplItem'];
     var newContainer = morph(container[0], tmplItem(item), {childrenOnly: false});
+    var editNote = $(".note-edit");
+    $(document).keyup(function(e) {
+      //if (e.keyCode === 13) $('.done', newContainer).click();     // enter
+      if (e.keyCode === 27) $('.btn-cancel', editNote).click();   // esc
+    });
     $("#modal-overlay").removeClass("closed");
     $("#modal-overlay").click(function() {
-        //UIeditDone(elementFromItem(item));
-        UIeditDone(container[0]);
+        UIeditDone(container[0], undefined, true);
     });
 }
 
-function UIeditDone(element,event) {
+function UIeditDone(element,event,doSave) {
     var container = UIcontainer(element);
     var item = htmlToModel(container);
     item.displayStyle = "display";
     delete item.edit;
+    if( doSave ) {
+        // Save new version
+        saveItem(item);
+    } else {
+        // Restore old version
+        item = itemById( item.id );
+        item.displayStyle = "display";
+        delete item.edit;
+    };
+    
+    // This is likely a little bit far-reaching, as we nuke all custom
+    // keyboard shortcuts
+    $(document).unbind('keyup');
+
     var tmplItem = Handlebars.partials['tmplItem'];
-    console.log(tmplItem(item));
     morph(container[0], tmplItem(item), {childrenOnly: false});
     if( event ) {
         event.stopPropagation();
@@ -169,6 +185,9 @@ function htmlToModel(element) {
         "id" : $('*[name="id"]', container).val(),
         "title" : $('h2', container).text(),
         "text" : $('div.note-text', container).html(),
+        // bgColor
+        // pinned
+        // ...
         "schemaVersion" : schemaVersion // we'll force-upgrade it here
     };
     console.log("Update from HTML", new_item);
