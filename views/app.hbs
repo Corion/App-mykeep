@@ -175,6 +175,39 @@ iconPin {
 </div>
 </script>
 
+<!-- desktop edit -->
+<script id="tmplEditItem" type="text/x-handlebars-template">
+<div class="note note-edit mybrick masonry-brick" id="edit-container"
+          style="background-color: \{\{bgcolor}};"
+    >
+          <input type="hidden" name="id" value="\{\{id}}" />
+    <div class="note-toolbar-top">
+        \{\{#if pinPosition}}
+        <div role="button" class="iconPin uiItem" tabindex="0" aria-label="Pin note" aria-pressed="true" style="user-select: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path d="M16 5h.99L17 3H7v2h1v7l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2V5z">
+                </path>
+                <path fill="none" d="M0 0h24v24H0z">
+                </path>
+                </svg>
+        </div>
+        \{\{/if}}
+    </div>
+    <h2 contenteditable="true">\{\{title}}</h2>
+    <div class="note-text" contenteditable="true">\{\{\{text}}}</div>
+    <div class="note-toolbar-bottom">
+              <!-- These URLs should be made no-Javascript-friendly -->
+              <a href="#" class="uiItem" onclick="archiveItemUI(this)">x</a>
+              <a href="#" class="uiItem" onclick="UIdeleteItem(this)">d</a>
+              <a href="#" class="uiItem" onclick="syncItemUI(this)">u</a>
+              <span class="uiItem" id="sync-\{\{id}}">sync</span>
+              <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
+              <a href="#" class="uiItem btn-cancel" onclick="javascript:UIeditDone(this,event,false); return false;">Cancel</a>
+              <a href="#" class="uiItem btn-done" onclick="javascript:UIeditDone(this,event,true); return false;">Done</a>
+    </div>
+</div>
+</script>
+
 <script id="tmplItems" type="text/x-handlebars-template">
 <div id="items">
     \{\{#each notes}}
@@ -186,14 +219,19 @@ iconPin {
 </script>
 
 <script>
+var templates = {};
 // Compile all our templates, until we can do that statically
 $('script[type="text/x-handlebars-template"').each(function(i, item) {
     //console.log([$(item).attr('id'), $(item).html()]);
     // We should unescape the template here, later
     var html = $(item).html();
+    var name = $(item).attr('id');
     html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
 
-    Handlebars.registerPartial($(item).attr('id'), html );
+    var r = Handlebars.compile(html);
+    //console.log(r);
+    templates[name] = r;
+    Handlebars.registerPartial(name, r);
 });
 
 var html = $("#tmplItems").html();
