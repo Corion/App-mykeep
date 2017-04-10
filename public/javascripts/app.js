@@ -134,12 +134,16 @@ function UIeditItem(element) {
     var item = htmlToModel(container);
     item.displayStyle = "edit";
     item.edit = true;
-    var tmplItem = Handlebars.partials['tmplItem'];
-    var newContainer = morph(container[0], tmplItem(item), {childrenOnly: false});
-    var editNote = $(".note-edit");
+    container.css('opacity', 0); // Hide the original, so we don't rearrange
+
+    var tmplEditItem = templates['tmplEditItem'];
+    var editNode = $('#edit-container');
+    
+    // Display the edit note
+    var newContainer = morph(editNode[0], tmplEditItem(item), {childrenOnly: false});
     $(document).keyup(function(e) {
       //if (e.keyCode === 13) $('.done', newContainer).click();     // enter
-      if (e.keyCode === 27) $('.btn-cancel', editNote).click();   // esc
+      if (e.keyCode === 27) $('#edit-container .btn-cancel').click();   // esc
     });
     $("#modal-overlay").removeClass("closed");
     $("#modal-overlay").click(function() {
@@ -166,8 +170,14 @@ function UIeditDone(element,event,doSave) {
     // keyboard shortcuts
     $(document).unbind('keyup');
 
-    var tmplItem = Handlebars.partials['tmplItem'];
-    morph(container[0], tmplItem(item), {childrenOnly: false});
+    // Hide the edit container again
+    var editNode = $('#edit-container');
+    var newContainer = morph(editNode[0], '<div id="edit-container"></div>', {childrenOnly: false});
+
+    // And recreate the display version
+    var tmplItem = templates['tmplItem'];
+    morph($('#note-'+item.id)[0], tmplItem(item), {childrenOnly: false});
+    
     if( event ) {
         event.stopPropagation();
     };
@@ -463,7 +473,6 @@ function repaintItems(items) {
     morph(DOM, tmplItems(items), {childrenOnly:true});
     //morphdom(DOM, '<div id="items"><div class="note">a</div><div class="note">b</div></div>', {childrenOnly:true});
     DOM = $('#items')[0];
-    console.log("#items still defined?", DOM);
 };
 
 function UIlistItems() {
