@@ -99,15 +99,21 @@ function UIcontainer(element) {
     return $(element).closest(".note");
 }
 
-function UIdeleteItem(element) {
+function UIdeleteItem(element,event) {
     var item = htmlToModel(UIcontainer(element));
+    if( event ) {
+        event.stopPropagation();
+    };
     console.log("deleting",item);
     deleteItem(item);
     repaintItems({"notes":notes});
 }
 
-function UItogglePinItem(element) {
+function UItogglePinItem(element,event) {
     var item = htmlToModel(UIcontainer(element));
+    if( event ) {
+        event.stopPropagation();
+    };
 
     if( item.pinPosition > 0 ) {
         item.pinPosition = 0;

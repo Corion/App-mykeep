@@ -162,9 +162,9 @@ iconPin {
     <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
     <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
-              <a href="#" class="uiItem" onclick="archiveItemUI(this)">x</a>
-              <a href="#" class="uiItem" onclick="UIdeleteItem(this)">d</a>
-              <a href="#" class="uiItem" onclick="syncItemUI(this)">u</a>
+              <a href="#" class="uiItem" onclick="javascript:archiveItemUI(this,event); return false">x</a>
+              <a href="#" class="uiItem" onclick="javascript:UIdeleteItem(this,event); return false">d</a>
+              <a href="#" class="uiItem" onclick="javascript:syncItemUI(this,event); return false">u</a>
               <span class="uiItem" id="sync-\{\{id}}">sync</span>
               <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
               \{\{#if edit}}
@@ -197,9 +197,9 @@ iconPin {
     <div class="note-text" contenteditable="true">\{\{\{text}}}</div>
     <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
-              <a href="#" class="uiItem" onclick="archiveItemUI(this)">x</a>
-              <a href="#" class="uiItem" onclick="UIdeleteItem(this)">d</a>
-              <a href="#" class="uiItem" onclick="syncItemUI(this)">u</a>
+              <a href="#" class="uiItem" onclick="UIarchiveItem(this,event); return false;">x</a>
+              <a href="#" class="uiItem" onclick="UIdeleteItem(this,event); return false;">d</a>
+              <a href="#" class="uiItem" onclick="syncItemUI(this,event); return false;">u</a>
               <span class="uiItem" id="sync-\{\{id}}">sync</span>
               <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
               <a href="#" class="uiItem btn-cancel" onclick="javascript:UIeditDone(this,event,false); return false;">Cancel</a>
