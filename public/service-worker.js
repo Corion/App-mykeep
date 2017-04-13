@@ -149,6 +149,7 @@ function fetchNotes(options) {
 
     // Stuff we will do once we have both, the HTTP response and the local
     // data
+    var lastSync = new Date().getTime();
     merged = Promise.all([local,remote]).then(function(items){
         var local = items[0];
         var remote = items[1];
@@ -171,14 +172,18 @@ function fetchNotes(options) {
                 delete unsynchronized[item.id]; // the remote side knows this ID
                 var info = mergeItem( local_item, item );
 
+                // Update the last synchronized timestamp of all items
+                info.lastSyncedAt = lastSync;
+
                 if( info.storeRemote ) {
                     // Push the change to the mothership
                     markForSync( info.item );
                 };
 
                 if( info.storeLocal ) {
-                    // Update our local storage
-                    console.log("Storing updated item locally", info.item );
+                    // Update our local storage if anything besides lastSyncedAt changed
+                    // Maybe we should always store...
+                    // console.log("Storing updated item locally", info.item );
                     local_changes.push( storeItem( info.item ));
                 };
 
@@ -186,17 +191,18 @@ function fetchNotes(options) {
             } else {
                 // Update our local storage
                 console.log("Storing new item locally", item);
+
                 local_changes.push( storeItem( item ));
             };
             merged[item.id] = item;
         };
-        
+
         // Tell the mothership of our new things:
         var newCreated = byLastChange( Object.values(unsynchronized));
         newCreated.forEach(function(item){
             markForSync(item);
         });
-        
+
         // If we have written our local copy of the world, tell the UI
         // to refresh its view
         Promise.all(local_changes).then(function(changes) {
