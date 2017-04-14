@@ -39,7 +39,7 @@ if (navigator.serviceWorker) {
     navigator.serviceWorker.addEventListener('message', function(event){
         console.log("UI Client received message: ", event.data);
         notes = event.data.notes;
-        repaintItems(notes);
+        repaintItems(event.data);
         event.ports[0].postMessage("Thank you!");
     });
 
@@ -520,7 +520,7 @@ function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
     var target = urlTemplate( "./notes/:id", item );
-    // console.log(target, item);
+    //console.log("page: POST to ",target, item);
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
