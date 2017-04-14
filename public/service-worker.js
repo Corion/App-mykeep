@@ -8,7 +8,7 @@ importScripts(
 self.toolbox.options.debug = true;
 
 const precacheFiles = [
-    //'./',
+    './',
     './index.html',
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',
@@ -117,6 +117,8 @@ function fetchNotes(options) {
                 console.log("(sw) Mothership status received", json);
                 return json.items;
             });
+        }).catch(function(response) {
+            console.log("(sw) Seems we are offline");
         });
     } else {
         // Remote is empty
@@ -154,63 +156,65 @@ function fetchNotes(options) {
         var local = items[0];
         var remote = items[1];
 
-        console.log("(sw) Local and remote data available, merging", items);
+        if( remote !== undefined ) {
+            console.log("(sw) Local and remote data available, merging", items);
 
-        // Merge the two
-        var merged = {};
-        var unsynchronized = {}; // Things we created while offline
-        for( var i = 0; i < local.length; i++ ) {
-            var item = local[i];
-            merged[item.id] = item;
-            unsynchronized[item.id] = item;
-        };
-        var local_changes = [];
-        for( var i = 0; i < remote.length; i++ ) {
-            var item = remote[i];
-            var local_item;
-            if( local_item = merged[ item.id ]) {
-                delete unsynchronized[item.id]; // the remote side knows this ID
-                var info = mergeItem( local_item, item );
-
-                // Update the last synchronized timestamp of all items
-                info.lastSyncedAt = lastSync;
-
-                if( info.storeRemote ) {
-                    // Push the change to the mothership
-                    markForSync( info.item );
-                };
-
-                if( info.storeLocal ) {
-                    // Update our local storage if anything besides lastSyncedAt changed
-                    // Maybe we should always store...
-                    // console.log("Storing updated item locally", info.item );
-                    local_changes.push( storeItem( info.item ));
-                };
-
-                item = info.item;
-            } else {
-                // Update our local storage
-                console.log("Storing new item locally", item);
-
-                local_changes.push( storeItem( item ));
+            // Merge the two
+            var merged = {};
+            var unsynchronized = {}; // Things we created while offline
+            for( var i = 0; i < local.length; i++ ) {
+                var item = local[i];
+                merged[item.id] = item;
+                unsynchronized[item.id] = item;
             };
-            merged[item.id] = item;
+            var local_changes = [];
+            for( var i = 0; i < remote.length; i++ ) {
+                var item = remote[i];
+                var local_item;
+                if( local_item = merged[ item.id ]) {
+                    delete unsynchronized[item.id]; // the remote side knows this ID
+                    var info = mergeItem( local_item, item );
+
+                    // Update the last synchronized timestamp of all items
+                    info.lastSyncedAt = lastSync;
+
+                    if( info.storeRemote ) {
+                        // Push the change to the mothership
+                        markForSync( info.item );
+                    };
+
+                    if( info.storeLocal ) {
+                        // Update our local storage if anything besides lastSyncedAt changed
+                        // Maybe we should always store...
+                        // console.log("Storing updated item locally", info.item );
+                        local_changes.push( storeItem( info.item ));
+                    };
+
+                    item = info.item;
+                } else {
+                    // Update our local storage
+                    console.log("Storing new item locally", item);
+
+                    local_changes.push( storeItem( item ));
+                };
+                merged[item.id] = item;
+            };
+
+            // Tell the mothership of our new things:
+            var newCreated = byLastChange( Object.values(unsynchronized));
+            newCreated.forEach(function(item){
+                markForSync(item);
+            });
+            // If we have written our local copy of the world, tell the UI
+            // to refresh its view
+            Promise.all(local_changes).then(function(changes) {
+                // Notify the UI of the newly available list
+                var values = byLastChange( Object.values(merged));
+                console.log("(sw) Local and remote data merged, notifying UI for repaint", values);
+                return notifyUI({ "notes" : values, "action" : "synchronized" });
+            });
         };
 
-        // Tell the mothership of our new things:
-        var newCreated = byLastChange( Object.values(unsynchronized));
-        newCreated.forEach(function(item){
-            markForSync(item);
-        });
-
-        // If we have written our local copy of the world, tell the UI
-        // to refresh its view
-        Promise.all(local_changes).then(function(changes) {
-            // Notify the UI of the newly available list
-            var values = byLastChange( Object.values(merged));
-            console.log("(sw) Local and remote data merged, notifying UI for repaint", values);
-            return notifyUI({ "notes" : values, "action" : "synchronized" });
-        });
     });
 
     return local
@@ -220,7 +224,7 @@ function fetchNotes(options) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.get("./notes/list", function(request, values,options) {
+self.toolbox.router.get("notes/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
 
     // XXX determine this from the headers or the query part of the URL
@@ -308,6 +312,7 @@ self.toolbox.router.default = function(request, values,options) {
     return fetch(request);
 };
 */
+toolbox.router.default = toolbox.cacheFirst;
 
 // Mark an item as to-be-synced
 // The item must have been stored completely in localforage because we don't
