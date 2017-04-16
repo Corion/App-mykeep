@@ -84,15 +84,23 @@ get '/index.html' => sub {
         and config->{environment} eq 'production'   ) {
 
         my $r = join '/', 'https:/', request->uri_base, request->path_info;
-        warn Dumper {
-            base => request->uri_base,
-            request_uri => request->request_uri,
-            path_info => request->path_info,
-        };
         return redirect $r;
     }
 
     template 'app';
+};
+
+get '/settings.html' => sub {
+    template 'settings';
+};
+
+get '/settings.json' => sub {
+    content_type 'application/json; charset=utf-8';
+    return to_json {
+        lastSynced => time,
+        version => $VERSION,
+        url => request->uri_base,
+    };
 };
 
 get '/notes/list' => sub {
