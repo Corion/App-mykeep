@@ -103,6 +103,13 @@ get '/settings.json' => sub {
     };
 };
 
+
+post '/settings.json' => sub {
+    content_type 'application/json; charset=utf-8';
+    return to_json {
+    };
+};
+
 get '/notes/list' => sub {
     headers( "Connection" => "close" );
     my @files= map { basename $_ } glob storage_dir() . '/*.json';

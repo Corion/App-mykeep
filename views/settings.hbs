@@ -27,6 +27,15 @@ function saveSettings(newSettings) {
     }));
 }
 
+function UIsaveSettingsAndReturn() {
+    // Only save them if they changed?!
+    saveSettings(settings).then(function() {
+        document.location = "./index.html";
+    }).catch(function(e) {
+        console.log(e);
+    });
+}
+
 loadSettings().then(function(s) {
     settings = s;
 });
@@ -68,8 +77,10 @@ var tmplItems = Handlebars.compile(html);
   <!-- app-bar -->
   <!-- maybe this should go into layouts/main.hbs -->
   <div id="topbar"><div style="display:inline">Settings</div>
-        <button class="accept" aria-label="Done" role="button" tabindex="0" onclick="javascript:saveSettings()">
+        <form>
+        <button class="accept" aria-label="Done" role="button" tabindex="0" onclick="javascript:UIsaveSettingsAndReturn();return false">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Done
         </button>
+        </form>
   </div>
 </div>
