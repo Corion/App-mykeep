@@ -140,13 +140,26 @@ function UIeditItem(element) {
     var item = htmlToModel(container);
     item.displayStyle = "edit";
     item.edit = true;
-    container.css('opacity', 0); // Hide the original, so we don't rearrange
+    var editNode = container.clone();
 
     var tmplEditItem = templates['tmplEditItem'];
-    var editNode = $('#edit-container');
+    editNode.attr('id', 'edit-container');
+    //var editNode = $('#edit-container');
+    // Place our edit-copy directly over of the original element so the morph
+    // looks as if our elements floats to the middle
+    editNode.css({
+        "position" : "absolute",
+        "left" : container.position().left,
+        "top"  : container.position().top,
+        "width" : container.position().width,
+        "height"  : container.position().height,
+    });
+    editNode.appendTo(container.parent()); // just to give it a place
+
+    // Hide the original, so we don't rearrange all the notes
+    container.css('opacity', 0); 
     
     // Display the edit note
-    var newContainer = morph(editNode[0], tmplEditItem(item), {childrenOnly: false});
     $(document).keyup(function(e) {
       //if (e.keyCode === 13) $('.done', newContainer).click();     // enter
       if (e.keyCode === 27) $('#edit-container .btn-cancel').click();   // esc
@@ -155,6 +168,7 @@ function UIeditItem(element) {
     $("#modal-overlay").click(function() {
         UIeditDone(container[0], undefined, true);
     });
+    var newContainer = morph(editNode[0], tmplEditItem(item), {childrenOnly: false});
 }
 
 function UIeditDone(element,event,doSave) {
@@ -176,9 +190,10 @@ function UIeditDone(element,event,doSave) {
     // keyboard shortcuts
     $(document).unbind('keyup');
 
-    // Hide the edit container again
+    // Remove the edit container again
     var editNode = $('#edit-container');
-    var newContainer = morph(editNode[0], '<div id="edit-container"></div>', {childrenOnly: false});
+    editNode.remove();
+    // var newContainer = morph(editNode[0], '<div id="edit-container"></div>', {childrenOnly: false});
 
     // And recreate the display version
     var tmplItem = templates['tmplItem'];
