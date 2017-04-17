@@ -157,8 +157,8 @@ function UIeditItem(element) {
     editNode.appendTo(container.parent()); // just to give it a place
 
     // Hide the original, so we don't rearrange all the notes
-    container.css('opacity', 0); 
-    
+    container.css('opacity', 0);
+
     // Display the edit note
     $(document).keyup(function(e) {
       //if (e.keyCode === 13) $('.done', newContainer).click();     // enter
@@ -169,6 +169,70 @@ function UIeditItem(element) {
         UIeditDone(container[0], undefined, true);
     });
     var newContainer = morph(editNode[0], tmplEditItem(item), {childrenOnly: false});
+}
+
+// https://gist.github.com/anantn/1852070
+function UIcaptureImageDialog(element) {
+    // Display the "capture" dialog:
+    var tmplCaptureImage = templates['tmplCaptureImage'];
+    var dialog = tmplCaptureImage();
+    $(dialog).appendTo($(element)); // Well, that one better exist
+    
+    /*
+    var front = false;
+    document.getElementById('flip-button').onclick = function() { front = !front; };
+
+    var constraints = { video: { facingMode: (front? "user" : "environment") } }
+    */
+
+   // use MediaDevices API
+    // docs: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+    // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
+    // XXX Implement the above instead of hardcoding
+    if (navigator.mediaDevices) {
+        // access the web cam
+        navigator.mediaDevices.getUserMedia({"video": true})
+        // permission granted:
+        .then(function(stream) {
+            var video = $("#cameraCapture");
+            var v = video[0];
+            v.srcObject = stream;
+            $(v).click(UIcaptureImage);
+        })
+        // permission denied:
+        .catch(function(error) {
+            alert('Could not access the camera. Error: ' + error.name + ' ' + error.message);
+        });
+    }
+};
+
+function UIcaptureImage(event) {
+    var context;
+    var videoElement = event.target;
+
+    /*
+    var width = videoElement.offsetWidth
+      , height = videoElement.offsetHeight;
+      */
+    var width = videoElement.videoWidth
+      , height = videoElement.videoHeight;
+
+    var img = $('<img>');
+    $("#edit-container .note-text").append(img);
+    var canvas = $('<canvas>');
+    canvas.width(width);
+    canvas.height(height);
+
+    context = canvas[0].getContext('2d');
+    context.drawImage(videoElement, 0, 0, width, height);
+    img.attr('src', canvas[0].toDataURL('image/png'));
+    //img.width(width);
+    //img.height(height);
+    $(videoElement).remove();
+
+    if( event ) {
+        event.stopPropagation();
+    };
 }
 
 function UIeditDone(element,event,doSave) {
@@ -185,7 +249,7 @@ function UIeditDone(element,event,doSave) {
         item.displayStyle = "display";
         delete item.edit;
     };
-    
+
     // This is likely a little bit far-reaching, as we nuke all custom
     // keyboard shortcuts
     $(document).unbind('keyup');
@@ -198,7 +262,7 @@ function UIeditDone(element,event,doSave) {
     // And recreate the display version
     var tmplItem = templates['tmplItem'];
     morph($('#note-'+item.id)[0], tmplItem(item), {childrenOnly: false});
-    
+
     if( event ) {
         event.stopPropagation();
     };
@@ -301,7 +365,7 @@ function repaintItems(items) {
 
     // $('#items').html(tmplItems(items));
     var DOM = $('#items')[0];
-    
+
     morph(DOM, tmplItems(items), {childrenOnly:true});
     //morphdom(DOM, '<div id="items"><div class="note">a</div><div class="note">b</div></div>', {childrenOnly:true});
     DOM = $('#items')[0];

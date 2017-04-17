@@ -196,6 +196,9 @@ iconPin {
               <!-- These URLs should be made no-Javascript-friendly -->
               <a href="#" class="uiItem" onclick="UIarchiveItem(this,event); return false;">x</a>
               <a href="#" class="uiItem" onclick="UIdeleteItem(this,event); return false;">d</a>
+              <a href="#" class="uiItem" onclick="UIcaptureImageDialog(this,event); return false;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+              </a>
               <a href="#" class="uiItem" onclick="syncItemUI(this,event); return false;">u</a>
               <span class="uiItem" id="sync-\{\{id}}">sync</span>
               <span class="uiItem" id="modified-\{\{id}}">\{\{modifiedAt}}</span>
@@ -203,6 +206,11 @@ iconPin {
               <a href="#" class="uiItem btn-done" onclick="javascript:UIeditDone(this,event,true); return false;">Done</a>
     </div>
 </div>
+</script>
+
+<!-- capture image screen -->
+<script id="tmplCaptureImage" type="text/x-handlebars-template">
+    <video id="cameraCapture" autoplay></video>
 </script>
 
 <script id="tmplItems" type="text/x-handlebars-template">
@@ -260,9 +268,8 @@ var tmplItems = Handlebars.compile(html);
         <a href="#"><!-- add new to-do list -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
         </a>
-        <a href="#"><!-- add new image (from camera) -->
+        <a href="#" onclick="javascript:UIcaptureImageDialog(this)">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-        <!-- Javascript source for the "capture image" template - https://gist.github.com/anantn/1852070 -->
         </a>
       </form>
     </div>
