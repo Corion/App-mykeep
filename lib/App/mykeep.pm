@@ -96,17 +96,22 @@ get '/settings.html' => sub {
 
 get '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
-    return to_json {
+    return to_json +{
         lastSynced => time,
         version => $VERSION,
         url => request->uri_base,
+        # This should be kept client-side (only)
+        useFrontCamera => 0,
     };
 };
 
 
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
-    return to_json {
+    return to_json +{
+        lastSynced => time,
+        version => $VERSION,
+        url => request->uri_base,
         # This should be kept client-side (only)
         useFrontCamera => 0,
     };
