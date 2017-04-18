@@ -206,19 +206,21 @@ function UIeditItem(element) {
     var newContainer = morph(editNode[0], tmplEditItem(item), {childrenOnly: false});
 }
 
+function UItoggleCamera(element) {
+    settings.useFrontCamera = !settings.useFrontCamera;
+}
+
 // https://gist.github.com/anantn/1852070
 function UIcaptureImageDialog(element) {
     // Display the "capture" dialog:
+    var container = UIcontainer(element);
     var tmplCaptureImage = templates['tmplCaptureImage'];
     var dialog = tmplCaptureImage();
-    $(dialog).appendTo($(element)); // Well, that one better exist
+    $(dialog).appendTo($(".note-text",container)); // Well, that one better exist
     
-    /*
-    var front = false;
-    document.getElementById('flip-button').onclick = function() { front = !front; };
+    var front = settings.useFrontCamera;
 
     var constraints = { video: { facingMode: (front? "user" : "environment") } }
-    */
 
    // use MediaDevices API
     // docs: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
@@ -350,31 +352,6 @@ function updateModel(element) {
         UIaddItem(newItem);
     };
 }
-
-// Serialize all item fetching over one connection, just to be nicer to low
-// bandwidth connections instead of bulk-fetching over multiple connections
-function requestQueue($q,$http) {
-  var queue=[];
-  var execNext = function() {
-    var task = queue[0];
-    $http(task.c).then(function(data) {
-      queue.shift();
-      task.d.resolve(data);
-      if (queue.length>0) execNext();
-    }, function(err) {
-      queue.shift();
-      task.d.reject(err);
-      if (queue.length>0) execNext();
-    })
-    ;
-  };
-  return function(config) {
-    var d = $q.defer();
-    queue.push({c:config,d:d});
-    if (queue.length===1) execNext();
-    return d.promise;
-  };
-};
 
 // Hacky url template implementation
 // Lacks for example %-escaping
