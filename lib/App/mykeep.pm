@@ -99,7 +99,7 @@ get '/settings.json' => sub {
     return to_json +{
         lastSynced => time,
         version => $VERSION,
-        url => request->uri_base,
+        url => '' . request->uri_base,
         # This should be kept client-side (only)
         useFrontCamera => 0,
     };
