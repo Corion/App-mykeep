@@ -95,6 +95,41 @@ function defaultOrder(items) {
     return items
 };
 
+var settings;
+
+function loadSettings() {
+    return Promise.resolve($.ajax({
+            "type":"GET"
+          , "url":"./settings.json"
+          , "contentType": "application/json"
+          , "processData":false
+    }));
+}
+
+function saveSettings(newSettings) {
+    return Promise.resolve($.ajax({
+            "type":"POST"
+          , "url":"./settings.json"
+          , "data":JSON.stringify(newSettings)
+          , "contentType": "application/json"
+          , "processData":false
+    }));
+}
+
+// Settings.html
+function UIsaveSettingsAndReturn() {
+    // Only save them if they changed?!
+    saveSettings(settings).then(function() {
+        document.location = "./index.html";
+    }).catch(function(e) {
+        console.log(e);
+    });
+}
+
+loadSettings().then(function(s) {
+    settings = s;
+});
+
 function UIcontainer(element) {
     return $(element).closest(".note");
 }
