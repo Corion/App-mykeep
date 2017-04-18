@@ -107,6 +107,8 @@ get '/settings.json' => sub {
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
     return to_json {
+        # This should be kept client-side (only)
+        useFrontCamera => 0,
     };
 };
 
