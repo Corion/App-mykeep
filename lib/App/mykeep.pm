@@ -18,6 +18,7 @@ use vars qw( @note_keys $schemaVersion );
     title
     text
     bgcolor
+    labels
     pinPosition
     modifiedAt
     lastSyncedAt
@@ -38,6 +39,7 @@ Currently we have the following fields
   title
   text
   bgcolor
+  labels
   modifiedAt
   archivedAt
   lastSyncedAt

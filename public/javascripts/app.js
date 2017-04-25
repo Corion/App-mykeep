@@ -317,6 +317,7 @@ function htmlToModel(element) {
         "id" : $('*[name="id"]', container).val(),
         "title" : $('h2', container).text(),
         "text" : $('div.note-text', container).html(),
+        "labels" : [],
         // bgColor
         // pinned
         // ...
@@ -400,6 +401,7 @@ function UIaddItem() {
     var item= {
         text: entry.val()
       , title: ""
+      , labels: []
       , pinPosition: 0
       , done:false
       , modifiedAt: undefined

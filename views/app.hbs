@@ -124,6 +124,16 @@ iconPin {
     display: inline;
 }
 
+.note-labels .label {
+    padding-top: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-bottom: 1px;
+    display: inline;
+    background-color: #777;
+    border-radius: 3px;
+}
+
 </style>
 
 <!-- these should be automagically inserted resp. converted from static
@@ -157,6 +167,11 @@ iconPin {
           <h2 contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{title}}</h2>
           \{\{/ifCond}}
     <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
+    <div class="note-labels">
+    \{\{#each labels}}
+        <div class="label">\{\{this}}</div>
+    \{\{/each}}
+    </div>
     <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
               <a href="#" class="uiItem" onclick="javascript:archiveItemUI(this,event); return false">x</a>
