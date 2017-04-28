@@ -108,6 +108,7 @@ function loadSettings() {
 }
 
 function saveSettings(newSettings) {
+    // Save the settings locally
     return Promise.resolve($.ajax({
             "type":"POST"
           , "url":"./settings.json"
@@ -466,16 +467,6 @@ function deleteItem(item) {
     }));
 }
 
-// Filters respect the user clicksequence to allow for sensible
-// undo/redo via back/forward navigation
-var criteriaMatch = {
-    "background" : function(i,v) { return i.background == v },
-    "text"       : function(i,v) { return    i.text.index(v) >= 0
-                                          || i.title.index(v) >= 0
-                                          || i.labels.filter(function(i) { return i.index(v) >= 0 }).length > 0
-                                 },
-};
-
 function UIswitchPage(url, parameters) {
     var selector = '#container';
     // Switch to the search page
@@ -495,24 +486,40 @@ function UIswitchPage(url, parameters) {
     return nextPage
 }
 
-function UIsearchPage(element) {
-    // Switch to the search page
-    // Apply initialization upon loading?!
+function UIsearchPage(element, options) {
+    if( ! options ) {
+        options = []
+    };
+    
     return UIswitchPage('./search.html').then(function() {
+        // Fetch the current notes if we don't have any yet...
         // Initialize the search filter if we have an existing filter already
+        var filtered = applyFilter(notes, currentFilter);
+        repaintItems({"notes":filtered});
     });
 }
 
 function UIdisplayPage(element) {
-    // Switch to the search page
-    // Apply initialization upon loading?!
     return UIswitchPage('./index.html').then(function() {
-        UIlistItems();
+        repaintItems({"notes":notes});
     });
 }
 
-function UIfilterItem(element) {
+function UIsettingsPage(element) {
+    return UIswitchPage('./settings.html').then(function() {
+        // repaintItems({"notes":notes});
+    });
 }
+
+// Filters respect the user clicksequence to allow for sensible
+// undo/redo via back/forward navigation
+var criteriaMatch = {
+    "background" : function(i,v) { return i.background == v },
+    "text"       : function(i,v) { return    i.text.index(v) >= 0
+                                          || i.title.index(v) >= 0
+                                          || i.labels.filter(function(i) { return i.index(v) >= 0 }).length > 0
+                                 },
+};
 
 function applyFilter(notes,filter) {
     var items = notes;
