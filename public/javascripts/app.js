@@ -456,3 +456,31 @@ function deleteItem(item) {
           , "processData":false
     }));
 }
+function UIswitchPage(url, parameters) {
+    var selector = '#container';
+    // Switch to the search page
+    var currentPage = $(selector);
+    var nextPage = Promise.resolve($.get(url), parameters).then(function(html) {
+        // Unless I wrap this in another level, jQuery won't find #container?!
+        var payload = $("<div>"+html+"</div>").find(selector);
+        if( payload.length == 0 ) {
+            console.log("Selector " + selector + " was not found in " + url);
+        } else {
+            morph(currentPage[0],payload[0].outerHTML,{childrenOnly: false});
+        };
+        // Push the URL onto the browser history
+        // Call whatever initialization JS there is on the page
+        // Or maybe there shouldn't be any!
+    });
+    return nextPage
+}
+
+function UIsearchPage(element) {
+    // Switch to the search page
+    return UIswitchPage('./search.html');
+}
+
+function UIdisplayPage(element) {
+    // Switch to the search page
+    return UIswitchPage('./index.html');
+}
