@@ -509,7 +509,11 @@ function UIfilterItem(element) {
 
 function applyFilter(notes,filter) {
     var items = notes;
-    filter.each(function(i,el) {
+    console.log(filter);
+    if( ! filter ) {
+        filter = [];
+    };
+    filter.forEach(function(i,el) {
         items = items.filter(function(i) {
             return criteriaMatch[el.name](i,el.value)
         });
@@ -520,7 +524,7 @@ function applyFilter(notes,filter) {
 function describeFilter(notes,filter) {
     var crit;
     var description = [];
-    filter.each( function(i,el) {
+    filter.forEach( function(i,el) {
         var desc = el.description || el.value;
         description.push( desc );
     });
