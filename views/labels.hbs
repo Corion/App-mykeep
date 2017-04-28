@@ -1,0 +1,63 @@
+<style>
+#topbar {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    background-color: #fb0;
+}
+</style>
+<!-- On Desktop this should be a popup, on mobile(ish), this
+     should be a full-screen popup
+     On no-JS, this should be its own page
+     -->
+<!-- use https://codepen.io/thiesbrake/pen/dEmiA ?! -->
+<script id="tmplSettings" type="text/x-handlebars-template">
+<input placeholder="Add label" name="newlabel" value="">
+\{\{#each labels}}
+<div class="label">
+<input type="checkbox" name="chk_\{\{this}}" \{\{\{#checked note.labels}}}> <label for="chk_\{\{this}}" onclick="toggleLabel(this)">\{\{this}}</label>
+</div>
+\{\{/each}}
+</script>
+
+<script>
+var templates = {};
+// Compile all our templates, until we can do that statically
+$('script[type="text/x-handlebars-template"').each(function(i, item) {
+    var html = $(item).html();
+    var name = $(item).attr('id');
+    html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
+
+    var r = Handlebars.compile(html);
+    //console.log(r);
+    templates[name] = r;
+    Handlebars.registerPartial(name, r);
+});
+
+Handlebars.registerHelper('checked', function(currentValue) {
+    return currentValue == '1' ? ' checked="checked"' : '';
+});
+
+// Initialize label map
+var labels = {};
+
+function toggleLabel(el) {
+    // Toggle the label
+}
+
+var html = $("#tmplSettings").html();
+html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
+var tmplItems = Handlebars.compile(html);
+</script>
+
+<div>
+  <!-- app-bar -->
+  <!-- maybe this should go into layouts/main.hbs -->
+  <div id="topbar"><div style="display:inline">Settings</div>
+        <form>
+        <button class="accept" aria-label="Done" role="button" tabindex="0" onclick="javascript:UIsaveSettingsAndReturn();return false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Done
+        </button>
+        </form>
+  </div>
+</div>
