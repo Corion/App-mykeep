@@ -57,6 +57,7 @@ if (navigator.serviceWorker) {
 // Should we keep notes[] or have it all in localforage instead?!
 // XXX: Also resolve repaintItems({"notes":notes}) vs. notes=[]
 var notes = [];
+var currentFilter = [];
 
 // We want to use logic operators, sometimes...
 Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
