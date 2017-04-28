@@ -165,8 +165,10 @@ function UItogglePinItem(element,event) {
 }
 
 function morph(DOM,html,options) {
+    // Clean up the HTML so that morphdom understands what we want it to do
     html = html.replace(/^\s+/,'');
-    //console.log(html);
+    html = html.replace(/^<!--.*?-->\s*/m,'');
+    // console.log(html);
     morphdom(DOM, html, options);
 }
 
