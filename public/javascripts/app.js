@@ -490,12 +490,18 @@ function UIswitchPage(url, parameters) {
 
 function UIsearchPage(element) {
     // Switch to the search page
-    return UIswitchPage('./search.html');
+    // Apply initialization upon loading?!
+    return UIswitchPage('./search.html').then(function() {
+        // Initialize the search filter if we have an existing filter already
+    });
 }
 
 function UIdisplayPage(element) {
     // Switch to the search page
-    return UIswitchPage('./index.html');
+    // Apply initialization upon loading?!
+    return UIswitchPage('./index.html').then(function() {
+        UIlistItems();
+    });
 }
 
 function UIfilterItem(element) {

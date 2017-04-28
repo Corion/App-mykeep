@@ -18,8 +18,8 @@ self.toolbox.options.debug = true;
 const precacheFiles = [
     './',
     './index.html',
-    './settings.html',
     './search.html',
+    './settings.html',
     './settings.json',
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',
