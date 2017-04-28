@@ -120,7 +120,7 @@ function saveSettings(newSettings) {
 function UIsaveSettingsAndReturn() {
     // Only save them if they changed?!
     saveSettings(settings).then(function() {
-        document.location = "./index.html";
+        UIdisplayItems();
     }).catch(function(e) {
         console.log(e);
     });
