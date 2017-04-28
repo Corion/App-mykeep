@@ -387,15 +387,21 @@ function repaintItems(items) {
     DOM = $('#items')[0];
 };
 
-function UIlistItems() {
+function listItems() {
     console.log("Fetching './notes/list' via jQuery");
-    Promise.resolve($.get('./notes/list', null)).then(function(json) {
-        console.log(json);
-        json['notes'] = json['items'];
-        notes = defaultOrder( json['notes']);
+    return
+        Promise.resolve($.get('./notes/list', null)).then(function(json) {
+            console.log("Fetched");
+            json['notes'] = json['items'];
+            notes = defaultOrder( json['notes']);
+        }, function(r1,r2) {
+            console.log([r1,r2]);
+        })
+};
+
+function UIlistItems() {
+    listItems().then(function(json) {
         repaintItems({ "notes": notes });
-    }, function(r1,r2) {
-        console.log([r1,r2]);
     })
 }
 
