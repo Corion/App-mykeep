@@ -7,10 +7,19 @@ importScripts(
 );
 self.toolbox.options.debug = true;
 
+// In the long run, fill the cache ourselves and request/match up the
+// digests between the local version and the live version
+// Propably use SHA256 or whatever is available in Javascript natively
+// Consider using window.crypto to get at the SHA-256 calculator
+// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto
+// If we are online and at least 24 hours have passed, we should check
+// the checksums to see if we need to upgrade
+
 const precacheFiles = [
     './',
     './index.html',
     './settings.html',
+    './search.html',
     './settings.json',
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',

@@ -119,6 +119,10 @@ post '/settings.json' => sub {
     };
 };
 
+get '/search.html' => sub {
+    template 'search';
+};
+
 get '/notes/list' => sub {
     headers( "Connection" => "close" );
     my @files= map { basename $_ } glob storage_dir() . '/*.json';
