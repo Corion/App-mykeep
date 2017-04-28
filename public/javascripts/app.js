@@ -458,6 +458,17 @@ function deleteItem(item) {
           , "processData":false
     }));
 }
+
+// Filters respect the user clicksequence to allow for sensible
+// undo/redo via back/forward navigation
+var criteriaMatch = {
+    "background" : function(i,v) { return i.background == v },
+    "text"       : function(i,v) { return    i.text.index(v) >= 0
+                                          || i.title.index(v) >= 0
+                                          || i.labels.filter(function(i) { return i.index(v) >= 0 }).length > 0
+                                 },
+};
+
 function UIswitchPage(url, parameters) {
     var selector = '#container';
     // Switch to the search page
@@ -485,4 +496,27 @@ function UIsearchPage(element) {
 function UIdisplayPage(element) {
     // Switch to the search page
     return UIswitchPage('./index.html');
+}
+
+function UIfilterItem(element) {
+}
+
+function applyFilter(notes,filter) {
+    var items = notes;
+    filter.each(function(i,el) {
+        items = items.filter(function(i) {
+            return criteriaMatch[el.name](i,el.value)
+        });
+    });
+    return items
+}
+
+function describeFilter(notes,filter) {
+    var crit;
+    var description = [];
+    filter.each( function(i,el) {
+        var desc = el.description || el.value;
+        description.push( desc );
+    });
+    return description.join(", ")
 }
