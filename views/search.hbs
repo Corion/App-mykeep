@@ -3,7 +3,7 @@
     display: block;
     margin: 0px;
     padding: 0px;
-    background-color: #fb0;
+    background-color: #0bf;
 }
 </style>
 <script id="tmplSearch" type="text/x-handlebars-template">
@@ -34,7 +34,7 @@ Handlebars.registerHelper('checked', function(currentValue) {
 
 <div id="container">
   <!-- app-bar -->
-  <div id="topbar"><div style="display:inline">Search</div>
+  <div id="topbar" class="search"><div style="display:inline">Search</div>
       <form action="." method="POST" onsubmit="javascript:UIfilterItem(); return false;">
         <input name="search" type="text" size="30" placeholder="search" onchange="javascript:UIfilterItem(); return false;" />
         <a href="index.html" tabindex="0" onclick="UIdisplayPage(); return false;">
