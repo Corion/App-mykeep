@@ -523,17 +523,23 @@ function UIsettingsPage(element) {
     });
 }
 
+function foldCaseContained(haystack,needle) {
+    var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
+    var re = new RegExp(quotemeta,"i");
+    return re.test(haystack);
+}
+
 // Filters respect the user clicksequence to allow for sensible
 // undo/redo via back/forward navigation
 var criteriaMatch = {
     "status"     : function(i,v) { return i.status == v },
     "background" : function(i,v) { return i.background == v },
-    "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return i.indexOf(v) >= 0 }).length > 0 },
+    "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return foldCaseContained(i,v) }).length > 0 },
     "text"       : function(i,v) {
-        return    v.length <= 2               // Only search with length >= 3
-               || i.text.indexOf(v) >= 0      // Text
-               || i.title.indexOf(v) >= 0     // Title
-               || criteriaMatch['label'](i,v) // Label
+        return    v.length <= 2                // Only search with length >= 3
+               || foldCaseContained(i.text,v)  // Text
+               || foldCaseContained(i.title,v) // Title
+               || criteriaMatch['label'](i,v)  // Label
                ;
         },
 };
