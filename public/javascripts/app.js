@@ -517,9 +517,10 @@ function UIsettingsPage(element) {
 // undo/redo via back/forward navigation
 var criteriaMatch = {
     "background" : function(i,v) { return i.background == v },
+    "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return i == v }).length > 0 },
     "text"       : function(i,v) { return    i.text.index(v) >= 0
                                           || i.title.index(v) >= 0
-                                          || i.labels.filter(function(i) { return i.index(v) >= 0 }).length > 0
+                                          || criteriaMatch['label'](i,v)
                                  },
 };
 
@@ -529,9 +530,15 @@ function applyFilter(notes,filter) {
     if( ! filter ) {
         filter = [];
     };
-    filter.forEach(function(i,el) {
+    filter.forEach(function(el,i) {
         items = items.filter(function(i) {
-            return criteriaMatch[el.name](i,el.value)
+            // console.log("Filtering on", el);
+            if( ! criteriaMatch[el.name]) {
+                console.log("Unknown match criteria", el);
+            };
+            var res = criteriaMatch[el.name](i,el.value);
+            console.log(i,el,res);
+            return res;
         });
     });
     return items
@@ -545,4 +552,14 @@ function describeFilter(notes,filter) {
         description.push( desc );
     });
     return description.join(", ")
+}
+
+function UIfilterLabel(element,event) {
+    var label = $(element).text();
+    // Reset the filter here ?!
+     if( event ) {
+        event.stopPropagation();
+    };
+   currentFilter = [{ "name": "label", "value":label } ];
+    return UIsearchPage(element );
 }

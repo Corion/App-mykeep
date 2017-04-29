@@ -97,7 +97,7 @@ function mergeItem( local, remote ) {
     // changes that were made after that. If the remote item is deleted
     // but the local one is older, wipe the local text and body to save space
     // and later some cleanup job should be able to purge the item totally
-
+    
     if( remote.modifiedAt > local.modifiedAt ) {
         result.item = remote;
         result.storeLocal = true;
@@ -144,7 +144,7 @@ function fetchNotes(options) {
         var fullNotes = [];
         for( var i = 0; i < keys.length; i++ ) {
             var k = keys[i];
-            console.log(k);
+            //console.log(k);
             fullNotes.push( localforage.getItem(k).then(function(v) {
                 //console.log(k,"=>",v);
                 return v

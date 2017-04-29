@@ -3,7 +3,6 @@
 <!-- later -->
 <!-- Display and edit template for desktop, display template for mobile -->
 <!-- mobile doesn't have :hover ... -->
-<!-- animations will work once I move to a DOM-differ -->
 <script id="tmplItem" type="text/x-handlebars-template">
 <div class="note note-\{\{displayStyle}} mybrick masonry-brick" id="note-\{\{id}}"
           style="background-color: \{\{bgcolor}};"
@@ -32,7 +31,7 @@
     <div class="note-labels">
     <!-- the labels should link to a filter for that label -->
     \{\{#each labels}}
-        <div class="label">\{\{this}}</div>
+        <a href="./search.html?label=\{\{this}}" class="label" onclick="javascript:UIfilterLabel(this,event);return false;">\{\{this}}</a>
     \{\{/each}}
     </div>
     <div class="note-toolbar-bottom">
