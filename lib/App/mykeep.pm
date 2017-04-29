@@ -72,6 +72,8 @@ sub upgrade_schema( $item, $schemaVersion = $schemaVersion ) {
     $upgraded{status}        ||= 'active';
     $upgraded{schemaVersion} ||= $schemaVersion;
     $upgraded{pinPosition}   ||= 0;
+    $upgraded{createdAt}     ||= 0;
+    $upgraded{modifiedAt}    ||= 0;
     return \%upgraded
 }
 
