@@ -57,7 +57,7 @@ if (navigator.serviceWorker) {
 // Should we keep notes[] or have it all in localforage instead?!
 // XXX: Also resolve repaintItems({"notes":notes}) vs. notes=[]
 var notes = [];
-var currentFilter = [];
+var currentFilter = {};
 
 // We want to use logic operators, sometimes...
 Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
@@ -221,7 +221,7 @@ function UIcaptureImageDialog(element) {
     var tmplCaptureImage = templates['tmplCaptureImage'];
     var dialog = tmplCaptureImage();
     $(dialog).appendTo($(".note-text",container)); // Well, that one better exist
-    
+
     var front = settings.useFrontCamera;
 
     var constraints = { video: { facingMode: (front? "user" : "environment") } }
@@ -390,7 +390,7 @@ function repaintItems(items) {
 
 function listItems() {
     console.log("Fetching './notes/list' via jQuery");
-    var res = 
+    var res =
         Promise.resolve($.get('./notes/list', null)).then(function(json) {
             console.log("Fetched");
             json['notes'] = json['items'];
@@ -473,6 +473,10 @@ function UIswitchPage(url, parameters) {
     var selector = '#container';
     // Switch to the search page
     var currentPage = $(selector);
+
+    // But only if we are not already on it. Otherwise, just restore that
+    // page from its template (or whatnot)
+
     var nextPage = Promise.resolve($.get(url), parameters).then(function(html) {
         // Unless I wrap this in another level, jQuery won't find #container?!
         var payload = $("<div>"+html+"</div>").find(selector);
@@ -492,16 +496,22 @@ function UIsearchPage(element, options) {
     if( ! options ) {
         options = []
     };
-    
+
     return UIswitchPage('./search.html').then(function() {
         // Fetch the current notes if we don't have any yet...
         // Initialize the search filter if we have an existing filter already
-        var filtered = applyFilter(notes, currentFilter);
-        repaintItems({"notes":filtered});
+        UIpaintFilteredItems();
+        $("#search").focus();
     });
 }
 
+function UIpaintFilteredItems() {
+    var filtered = applyFilter(notes, currentFilter);
+    repaintItems({"notes":filtered});
+}
+
 function UIdisplayPage(element) {
+    currentFilter = {};
     return UIswitchPage('./index.html').then(function() {
         repaintItems({"notes":notes});
     });
@@ -516,31 +526,45 @@ function UIsettingsPage(element) {
 // Filters respect the user clicksequence to allow for sensible
 // undo/redo via back/forward navigation
 var criteriaMatch = {
+    "status"     : function(i,v) { return i.status == v },
     "background" : function(i,v) { return i.background == v },
-    "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return i == v }).length > 0 },
-    "text"       : function(i,v) { return    i.text.index(v) >= 0
-                                          || i.title.index(v) >= 0
-                                          || criteriaMatch['label'](i,v)
-                                 },
+    "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return i.indexOf(v) >= 0 }).length > 0 },
+    "text"       : function(i,v) {
+        return    v.length <= 2               // Only search with length >= 3
+               || i.text.indexOf(v) >= 0      // Text
+               || i.title.indexOf(v) >= 0     // Title
+               || criteriaMatch['label'](i,v) // Label
+               ;
+        },
 };
 
 function applyFilter(notes,filter) {
     var items = notes;
     console.log(filter);
     if( ! filter ) {
-        filter = [];
+        filter = { "status": "active" };
     };
-    filter.forEach(function(el,i) {
+    if( ! filter["status"] ) {
+        filter["status"] = "active";
+    };
+    var key;
+    for( key in filter ) {
+        // Might use a real polyfill here, but what the hey ;)
+        // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+        if( ! filter.hasOwnProperty(key)) {
+            next;
+        };
         items = items.filter(function(i) {
+            var value = filter[key];
             // console.log("Filtering on", el);
-            if( ! criteriaMatch[el.name]) {
-                console.log("Unknown match criteria", el);
+            if( ! criteriaMatch[key]) {
+                console.log("Unknown match criteria", key);
             };
-            var res = criteriaMatch[el.name](i,el.value);
-            console.log(i,el,res);
+            var res = criteriaMatch[key](i,value);
+            // console.log(i,key,res);
             return res;
         });
-    });
+    };
     return items
 }
 
@@ -556,10 +580,22 @@ function describeFilter(notes,filter) {
 
 function UIfilterLabel(element,event) {
     var label = $(element).text();
-    // Reset the filter here ?!
      if( event ) {
         event.stopPropagation();
     };
-   currentFilter = [{ "name": "label", "value":label } ];
-    return UIsearchPage(element );
+
+    // Reset the filter
+    currentFilter = { "label" : label };
+    UIpaintFilteredItems();
+}
+
+function UIfilterText(element,event) {
+    var text = $(element).val();
+     if( event ) {
+        event.stopPropagation();
+    };
+    // Reallly push? Why not just have a set of filters that we edit?!
+    currentFilter["text"] = text;
+    UIpaintFilteredItems();
+    // return UIsearchPage( element );
 }
