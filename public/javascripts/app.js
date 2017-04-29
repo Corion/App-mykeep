@@ -390,14 +390,16 @@ function repaintItems(items) {
 
 function listItems() {
     console.log("Fetching './notes/list' via jQuery");
-    return
+    var res = 
         Promise.resolve($.get('./notes/list', null)).then(function(json) {
             console.log("Fetched");
             json['notes'] = json['items'];
             notes = defaultOrder( json['notes']);
         }, function(r1,r2) {
-            console.log([r1,r2]);
-        })
+            console.log("jQuery error",[r1,r2]);
+        });
+    console.log(res);
+    return res
 };
 
 function UIlistItems() {
