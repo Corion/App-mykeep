@@ -26,6 +26,7 @@ Handlebars.registerHelper('checked', function(currentValue) {
 
 <div id="container">
   <!-- app-bar -->
+  <!-- the title (bar) should become a template too, so we can display the current tag/keyword there -->
   <div id="topbar" class="search"><div style="display:inline">Search</div>
       <form action="." method="POST" onsubmit="javascript:UIfilterItem(); return false;">
         <input name="search" type="input" size="30" placeholder="Search" onchange="javascript:UIfilterItem(); return false;" />
