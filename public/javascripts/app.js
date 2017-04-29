@@ -523,14 +523,14 @@ function UIsettingsPage(element) {
     });
 }
 
+// This uses a regular expression because .toLower and .toUpper don't
+// properly fold international characters for comparison
 function foldCaseContained(haystack,needle) {
     var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
     var re = new RegExp(quotemeta,"i");
     return re.test(haystack);
 }
 
-// Filters respect the user clicksequence to allow for sensible
-// undo/redo via back/forward navigation
 var criteriaMatch = {
     "status"     : function(i,v) { return i.status == v },
     "background" : function(i,v) { return i.background == v },
@@ -544,6 +544,8 @@ var criteriaMatch = {
         },
 };
 
+// We should split the user text on whitespace as they likely want to search
+// for multiple words not necessarily in that order
 function applyFilter(notes,filter) {
     var items = notes;
     console.log(filter);
