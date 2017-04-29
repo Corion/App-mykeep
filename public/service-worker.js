@@ -28,7 +28,10 @@ const precacheFiles = [
     './javascripts/Math.uuid.js',
     './service-worker.js',
     './javascripts/sw-companion.js',
-    './javascripts/app.js'
+    './javascripts/app.js',
+    './css/app.css',
+    './css/error.css',
+    './css/style.css'
 ];
 
 // Start up immediately, replacing old instances

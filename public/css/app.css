@@ -1,4 +1,138 @@
-.done-true {
-  text-decoration: line-through;
-  color: grey;
+span[contentEditable] {
+        cursor: pointer;
+        background-color: #D0D0D0;
+    }
+
+[contentEditable].empty:before {
+  color: gray;
+  content: "Title";
+}
+
+[contentEditable].empty:focus:before {
+  height: 1em;
+  content: "|"; /* Erase that placeholder text again */
+}
+
+#topbar {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    background-color: #fb0;
+}
+
+#topbar.search {
+    background-color: #0bf;
+}
+
+.mybrick {
+  border: 1px solid black;
+  width: 240px;
+  min-height: 3em;
+  float: left;
+  margin: 16px;
+  padding: 8px;
+
+  /* Shadows */
+  /* Firefox */
+  -moz-box-shadow:5px 5px 7px rgba(33,33,33,1);
+  /* Safari+Chrome */
+  -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+  /* Opera */
+  box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+
+  background-color: rgba(255,220,30,1);
+
+  margin-bottom: 16px;
+}
+
+.note-display:hover {
+}
+/*BG color is a must for IE6*/
+.note-display .uiItem {
+    display:none;
+}
+.note-display:hover .uiItem {
+    display:inline;
+    /* position:absolute; */
+}
+
+.note {
+    -ms-transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+    -webkit-transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+    -moz-transition:    width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+    -o-transition:      width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+    transition:         width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+}
+
+.note-edit {
+    width: 600px;
+
+    /* Make it modal */
+    z-index: 1010;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    display: block;
+}
+
+.closed {
+  display: none !important;
+}
+
+#modal-overlay {
+    z-index: 1000;
+
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+
+    opacity:0.5 !important;
+}
+
+.note-toolbar-bottom {
+    height: 32px;
+    margin: 0px;
+    padding: 0px;
+  display:block;
+}
+
+.note-toolbar-top {
+    height: 32px;
+    margin: 0px;
+    padding: 0px;
+  display:block;
+}
+
+button {
+    border: none;
+    background-color: transparent;
+    display: inline;
+}
+
+h2 {
+  display:block;
+}
+
+iconPin {
+    width: 20px;
+    height: 20px;
+    display: inline;
+}
+
+.note-labels .label {
+    padding-top: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-bottom: 1px;
+    display: inline;
+    background-color: #777;
+    border-radius: 3px;
 }
