@@ -24,6 +24,14 @@ span[contentEditable] {
     background-color: #0bf;
 }
 
+#topbar .location {
+    font-weight: bold;
+    font-height: 20px;
+    display: inline;
+}
+
+#topbar form { display: inline; }
+
 .mybrick {
   border: 1px solid black;
   width: 240px;
