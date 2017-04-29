@@ -1,29 +1,3 @@
-<script id="tmplSearch" type="text/x-handlebars-template">
-</script>
-
-<script>
-var templates = {};
-// Compile all our templates, until we can do that statically
-$('script[type="text/x-handlebars-template"').each(function(i, item) {
-    var html = $(item).html();
-    var name = $(item).attr('id');
-    html = html.replace(/\\{/g, "{"); // Goddamn Text::Handlebars
-
-    var r = Handlebars.compile(html);
-    //console.log(r);
-    templates[name] = r;
-    Handlebars.registerPartial(name, r);
-});
-
-Handlebars.registerHelper('checked', function(currentValue) {
-    return currentValue == '1' ? ' checked="checked"' : '';
-});
-
-// As soon as we click one item or have three letters in the search bar,
-// filter and redraw the items
-
-</script>
-
 <div id="container">
   <!-- app-bar -->
   <!-- the title (bar) should become a template too, so we can display the current tag/keyword there -->
