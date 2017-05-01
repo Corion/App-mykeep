@@ -22,6 +22,7 @@ const precacheFiles = [
     './search.html',
     './settings.html',
     './settings.json',
+    './version.json',
     './javascripts/jquery-3.1.1.min.js',
     './javascripts/handlebars-v4.0.5.js',
     './javascripts/localforage.js',
@@ -35,6 +36,9 @@ const precacheFiles = [
     './css/style.css'
 ];
 
+// Precache the files
+self.toolbox.precache(precacheFiles);
+
 // Start up immediately, replacing old instances
 self.addEventListener('install', function(event) {
   event.waitUntil(self.skipWaiting());
@@ -43,11 +47,27 @@ self.addEventListener('install', function(event) {
 // All pages can use us immediately
 self.addEventListener('activate', function(event) {
   event.waitUntil(self.clients.claim());
+
+  // Do schema migration here, if necessary?!
+
+  // We installed a new version of the service worker, so
+  // force an update of all the rest as well:
+  // console.log("(sw) Updating because of activation");
+  // update();
+
   console.log('(sw) Finally active. Ready to start serving content!');
 });
 
-// Precache the files
-self.toolbox.precache(precacheFiles);
+// This is not an elegant way of upgrading. Ideally, we would download
+// _all_ of the new URLs and then switch to them atomically. Oh well.
+// Also, we would only update the changed parts and not everything. Oh well.
+function update() {
+    var url;
+    precacheFiles.forEach( function( url, i ) {
+        self.toolbox.uncache( url );
+        self.toolbox.cache( url );
+    });
+}
 
 localforage.config({
     "name": "mykeep",
@@ -98,7 +118,7 @@ function mergeItem( local, remote ) {
     // changes that were made after that. If the remote item is deleted
     // but the local one is older, wipe the local text and body to save space
     // and later some cleanup job should be able to purge the item totally
-    
+
     if( remote.modifiedAt > local.modifiedAt ) {
         result.item = remote;
         result.storeLocal = true;
