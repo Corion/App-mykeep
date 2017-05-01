@@ -17,6 +17,7 @@ self.toolbox.options.debug = true;
 
 const precacheFiles = [
     './',
+    './favicon.ico',
     './index.html',
     './search.html',
     './settings.html',
