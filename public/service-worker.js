@@ -319,6 +319,10 @@ function httpPost(item) {
     }))
 };
 
+// Maybe later reduce this so that the network request gets made only once
+// per 24 hours or something configurable
+self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
+
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
 /*

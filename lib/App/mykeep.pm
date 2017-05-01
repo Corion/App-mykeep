@@ -11,6 +11,8 @@ use Filter::signatures;
 use feature 'signatures';
 no warnings 'experimental::signatures';
 
+use vars qw($git_release);
+
 our $VERSION = '0.01';
 
 use vars qw( @note_keys $schemaVersion );
@@ -77,6 +79,18 @@ sub upgrade_schema( $item, $schemaVersion = $schemaVersion ) {
     return \%upgraded
 }
 
+sub git_release {
+    if( ! $git_release ) {
+        if( -d '.git' ) {
+            $git_release ||= `git rev-parse HEAD`;
+        } else {
+            # This means we need to fudge our config on deploying?!
+            $git_release = config->{ git_release }
+        };
+    };
+    $git_release
+}
+
 get '/' => sub {
     redirect '/index.html';
 };
@@ -92,6 +106,14 @@ get '/index.html' => sub {
     }
 
     template 'app';
+};
+
+get '/version.json' => sub {
+    content_type 'application/json; charset=utf-8';
+    return to_json +{
+        version => $VERSION,
+        release => git_release(),
+    };
 };
 
 get '/settings.html' => sub {
