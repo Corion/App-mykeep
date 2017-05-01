@@ -14,9 +14,9 @@
 <!-- animations will work once I move to a DOM-differ -->
 <script id="tmplSettings" type="text/x-handlebars-template">
 <div class="settings">
-<div class="version"><label for="version">Version</label><input type="" id="version" name="version" value="\{\{version}}"/></div>
-<div class="url"><label for="url">URL</label><input type="" id="url" name="url" value="\{\{url}}"/></div>
-<div class="lastSync"><label for="lastSync">Last synchronized at</label><input type="" id="lastSync" name="lastSync" value="\{\{lastSync}}"/></div>
+<div class="version"><label for="version">Version</label><div>\{\{server.version}}</div></div>
+<div class="url"><label for="url">URL</label><input type="" id="url" name="url" value="\{\{client.url}}"/></div>
+<div class="lastSync"><label for="lastSync">Last synchronized at</label><input type="" id="lastSync" name="lastSync" value="\{\{client.lastSync}}"/></div>
 </div>
 </script>
 
@@ -39,14 +39,19 @@ html = html.replace(/\\{\\{/g, "{"+"{"); // Goddamn Text::Handlebars
 var tmplItems = Handlebars.compile(html);
 </script>
 
-<div>
+<div id="container">
   <!-- app-bar -->
   <!-- maybe this should go into layouts/main.hbs -->
-  <div id="topbar"><div style="display:inline">Settings</div>
+  <div id="topbar" class="settings"><div class="location">Settings</div>
         <form>
         <button class="accept" aria-label="Done" role="button" tabindex="0" onclick="javascript:UIsaveSettingsAndReturn();return false">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> Done
         </button>
         </form>
+  </div>
+  <div>
+    <div id="items">
+        <div>...loading...</div><!-- this should be rendered server-side, some day -->
+    </div>
   </div>
 </div>
