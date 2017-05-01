@@ -97,11 +97,21 @@ function defaultOrder(items) {
 };
 
 var settings;
+var serverVersion;
 
 function loadSettings() {
     return Promise.resolve($.ajax({
             "type":"GET"
           , "url":"./settings.json"
+          , "contentType": "application/json"
+          , "processData":false
+    }));
+}
+
+function loadServerVersion() {
+    return Promise.resolve($.ajax({
+            "type":"GET"
+          , "url":"./version.json"
           , "contentType": "application/json"
           , "processData":false
     }));
@@ -518,8 +528,16 @@ function UIdisplayPage(element) {
 }
 
 function UIsettingsPage(element) {
-    return UIswitchPage('./settings.html').then(function() {
-        // repaintItems({"notes":notes});
+    return loadServerVersion().then( function() {
+        return UIswitchPage('./settings.html')
+    }).then(function() {
+        // Manually render our settings template here:
+        var DOM = $('#items')[0];
+
+        morph(DOM, tmplSettings({
+            "server" : serverVersion,
+            "client" : settings
+        }), {childrenOnly:true});
     });
 }
 

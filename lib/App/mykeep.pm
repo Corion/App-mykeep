@@ -124,13 +124,11 @@ get '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
     return to_json +{
         lastSynced => time,
-        version => $VERSION,
         url => '' . request->uri_base,
-        # This should be kept client-side (only)
+        # Per-device settings - we shouldn't store them here?!
         useFrontCamera => 0,
     };
 };
-
 
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
@@ -138,7 +136,7 @@ post '/settings.json' => sub {
         lastSynced => time,
         version => $VERSION,
         url => request->uri_base,
-        # This should be kept client-side (only)
+        # Per-device settings - we shouldn't store them here?!
         useFrontCamera => 0,
     };
 };
