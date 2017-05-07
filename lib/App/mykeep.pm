@@ -58,6 +58,27 @@ Future keys might become
 
   hasReminder / reminderICal - for reminders and their ICal calendar entry
 
+=head2 syncSetting
+
+=over 4
+
+=item *
+
+deviceOnly - never share this note with the upstream
+
+=item *
+
+accountOnly - only share this note with the same account upstream
+
+=item *
+
+public - this note is visible to the general public
+
+=back
+
+Maybe a note should also get a list of allowed writers and resource
+administrators to make changing of information restrictable.
+
 =head1 SECURITY
 
 We should limit the size of incoming HTTP requests as early as possible, that
