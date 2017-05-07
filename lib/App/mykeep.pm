@@ -93,6 +93,13 @@ sub git_release {
     $git_release
 }
 
+sub user_credentials {
+    return {
+        user => '',
+        directory => '',
+    }
+}
+
 get '/' => sub {
     redirect '/index.html';
 };
@@ -123,12 +130,14 @@ get '/settings.html' => sub {
 };
 
 get '/settings.json' => sub {
+    # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     return to_json +{
         lastSynced => time,
         url => '' . request->uri_base,
         # Per-device settings - we shouldn't store them here?!
         useFrontCamera => 0,
+        credentials => user_credentials(),
     };
 };
 
