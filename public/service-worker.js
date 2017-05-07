@@ -120,10 +120,14 @@ function mergeItem( local, remote ) {
     // and later some cleanup job should be able to purge the item totally
 
     if( remote.modifiedAt > local.modifiedAt ) {
+        // The local syncSetting always takes precedence!
+        remote.syncSetting = local.syncSetting;
+
         result.item = remote;
         result.storeLocal = true;
     };
-    if( local.modifiedAt > remote.modifiedAt ) {
+    if( local.modifiedAt > remote.modifiedAt
+        and local.syncSetting !== "deviceOnly" ) {
         result.item = local;
         result.storeRemote = true;
     };

@@ -26,6 +26,7 @@ use vars qw( @note_keys $schemaVersion );
     lastSyncedAt
     archivedAt
     schemaVersion
+    syncSetting
 );
 $schemaVersion = '001.000.000';
 
@@ -49,6 +50,7 @@ Currently we have the following fields
   status
   schemaVersion
   pinPosition
+  syncSetting
 
 Maybe this should be moved to its own module. Later.
 
