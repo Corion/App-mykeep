@@ -84,6 +84,26 @@ administrators to make changing of information restrictable.
 We should limit the size of incoming HTTP requests as early as possible, that
 is, ideally, in the Plack handler that reads the request
 
+=head1 ACCOUNTS
+
+A user account consists of three parts:
+
+=over 4
+
+=item #
+
+The user account - this is a uuid, likely
+
+=item #
+
+The storage directory - this is that same uuid again, likely
+
+=item #
+
+The account secret - this is used for authentification of the user
+
+=back
+
 =cut
 
 sub storage_dir {
@@ -177,25 +197,28 @@ get '/search.html' => sub {
     template 'search';
 };
 
-get '/notes/list' => sub {
+get '/notes/:account/list' => sub {
     headers( "Connection" => "close" );
-    my @files= map { basename $_ } glob storage_dir() . '/*.json';
-    # Consider paging here
-    # Also, conssider only changes since here...
+    if( my $account = verify_account( params->{account}, request )) {
+        my @files= map { basename $_ } glob join '/', storage_dir(), $account, '*.json';
+        # Consider paging here
+        # Also, consider how to merge public and private notes here
+        # Also, consider only changes since here...
 
-    my @result=
-        sort {
-            ($b->{pinPosition} || 0) <=> ($a->{pinPosition} || 0)
-         || $b->{modifiedAt} <=> $a->{modifiedAt}
-         || $b->{createdAt} <=> $a->{createdAt}
-        }
-        map { my $i= load_item($_);
-              $i
-        } map { s/\.json$//ir }
-        @files
-        ;
-    content_type 'application/json; charset=utf-8';
-    return to_json { more => undef, items => \@result };
+        my @result=
+            sort {
+                ($b->{pinPosition} || 0) <=> ($a->{pinPosition} || 0)
+             || $b->{modifiedAt} <=> $a->{modifiedAt}
+             || $b->{createdAt} <=> $a->{createdAt}
+            }
+            map { my $i= load_item($_);
+                  $i
+            } map { s/\.json$//ir }
+            @files
+            ;
+        content_type 'application/json; charset=utf-8';
+        return to_json { more => undef, items => \@result };
+    };
 };
 
 sub clean_id {
@@ -210,9 +233,24 @@ sub slurp( $fn ) {
     <$fh>
 }
 
+sub verify_account( $account, $param ) {
+    $account =~ m!\A([A-Za-Z0-9-]+)\z!
+        or return;
+    my $account_dir = join '/', storage_dir(), $account;
+    -d $account_dir or return;
+    -f "$account_dir/.account" or return;
+    
+    # Well, maybe later move that to JSON, and sign it, and hand it to the
+    # client, JWT-style, so they can be identified/trusted without hitting
+    # the disk. Once we go web-scale.
+    my $content = slurp("$account_dir/.account");
+    $param->{secret} eq $content
+        and return $account
+}
+
 sub load_item {
     my( $id, %options )= @_;
-    my $fn= join "/", storage_dir(), "$id.json";
+    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
     if( -f $fn ) {
         my $content= slurp( $fn );
         my $res = decode_json($content);
@@ -235,26 +273,30 @@ sub save_item {
 
     die "Have no id for item?!"
         unless $item->{id};
-    my $fn= join "/", storage_dir(), "$id.json";
+    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
     open my $fh, '>:raw', $fn
         or die "'$fn': $!";
     print $fh encode_json( $item )
 }
 
-get '/notes/:note' => sub {
-    my $id= clean_id( params->{note} );
-    headers( "Connection"             => "close",
-             "Content-Disposition"    => "attachment; filename=${id}.json",
-             "X-Content-Type-Options" => "nosniff",
-           );
+get '/notes/:account/:note' => sub {
+    if( my $account = verify_account( params->{account}, request )) {
+        my $id= clean_id( params->{note} );
+        headers( "Connection"             => "close",
+                 "Content-Disposition"    => "attachment; filename=${id}.json",
+                 "X-Content-Type-Options" => "nosniff",
+               );
 
-    my $item= load_item( $id );
-    # Check "if-modified-since" header
-    # If we're newer, send response
-    # otherwise, update the last-synced timestamp?!
+        my $item= load_item( $id );
+        # Check "if-modified-since" header
+        # If we're newer, send response
+        # otherwise, update the last-synced timestamp?!
 
-    content_type 'application/json; charset=utf-8';
-    return to_json($item);
+        content_type 'application/json; charset=utf-8';
+        return to_json($item);
+    } else {
+        status 400;
+    }
 };
 
 sub last_edit_wins {
@@ -276,7 +318,7 @@ sub last_edit_wins {
 # Maybe PUT instead of POST, later
 # Also, in addition to getting+saving JSON, also allow for simple
 # CGI parameters so we could even function without Javascript
-post '/notes/:note' => sub {
+post '/notes/:account/:note' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
 
@@ -285,62 +327,66 @@ post '/notes/:note' => sub {
         return;
     };
 
-    my $ct = request->content_type;
-    my $charset = 'utf-8';
-    if( $ct =~ /;\s*charset=(["']?)(.*)\1/ ) {
-        $charset = $2;
-    };
-    my $body= decode_json(request->body);
+    if( my $account = verify_account( params->{account}, request )) {
+        my $ct = request->content_type;
+        my $charset = 'utf-8';
+        if( $ct =~ /;\s*charset=(["']?)(.*)\1/ ) {
+            $charset = $2;
+        };
+        my $body= decode_json(request->body);
 
-    my $item;
-    if(not eval { $item = load_item( $id ); 1 }) {
-        $item = {};
-    };
+        my $item;
+        if(not eval { $item = load_item( $id ); 1 }) {
+            $item = {};
+        };
 
-    $body = upgrade_schema( $body );
+        $body = upgrade_schema( $body );
 
-    if( ($item->{status} || '') ne 'deleted' ) {
-        # Really crude "last edit wins" approach
-        $item= last_edit_wins( $item, $body );
-    };
+        if( ($item->{status} || '') ne 'deleted' ) {
+            # Really crude "last edit wins" approach
+            $item= last_edit_wins( $item, $body );
+        };
 
-    # Set "last-synced" timestamp
-    $item->{lastSyncedAt}= time();
-    save_item( $item );
+        # Set "last-synced" timestamp
+        $item->{lastSyncedAt}= time();
+        save_item( $item );
 
-    # Do we really want to do an external redirect here
-    # instead of serving an internal redirect to the client?
-    # Also, do we want to (re)deliver the known content at all?!
-    # Maybe it's just enough to tell the client the server status
-    # that is, id and lastSyncedAt unless there are changes.
-    # Maybe { result: patch, { id: 123, changed: [foo:"bar"] }]
+        # Do we really want to do an external redirect here
+        # instead of serving an internal redirect to the client?
+        # Also, do we want to (re)deliver the known content at all?!
+        # Maybe it's just enough to tell the client the server status
+        # that is, id and lastSyncedAt unless there are changes.
+        # Maybe { result: patch, { id: 123, changed: [foo:"bar"] }]
 
-    # "forward()" won't work, because we want to change
-    # POST to GET
-    content_type 'application/json; charset=utf-8';
-    return to_json($item);
+        # "forward()" won't work, because we want to change
+        # POST to GET
+        content_type 'application/json; charset=utf-8';
+        return to_json($item);
+    }
 };
 
 # Maybe PUT instead of POST, later
 # Also, in addition to getting+saving JSON, also allow for simple
 # CGI parameters so we could even function without Javascript
-post '/notes/:note/delete' => sub {
+post '/notes/:account/:note/delete' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
+    
+    if( my $account = verify_account( params->{account}, request )) {
+        # Maybe archive the item
+        # We shouldn't delete anyway, because deleting means
+        # breaking synchronization
+        #my $fn= storage_dir() . "/$id.json";
 
-    # Maybe archive the item
-    # We shouldn't delete anyway, because deleting means
-    # breaking synchronization
-    #my $fn= storage_dir() . "/$id.json";
+        my $item = load_item($id);
+        $item->{status} = 'deleted';
+        save_item( $item );
 
-    my $item = load_item($id);
-    $item->{status} = 'deleted';
-    save_item( $item );
+        # Cleanup should be done in a cron job, and later in a real DB
+        #unlink $fn; # boom
 
-    # Cleanup should be done in a cron job, and later in a real DB
-    #unlink $fn; # boom
-
-    return "";
+        return "";
+    }
 };
 
 sub within_request_size_limits {
