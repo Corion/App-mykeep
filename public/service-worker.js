@@ -39,6 +39,16 @@ const precacheFiles = [
 // Precache the files
 self.toolbox.precache(precacheFiles);
 
+// Also try to request that our data shouldn't be purged on storage pressure
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(function(granted) {
+    if (granted)
+        //alert("Storage will not be cleared except by explicit user action");
+    else
+        //alert("Storage may be cleared by the UA under storage pressure.");
+  });
+}
+
 // Start up immediately, replacing old instances
 self.addEventListener('install', function(event) {
   event.waitUntil(self.skipWaiting());

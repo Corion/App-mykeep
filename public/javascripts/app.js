@@ -99,6 +99,18 @@ function defaultOrder(items) {
 var settings;
 var serverVersion;
 
+// Returns a Promise which resolves to the persistence state of storage
+function storagePersists() {
+    if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persisted().then( function( persistent ) {
+            return persistent
+        });
+    } else {
+        // Assume the worst
+        return Promise.resolve(false)
+    }
+}
+
 function loadSettings() {
     return Promise.resolve($.ajax({
             "type":"GET"
