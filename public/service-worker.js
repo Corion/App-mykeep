@@ -273,7 +273,7 @@ function fetchNotes(options) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.get("notes/list", function(request, values,options) {
+self.toolbox.router.get("./notes/"+settings.account+"/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
 
     // XXX determine this from the headers or the query part of the URL
