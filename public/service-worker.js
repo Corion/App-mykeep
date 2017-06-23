@@ -137,7 +137,7 @@ function mergeItem( local, remote ) {
         result.storeLocal = true;
     };
     if( local.modifiedAt > remote.modifiedAt
-        and local.syncSetting !== "deviceOnly" ) {
+        && local.syncSetting !== "deviceOnly" ) {
         result.item = local;
         result.storeRemote = true;
     };
