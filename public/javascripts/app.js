@@ -555,10 +555,16 @@ function UIsettingsPage(element) {
 
 // This uses a regular expression because .toLower and .toUpper don't
 // properly fold international characters for comparison
-function foldCaseContained(haystack,needle) {
-    var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
-    var re = new RegExp(quotemeta,"i");
-    return re.test(haystack);
+function foldCaseContained(haystack,needles) {
+    var matched = 0;
+    needles.forEach(function(i,v) {
+        var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
+        var re = new RegExp(quotemeta,"i");
+        if( re.test(haystack)) {
+            matched++
+        };
+    });
+    return matched == needles.length;
 }
 
 var criteriaMatch = {
@@ -566,10 +572,10 @@ var criteriaMatch = {
     "background" : function(i,v) { return i.background == v },
     "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return foldCaseContained(i,v) }).length > 0 },
     "text"       : function(i,v) {
+        var parts = /\s+/.split( v );
         return    v.length <= 2                // Only search with length >= 3
-               || foldCaseContained(i.text,v)  // Text
-               || foldCaseContained(i.title,v) // Title
-               || criteriaMatch['label'](i,v)  // Label
+               || foldCaseContained(i.text + " " + i.title,parts)  // Text
+               || criteriaMatch['label'](i,v)                      // Label
                ;
         },
 };
