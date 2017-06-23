@@ -134,10 +134,12 @@ sub git_release {
     $git_release
 }
 
-sub user_credentials {
+sub user_credentials( $account_name ) {
+    my $account = verify_account( $account_name );
     return {
-        user => '',
-        directory => '',
+        user      => $account_name,
+        directory => $account->{directory},
+        secret    => '',
     }
 }
 
@@ -173,12 +175,13 @@ get '/settings.html' => sub {
 get '/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
+    my $user = session('user');
     return to_json +{
         lastSynced => time,
         url => '' . request->uri_base,
         # Per-device settings - we shouldn't store them here?!
         useFrontCamera => 0,
-        credentials => user_credentials(),
+        credentials => user_credentials($user),
     };
 };
 
@@ -211,7 +214,7 @@ get '/notes/:account/list' => sub {
              || $b->{modifiedAt} <=> $a->{modifiedAt}
              || $b->{createdAt} <=> $a->{createdAt}
             }
-            map { my $i= load_item($_);
+            map { my $i= load_item($_, account => $account );
                   $i
             } map { s/\.json$//ir }
             @files
@@ -234,22 +237,26 @@ sub slurp( $fn ) {
 }
 
 sub verify_account( $account, $param ) {
-    $account =~ m!\A([A-Za-Z0-9-]+)\z!
+    $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
-    my $account_dir = join '/', storage_dir(), $account;
-    -d $account_dir or return;
-    -f "$account_dir/.account" or return;
     
+    (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
+    return unless $account_entry;
+    
+    my $account_dir = join '/', storage_dir(), $account_entry->{directory};
+    -d $account_dir or return;
+
+    $account_entry
+    #-f "$account_dir/.account" or return;
     # Well, maybe later move that to JSON, and sign it, and hand it to the
     # client, JWT-style, so they can be identified/trusted without hitting
     # the disk. Once we go web-scale.
-    my $content = slurp("$account_dir/.account");
-    $param->{secret} eq $content
-        and return $account
+    #my $content = slurp("$account_dir/.account");
+    #$param->{secret} eq $content
+    #    and return $account
 }
 
-sub load_item {
-    my( $id, %options )= @_;
+sub load_item( $id, %options ) {
     my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
     if( -f $fn ) {
         my $content= slurp( $fn );
@@ -287,7 +294,7 @@ get '/notes/:account/:note' => sub {
                  "X-Content-Type-Options" => "nosniff",
                );
 
-        my $item= load_item( $id );
+        my $item= load_item( $id, account => $account );
         # Check "if-modified-since" header
         # If we're newer, send response
         # otherwise, update the last-synced timestamp?!
@@ -336,7 +343,7 @@ post '/notes/:account/:note' => sub {
         my $body= decode_json(request->body);
 
         my $item;
-        if(not eval { $item = load_item( $id ); 1 }) {
+        if(not eval { $item = load_item( $id, account => $account ); 1 }) {
             $item = {};
         };
 
@@ -378,7 +385,7 @@ post '/notes/:account/:note/delete' => sub {
         # breaking synchronization
         #my $fn= storage_dir() . "/$id.json";
 
-        my $item = load_item($id);
+        my $item = load_item($id, account => $account );
         $item->{status} = 'deleted';
         save_item( $item );
 
