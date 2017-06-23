@@ -32,3 +32,11 @@ mykeep:
   maximum_note_size: 1000000
 
 session: "YAML"
+
+accounts:
+ - user: demo
+   password: demo
+   directory: demo
+ - user: public
+   password:
+   directory: public
