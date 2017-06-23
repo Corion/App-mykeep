@@ -135,7 +135,7 @@ sub git_release {
 }
 
 sub user_credentials( $account_name ) {
-    my $account = verify_account( $account_name );
+    my $account = verify_account( $account_name, undef );
     return {
         user      => $account_name,
         directory => $account->{directory},
@@ -333,6 +333,7 @@ post '/notes/:account/:note' => sub {
         status 414;
         return;
     };
+
 
     if( my $account = verify_account( params->{account}, request )) {
         my $ct = request->content_type;

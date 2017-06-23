@@ -31,4 +31,4 @@ mykeep:
   # Maximum size of a single note
   maximum_note_size: 1000000
 
-
+session: "YAML"
