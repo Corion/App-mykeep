@@ -411,9 +411,9 @@ function repaintItems(items) {
 };
 
 function listItems() {
-    console.log("Fetching './notes/list' via jQuery");
+    console.log("Fetching './notes/"+settings.user+"/list' via jQuery");
     var res =
-        Promise.resolve($.get('./notes/list', null)).then(function(json) {
+        Promise.resolve($.get('./notes/'+settings.user+'/list', null)).then(function(json) {
             console.log("Fetched");
             json['notes'] = json['items'];
             notes = defaultOrder( json['notes']);

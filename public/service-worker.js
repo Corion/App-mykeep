@@ -39,13 +39,21 @@ const precacheFiles = [
 // Precache the files
 self.toolbox.precache(precacheFiles);
 
+// Fake the settings until I figure out how to do login etc.
+var settings = {
+    account : 'my-account',
+    uplink : '', // this should be the URL of our uplink server, basically the
+    // URL we fetched this page from(?!)
+}
+
 // Also try to request that our data shouldn't be purged on storage pressure
 if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().then(function(granted) {
-    if (granted)
+    if (granted) {
         //alert("Storage will not be cleared except by explicit user action");
-    else
+    } else {
         //alert("Storage may be cleared by the UA under storage pressure.");
+    }
   });
 }
 
@@ -161,7 +169,7 @@ function fetchNotes(options) {
     var remote;
     if( options.remote ) {
         console.log("(sw) Requesting notes from upstream");
-        remote = fetch("./notes/list").then( function(response) {
+        remote = fetch("./notes/"+settings.account+"/list").then( function(response) {
             return response.json().then(function( json ) {
                 console.log("(sw) Mothership status received", json);
                 return json.items;
