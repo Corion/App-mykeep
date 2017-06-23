@@ -6,13 +6,15 @@ App::mykeep
 
 =item *
 
-Create manifest.json
+Use L<HTTP::Upload::FlowJs> for sync, with web worker
 
-https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+This would help with flaky connections and large images. Currently each
+note is treated as a single opaque block that needs to be uploaded in one go
 
 =item *
 
-Use HTTP::Upload::FlowJs for sync, with web worker
+Consider L<Plack::Middleware::Auth::JWT> for authentication
+instead of using just cookies?
 
 =item *
 
@@ -24,13 +26,7 @@ How will we share the key among the clients
 
 Statically compile the templates to Javascript
 
-If all else fails, use Javascript::Duktape
-
-=item *
-
-Use camera API for attaching images
-
-L<https://developer.mozilla.org/en-US/docs/Web/Guide/API/Camera>
+If all else fails, use L<Javascript::Duktape>
 
 =item *
 
@@ -42,7 +38,9 @@ Google Keep synchronisation
 
 =item *
 
-Images as data: URIs
+Images as separate resources
+
+This will enable the next two items
 
 =item *
 
@@ -55,7 +53,7 @@ Resize images before non-fast upload
 
 =item *
 
-Set XSRF-Token" cookie from Perl, expect it as a header
+Set C<XSRF-Token> cookie from Perl, expect it as a header
 
 =item *
 
@@ -77,6 +75,12 @@ Export all data as one JSON file (from /notes/list, duh)
 
 =item *
 
+Create manifest.json
+
+https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+
+=item *
+
 Use heavily cached Javascript page as "App"
 
 =item *
@@ -86,5 +90,15 @@ Use Handlebars and MorphDOM for the UI
 =item *
 
 Use LocalForage for local storage
+
+=item *
+
+Use camera API for attaching images
+
+L<https://developer.mozilla.org/en-US/docs/Web/Guide/API/Camera>
+
+=item *
+
+Images as data: URIs
 
 =cut
