@@ -172,27 +172,31 @@ get '/settings.html' => sub {
     template 'settings';
 };
 
-get '/settings.json' => sub {
+get '/settings/:account/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
-    return to_json +{
-        lastSynced => time,
-        url => '' . request->uri_base,
-        # Per-device settings - we shouldn't store them here?!
-        useFrontCamera => 0,
-        credentials => user_credentials($user),
+    if( my $account = verify_account( params->{account}, request )) {
+        return to_json +{
+            lastSynced => time,
+            url => '' . request->uri_base,
+            # Per-device settings - we shouldn't store them here?!
+            useFrontCamera => 0,
+            credentials => user_credentials($user),
+        };
     };
 };
 
-post '/settings.json' => sub {
+post '/settings/:account/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
-    return to_json +{
-        lastSynced => time,
-        version => $VERSION,
-        url => request->uri_base,
-        # Per-device settings - we shouldn't store them here?!
-        useFrontCamera => 0,
+    if( my $account = verify_account( params->{account}, request )) {
+        return to_json +{
+            lastSynced => time,
+            version => $VERSION,
+            url => request->uri_base,
+            # Per-device settings - we shouldn't store them here?!
+            useFrontCamera => 0,
+        };
     };
 };
 
@@ -239,7 +243,7 @@ sub slurp( $fn ) {
 sub verify_account( $account, $param ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
-    
+
     (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
     return unless $account_entry;
     
