@@ -240,7 +240,7 @@ sub verify_account( $account, $param ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
     
-    (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
+    (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
     return unless $account_entry;
     
     my $account_dir = join '/', storage_dir(), $account_entry->{directory};
