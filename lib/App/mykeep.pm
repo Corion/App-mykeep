@@ -172,11 +172,11 @@ get '/settings.html' => sub {
     template 'settings';
 };
 
-get '/settings/:account/settings.json' => sub {
+get '/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_account( $user, request )) {
         return to_json +{
             lastSynced => time,
             url => '' . request->uri_base,
@@ -187,9 +187,9 @@ get '/settings/:account/settings.json' => sub {
     };
 };
 
-post '/settings/:account/settings.json' => sub {
+post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_account( $user, request )) {
         return to_json +{
             lastSynced => time,
             version => $VERSION,

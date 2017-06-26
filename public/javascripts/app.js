@@ -96,7 +96,7 @@ function defaultOrder(items) {
     return items
 };
 
-var settings;
+var settings = { user: "public"};
 var serverVersion;
 
 // Returns a Promise which resolves to the persistence state of storage
@@ -114,7 +114,7 @@ function storagePersists() {
 function loadSettings() {
     return Promise.resolve($.ajax({
             "type":"GET"
-          , "url":"./settings.json"
+          , "url":"./settings/settings.json"
           , "contentType": "application/json"
           , "processData":false
     }));
