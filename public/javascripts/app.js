@@ -7,10 +7,10 @@ API:
   GET /notes/list
       [{ id, modifiedAt }, ...  ]
 
-  POST /notes/{uuid}
+  POST /notes/:user/{uuid}
   Store/merge note {uuid}, redirect to GET
 
-  GET /notes/{uuid}
+  GET /notes/:user/{uuid}
   Return current (server)state of {uuid}
   Should have+respect If-Newer-Than headers!
 
@@ -383,7 +383,11 @@ function updateModel(element) {
 // Hacky url template implementation
 // Lacks for example %-escaping
 function urlTemplate( tmpl, vars ) {
-  return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
+  return tmpl.replace(/:(\w+)/g, function(m,name) {
+    return vars[name]
+        || settings["credentials"][name]
+        || ":"+name
+  }, 'y')
 };
 
 function elementFromItem(item) {
@@ -457,8 +461,7 @@ function UIaddItem() {
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
-    var target = urlTemplate( "./notes/:id", item );
-    //console.log("page: POST to ",target, item);
+    var target = urlTemplate( "./notes/:user/:id", item );
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
@@ -476,7 +479,7 @@ function deleteItem(item) {
         return el.id != item.id
     });
 
-    var target = urlTemplate( "./notes/:id/delete", item );
+    var target = urlTemplate( "./notes/:user/:id/delete", item );
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     delete item['text'];

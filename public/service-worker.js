@@ -305,7 +305,7 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.post("./notes/:id", function(request, values,options) {
+self.toolbox.router.post("./notes/:account/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
 
@@ -325,7 +325,7 @@ self.toolbox.router.post("./notes/:id", function(request, values,options) {
     return new Response();
 });
 
-self.toolbox.router.post("./notes/:id/delete", function(request, values,options) {
+self.toolbox.router.post("./notes/:account/:id/delete", function(request, values,options) {
     console.log("(sw) delete note called");
 
     // Store locally as object

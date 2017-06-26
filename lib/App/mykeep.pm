@@ -208,7 +208,7 @@ get '/search.html' => sub {
 get '/notes/:account/list' => sub {
     headers( "Connection" => "close" );
     if( my $account = verify_account( params->{account}, request )) {
-        my @files= map { basename $_ } glob join '/', storage_dir(), $account, '*.json';
+        my @files= map { basename $_ } glob join '/', storage_dir(), $account->{directory}, '*.json';
         # Consider paging here
         # Also, consider how to merge public and private notes here
         # Also, consider only changes since here...
@@ -285,7 +285,7 @@ sub save_item {
 
     die "Have no id for item?!"
         unless $item->{id};
-    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
+    my $fn= join "/", storage_dir(), $options{ account }->{directory}, "$id.json";
     open my $fh, '>:raw', $fn
         or die "'$fn': $!";
     print $fh encode_json( $item )
@@ -339,7 +339,6 @@ post '/notes/:account/:note' => sub {
         return;
     };
 
-
     if( my $account = verify_account( params->{account}, request )) {
         my $ct = request->content_type;
         my $charset = 'utf-8';
@@ -362,7 +361,7 @@ post '/notes/:account/:note' => sub {
 
         # Set "last-synced" timestamp
         $item->{lastSyncedAt}= time();
-        save_item( $item );
+        save_item( $item, account => $account );
 
         # Do we really want to do an external redirect here
         # instead of serving an internal redirect to the client?
@@ -393,12 +392,14 @@ post '/notes/:account/:note/delete' => sub {
 
         my $item = load_item($id, account => $account );
         $item->{status} = 'deleted';
-        save_item( $item );
+        save_item( $item, account => $account );
 
         # Cleanup should be done in a cron job, and later in a real DB
         #unlink $fn; # boom
 
         return "";
+    } else {
+        warning "Unknown account '$account'"
     }
 };
 
