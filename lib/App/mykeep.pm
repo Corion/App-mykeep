@@ -409,4 +409,40 @@ sub within_request_size_limits {
     };
 }
 
+get '/login' => sub {
+    my $user = session('user');
+    template 'login', {
+        user => $user,
+    };
+};
+
+post '/login' => sub {
+    my $user = params->{user};
+    my $password = params->{password};
+    
+    my $ok;
+    if( my $account = verify_account( $user, request )) {
+        # We know that user
+        # Verify their password
+        if( $account->{password} eq $password ) {
+            session('user', $user);
+            $ok = 1;
+        } else {
+            warning "Known user [$user] but wrong password";
+        };
+    } else {
+        warning "Unknown user [$user]";
+    };
+    if( ! $ok ) {
+        return
+            template 'login', {
+                user => $user,
+            };
+    } else {
+        return
+            redirect
+                './index.html';
+    }
+};
+
 true;
