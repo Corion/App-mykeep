@@ -114,7 +114,7 @@ function storagePersists() {
 function loadSettings() {
     return Promise.resolve($.ajax({
             "type":"GET"
-          , "url":"./settings/settings.json"
+          , "url":"./settings.json"
           , "contentType": "application/json"
           , "processData":false
     }));

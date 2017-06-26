@@ -11,9 +11,9 @@ use Dancer::Test;
 
 Dancer::config()->{mykeep}->{notes_dir} = tempdir();
 
-route_exists [POST => '/settings/public/settings.json'], 'a route handler is defined for /settings.json';
+route_exists [POST => '/settings.json'], 'a route handler is defined for /settings.json';
 
-my $r = dancer_response('GET' => '/settings/public/settings.json', {});
+my $r = dancer_response('GET' => '/settings.json', {});
 is $r->status, 200, 'We can retrieve public settings'
     or diag Dumper read_logs;
 

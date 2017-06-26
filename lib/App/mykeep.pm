@@ -189,6 +189,7 @@ get '/settings.json' => sub {
 
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
+    my $user = session('user');
     if( my $account = verify_account( $user, request )) {
         return to_json +{
             lastSynced => time,
