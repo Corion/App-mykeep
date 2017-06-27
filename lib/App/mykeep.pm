@@ -216,8 +216,8 @@ get '/notes/:account/list' => sub {
         my @result=
             sort {
                 ($b->{pinPosition} || 0) <=> ($a->{pinPosition} || 0)
-             || $b->{modifiedAt} <=> $a->{modifiedAt}
-             || $b->{createdAt} <=> $a->{createdAt}
+             || ($b->{modifiedAt}  || 0) <=> ($a->{modifiedAt}  || 0)
+             || ($b->{createdAt}   || 0) <=> ($a->{createdAt}   || 0)
             }
             map { my $i= load_item($_, account => $account );
                   $i
