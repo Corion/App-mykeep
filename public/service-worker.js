@@ -16,7 +16,7 @@ self.toolbox.options.debug = true;
 // the checksums to see if we need to upgrade
 
 const precacheFiles = [
-    './',
+/*
     './favicon.ico',
     './index.html',
     './search.html',
@@ -34,14 +34,18 @@ const precacheFiles = [
     './css/app.css',
     './css/error.css',
     './css/style.css'
+    */
 ];
 
 // Precache the files
 self.toolbox.precache(precacheFiles);
 
 // Fake the settings until I figure out how to do login etc.
+// Why have them in the backend instead of the frontend?!
 var settings = {
-    account : 'my-account',
+    "credentials": {
+        user : 'public'
+    },
     uplink : '', // this should be the URL of our uplink server, basically the
     // URL we fetched this page from(?!)
 }
@@ -164,12 +168,13 @@ function byLastChange(items) {
 };
 
 // Return full notes for the time being
-function fetchNotes(options) {
+function fetchNotes(values, options) {
     // Kick off a HTTP query to the mothership
     var remote;
     if( options.remote ) {
         console.log("(sw) Requesting notes from upstream");
-        remote = fetch("./notes/"+settings.account+"/list").then( function(response) {
+        var listUrl = urlTemplate("./notes/:user/list", values, {}),
+        remote = fetch(listUrl).then( function(response) {
             return response.json().then(function( json ) {
                 console.log("(sw) Mothership status received", json);
                 return json.items;
@@ -179,11 +184,12 @@ function fetchNotes(options) {
         });
     } else {
         // Remote is empty
+        console.log("(sw) No upstream request");
         remote = Promise.resolve([]);
     };
 
     var local = localforage.keys().then(function(keys) {
-        //console.log("(sw) listing keys from localStorage", keys);
+        console.log("(sw) listing keys from localStorage");
         var fullNotes = [];
         for( var i = 0; i < keys.length; i++ ) {
             var k = keys[i];
@@ -237,7 +243,7 @@ function fetchNotes(options) {
 
                     if( info.storeRemote ) {
                         // Push the change to the mothership
-                        markForSync( info.item );
+                        markForSync( info.item, values );
                     };
 
                     if( info.storeLocal ) {
@@ -260,7 +266,7 @@ function fetchNotes(options) {
             // Tell the mothership of our new things:
             var newCreated = byLastChange( Object.values(unsynchronized));
             newCreated.forEach(function(item){
-                markForSync(item);
+                markForSync(item, values);
             });
             // If we have written our local copy of the world, tell the UI
             // to refresh its view
@@ -281,7 +287,8 @@ function fetchNotes(options) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.get("./notes/"+settings.account+"/list", function(request, values,options) {
+// Also, we shouldn't interpolate the user here
+self.toolbox.router.get("./notes/:user/list", function(request, values,options) {
     console.log("(sw) fetch notes list called");
 
     // XXX determine this from the headers or the query part of the URL
@@ -289,7 +296,7 @@ self.toolbox.router.get("./notes/"+settings.account+"/list", function(request, v
     var options = {remote: true};
 
     // Return the local list first, and later update it
-    return fetchNotes(options).then(function(cannedNotes) {
+    return fetchNotes(values, options).then(function(cannedNotes) {
         var payload = JSON.stringify({ "items" : cannedNotes });
         return new Response(payload, {
             "status": 200,
@@ -299,13 +306,13 @@ self.toolbox.router.get("./notes/"+settings.account+"/list", function(request, v
 });
 
 function storeItem(item) {
-    console.log("(sw) Storing " + item.id);
+    console.log("(sw) Storing " + item.id + " locally");
     return localforage.setItem(item.id, item)
 }
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-self.toolbox.router.post("./notes/:account/:id", function(request, values,options) {
+self.toolbox.router.post("./notes/:user/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
 
@@ -314,10 +321,10 @@ self.toolbox.router.post("./notes/:account/:id", function(request, values,option
     // What about partial uploads?! Or do we only do these here, not
     // in the client?!
     request.json().then( function(item) {
-        storeItem(item).then(function( item ) {
+        return storeItem(item).then(function( item ) {
             // stored, now trigger a sync event resp. mark for sync so the
             // mothership also learns of our changes
-            markForSync(item);
+            markForSync(item, values);
         });
     });
 
@@ -325,7 +332,7 @@ self.toolbox.router.post("./notes/:account/:id", function(request, values,option
     return new Response();
 });
 
-self.toolbox.router.post("./notes/:account/:id/delete", function(request, values,options) {
+self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,options) {
     console.log("(sw) delete note called");
 
     // Store locally as object
@@ -336,7 +343,7 @@ self.toolbox.router.post("./notes/:account/:id/delete", function(request, values
         storeItem(item).then(function( item ) {
             // stored, now trigger a sync event resp. mark for sync so the
             // mothership also learns of our changes
-            markForSync(item);
+            markForSync(item, values);
         });
     });
 
@@ -346,14 +353,18 @@ self.toolbox.router.post("./notes/:account/:id/delete", function(request, values
 
 // Hacky url template implementation
 // Lacks for example %-escaping
-function urlTemplate( tmpl, vars ) {
-  return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
+function urlTemplate( tmpl, vars, more_vars ) {
+  return tmpl.replace(/:(\w+)/g, function(m,name) {
+    return vars[name]
+        || more_vars[name]
+        || ":"+name
+  }, 'y')
 };
 
 // Function to (re)perform a HTTP POST to our mothership
-function httpPost(item) {
+function httpPost(item, values) {
     return fetch(new Request(
-        urlTemplate("./notes/:id", item),
+        urlTemplate("./notes/:user/:id", item, values),
     {
         method: "POST",
         body: JSON.stringify(item),
@@ -367,18 +378,17 @@ self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
-/*
 self.toolbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called");
     return fetch(request);
 };
-*/
-toolbox.router.default = toolbox.cacheFirst;
+
+// toolbox.router.default = toolbox.cacheFirst;
 
 // Mark an item as to-be-synced
 // The item must have been stored completely in localforage because we don't
 // know when we will in memory next for synchronizsation
-function markForSync(item) {
+function markForSync(item, values) {
     // Schedule the background sync instead of performing the HTTP stuff
     // https://developers.google.com/web/updates/2015/12/background-sync
     // This seems to be intended for the page, not for the service worker
@@ -400,11 +410,15 @@ function markForSync(item) {
       // serviceworker/sync not supported
       // postDataFromThePage();
     */
-      return httpPost(item).then(function(r){
+      return httpPost(item, values).then(function(r){
           // item.lastSyncedAt = Math.floor((new Date).getTime() / 1000);
           // And update our local copy as well
           // storeItem( item );
           console.log("Data posted to mothership",item.id);
+          // Also mark the item as sent now, so we don't re-send it all
+          // the time?
+      }).catch(function(e) {
+          console.log("POST failed, maybe we are offline?")
       });
     //}
 }
@@ -417,7 +431,7 @@ self.addEventListener('sync', function(event) {
       event.waitUntil(
           localforage.getItem(match.group(1)).then( function(item) {
               console.log("(sw) Synchronizing item to server",item);
-              return httpPost(item)
+              return httpPost(item, { user: "No user set up in mark-for-sync" })
 
               // Actually, we should compare the response we get and update
               // our local copy if necessary, and update the UI if necessary
