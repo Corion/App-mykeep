@@ -135,7 +135,7 @@ sub git_release {
 }
 
 sub user_credentials( $account_name ) {
-    my $account = verify_account( $account_name, undef );
+    my $account = verify_session( $account_name, undef );
     return {
         user      => $account_name,
         directory => $account->{directory},
@@ -176,7 +176,7 @@ get '/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
-    if( my $account = verify_account( $user, request )) {
+    if( my $account = verify_session( $user, request )) {
         return to_json +{
             lastSynced => time,
             url => '' . request->uri_base,
@@ -190,7 +190,7 @@ get '/settings.json' => sub {
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
-    if( my $account = verify_account( $user, request )) {
+    if( my $account = verify_session( $user, request )) {
         return to_json +{
             lastSynced => time,
             version => $VERSION,
@@ -207,7 +207,7 @@ get '/search.html' => sub {
 
 get '/notes/:account/list' => sub {
     headers( "Connection" => "close" );
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my @files= map { basename $_ } glob join '/', storage_dir(), $account->{directory}, '*.json';
         # Consider paging here
         # Also, consider how to merge public and private notes here
@@ -241,8 +241,10 @@ sub slurp( $fn ) {
     <$fh>
 }
 
-sub verify_account( $account, $param ) {
+sub verify_session( $account, $request ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
+        or return;
+    session->{user} eq $account
         or return;
 
     (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
@@ -250,7 +252,7 @@ sub verify_account( $account, $param ) {
     
     my $account_dir = join '/', storage_dir(), $account_entry->{directory};
     -d $account_dir or return;
-
+    
     $account_entry
     #-f "$account_dir/.account" or return;
     # Well, maybe later move that to JSON, and sign it, and hand it to the
@@ -293,7 +295,7 @@ sub save_item {
 }
 
 get '/notes/:account/:note' => sub {
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my $id= clean_id( params->{note} );
         headers( "Connection"             => "close",
                  "Content-Disposition"    => "attachment; filename=${id}.json",
@@ -340,7 +342,7 @@ post '/notes/:account/:note' => sub {
         return;
     };
 
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my $ct = request->content_type;
         my $charset = 'utf-8';
         if( $ct =~ /;\s*charset=(["']?)(.*)\1/ ) {
@@ -385,7 +387,7 @@ post '/notes/:account/:note/delete' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
     
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         # Maybe archive the item
         # We shouldn't delete anyway, because deleting means
         # breaking synchronization
@@ -423,7 +425,7 @@ post '/login' => sub {
     my $password = params->{password};
     
     my $ok;
-    if( my $account = verify_account( $user, request )) {
+    if( my $account = verify_session( $user, request )) {
         # We know that user
         # Verify their password
         if( $account->{password} eq $password ) {
