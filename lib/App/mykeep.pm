@@ -262,7 +262,8 @@ sub verify_account( $account, $param ) {
 }
 
 sub load_item( $id, %options ) {
-    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
+    my $dir = $options{ account }->{directory};
+    my $fn= join "/", storage_dir(), $dir, "$id.json";
     if( -f $fn ) {
         my $content= slurp( $fn );
         my $res = decode_json($content);
