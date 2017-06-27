@@ -144,7 +144,7 @@ sub user_credentials( $account_name ) {
 }
 
 get '/' => sub {
-    redirect '/index.html';
+    redirect './index.html';
 };
 
 get '/index.html' => sub {
@@ -229,9 +229,21 @@ get '/notes/:account/list' => sub {
     };
 };
 
+=head2 C<< clean_id >>
+
+Makes sure that an ID is somewhat well-formed and somewhat looks like an UUID.
+Only allowed character are "-", "A" to "F" (any case) and "0"-"9".
+The length of the string must be shorter or equal to 100 characters.
+
+=cut
+
 sub clean_id {
     my( $id )= @_;
-    $id=~ tr/-A-Fa-f0-9//cdr;
+    if( length($id) > 100 ) {
+        substr($id,100) = ''
+    };
+    $id=~ tr/-A-Fa-f0-9//cd;
+    $id
 }
 
 sub slurp( $fn ) {
