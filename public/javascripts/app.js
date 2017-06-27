@@ -152,9 +152,19 @@ function UIsaveSettingsAndReturn() {
     });
 }
 
+/*
 loadSettings().then(function(s) {
-    settings = s;
+    if( ! typeof( settings ) === 'object' ) {
+        console.log("Weird settings problem");
+        console.log(settings);
+        settings = { user: "public" }
+    } else {
+        settings = s;
+    }
+}).catch(function(e) {
+    console.log(e);
 });
+*/
 
 function UIcontainer(element) {
     return $(element).closest(".note");
