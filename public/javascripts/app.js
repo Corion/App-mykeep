@@ -589,7 +589,7 @@ var criteriaMatch = {
     "background" : function(i,v) { return i.background == v },
     "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return foldCaseContained(i,v) }).length > 0 },
     "text"       : function(i,v) {
-        var parts = /\s+/.split( v );
+        var parts = v.split(/\s+/);
         return    v.length <= 2                // Only search with length >= 3
                || foldCaseContained(i.text + " " + i.title,parts)  // Text
                || criteriaMatch['label'](i,v)                      // Label
