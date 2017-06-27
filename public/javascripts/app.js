@@ -427,10 +427,11 @@ function repaintItems(items) {
 };
 
 function listItems() {
-    console.log("Fetching './notes/"+settings.user+"/list' via jQuery");
+    var url = urlTemplate("./notes/:user/list", {});
+    console.log("Fetching '"+url+"' via jQuery");
     var res =
-        Promise.resolve($.get('./notes/'+settings.user+'/list', null)).then(function(json) {
-            console.log("Fetched");
+        Promise.resolve($.get(url, null)).then(function(json) {
+            console.log("Fetched", json);
             json['notes'] = json['items'];
             notes = defaultOrder( json['notes']);
         }, function(r1,r2) {
@@ -477,6 +478,7 @@ function saveItem(item) {
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
+    console.log("saving to", target, item);
     return Promise.resolve($.ajax({
             "type":"POST"
           , "url":target
