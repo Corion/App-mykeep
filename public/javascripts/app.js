@@ -96,7 +96,7 @@ function defaultOrder(items) {
     return items
 };
 
-var settings = { user: "public"};
+var settings = { "credentials" : { "user": "public" }};
 var serverVersion;
 
 // Returns a Promise which resolves to the persistence state of storage
