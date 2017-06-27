@@ -117,7 +117,9 @@ function loadSettings() {
           , "url":"./settings.json"
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(e){
+        console.log("Uhoh",e);
+    });
 }
 
 function loadServerVersion() {
