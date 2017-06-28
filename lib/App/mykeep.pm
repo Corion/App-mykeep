@@ -226,6 +226,8 @@ get '/notes/:account/list' => sub {
             ;
         content_type 'application/json; charset=utf-8';
         return to_json { more => undef, items => \@result };
+    } else {
+        warning "No account found for listing stuff";
     };
 };
 
@@ -256,7 +258,12 @@ sub slurp( $fn ) {
 sub verify_session( $account, $request ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
-    session->{user} eq $account
+    if( ! session->{user}) {
+        $account = 'public';
+        session('user' => $account);
+        warning "Forcing account to '$account'";
+    };
+    (session->{user} && (session->{user} eq $account))
         or return;
 
     (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
