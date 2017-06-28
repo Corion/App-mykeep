@@ -574,7 +574,8 @@ function UIsettingsPage(element) {
 // properly fold international characters for comparison
 function foldCaseContained(haystack,needles) {
     var matched = 0;
-    needles.forEach(function(i,v) {
+    needles.forEach(function(v,i) {
+        var needle = v;
         var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
         var re = new RegExp(quotemeta,"i");
         if( re.test(haystack)) {
