@@ -54,6 +54,7 @@ my %module = (
         'JSON::XS'   => 0,
         'Filter::signatures' => 0,
         'Dancer::Template::Handlebars' => 0,
+        'Future::HTTP' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'App-mykeep-*' },
