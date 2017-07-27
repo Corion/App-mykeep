@@ -22,10 +22,13 @@ use vars qw( @note_keys $schemaVersion );
     bgcolor
     labels
     pinPosition
-    modifiedAt
     lastSyncedAt
+    modifiedAt
     archivedAt
+    deletedAt
+    status
     schemaVersion
+    pinPosition
     syncSetting
 );
 $schemaVersion = '001.000.000';
