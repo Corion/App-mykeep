@@ -69,7 +69,7 @@ sub save( $self, $config ) {
 # Bring a note to the most recent schema
 # Not the most efficient approach as we always make a copy
 sub payload( $self, $schemaVersion = $schemaVersion ) {
-    my %upgraded = @{$self}{ @note_keys };
+    my %upgraded; @upgraded{ @note_keys } = @{$self}{ @note_keys };
     $upgraded{status}        ||= 'active';
     $upgraded{schemaVersion} ||= $schemaVersion;
     $upgraded{pinPosition}   ||= 0;
