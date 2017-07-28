@@ -4,6 +4,7 @@ use Moo;
 use Filter::signatures;
 use feature 'signatures';
 no warnings 'experimental::signatures';
+use Path::Class;
 
 use JSON::XS qw(decode_json encode_json);
 
@@ -19,7 +20,6 @@ use vars qw( @note_keys $schemaVersion );
     archivedAt
     deletedAt
     schemaVersion
-    pinPosition
     syncSetting
 );
 $schemaVersion = '001.000.000';
@@ -38,8 +38,8 @@ has id => (
     },
 );
 
-sub load( $class, $id ) {
-    my $fn = join "/", $options{ dir }, lc "$id.json";
+sub load( $class, $id, $config ) {
+    my $fn = join "/", $config->note_directory, lc "$id.json";
     if( -f $fn ) {
         my $content = file( $fn )->slurp();
         my $res = decode_json($content);
@@ -54,15 +54,13 @@ sub load( $class, $id ) {
     }
 }
 
-sub save( $self, %options ) {
-    my( $item, %options )= @_;
-
+sub save( $self, $config ) {
     my $id = $self->id;
     my $payload = $self->get_payload();
     
     die "Have no id for item?!"
         unless $id;
-    my $fn = join "/", $options{ dir }, lc "$id.json";
+    my $fn = join "/", $config->note_directory, lc "$id.json";
     open my $fh, '>:raw', $fn
         or die "'$fn': $!";
     print $fh encode_json( $payload )
@@ -78,6 +76,10 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     $upgraded{createdAt}     ||= 0;
     $upgraded{modifiedAt}    ||= 0;
     return \%upgraded
+}
+
+sub delete( $self ) {
+    $self->{status} = 'deleted';
 }
 
 1;

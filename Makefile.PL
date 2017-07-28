@@ -56,9 +56,13 @@ my %module = (
         'Dancer::Template::Handlebars' => 0,
 
         # For the client
-        'Future::HTTP' => 0,
-        'Moo'          => 2,
-        'Path::Class'  => 0,
+        'Future::HTTP'   => 0,
+        'Moo'            => 2,
+        'Path::Class'    => 0,
+        'PerlX::Maybe'   => 0,
+        'Getopt::Long'   => 0,
+        'Pod::Usage'     => 0,
+        'File::Basename' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'App-mykeep-*' },
