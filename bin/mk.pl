@@ -2,8 +2,13 @@
 use strict;
 use Getopt::Long;
 use Pod::Usage;
-use App::mykeep::Client;
 use PerlX::Maybe 'maybe';
+use YAML qw( Dump Load );
+
+use Proc::InvokeEditor;
+use Text::FrontMatter::YAML;
+
+use App::mykeep::Client;
 
 use Filter::signatures;
 use feature 'signatures';
@@ -15,34 +20,25 @@ GetOptions(
     'sync:s'     => \my $sync_account,
     'n|dry-run'  => \my $dry_run,
 
-    # Commands
-    # Maybe these should become real commands, not switches
-    'edit:s'     => \my $edit_note,
-    'l|list'     => \my $list_notes,
-
-    't|label:s'  => \my $label,
-
     'f|config:s' => \my $config_file,
 
+    # Commands
+    # Maybe these should become real commands, not switches
+
+    # Edit note in $EDITOR
+    'edit'       => \my $edit_note,
+    # Append STDIN to note
+    'append'     => \my $append_note,
+
+    'l|list'     => \my $list_notes,
+
+    # Should we have an "init" action that sets up a new note directory?
+
+    't|label:s'  => \my $label,
 )
 or pod2usage(2);
 
-my $client = App::mykeep::Client->new(
-    maybe config_file => $config_file
-);
-
-my @note_body;
-if( $edit_note ) {
-    # create a template note in a tempfile
-    # invoke $EDITOR
-    # read tempfile back
-} elsif( @ARGV ) {
-    # Note from the command line
-    @note_body = join " ", @ARGV
-};
-
-# Should we have an "init" action that sets up a new note directory?
-
+# This should maybe even go into ::Client
 sub find_notes( $notes, $searchtext, $labels ) {
     my @search = split /\s+/, $searchtext;
     grep {
@@ -58,16 +54,7 @@ sub find_notes( $notes, $searchtext, $labels ) {
     } @$notes;
 }
 
-# split out actions into separate packages, like all the cool kids do?
-if( $list_notes ) {
-    my @notes = $client->list_items;
-
-    if( @note_body or $label ) {
-        # Search title and body
-        my $search = join " ", @note_body;
-        @notes = find_notes( \@notes, $search, $label );
-    };
-
+sub display_notes( @notes ) {
     for my $note (@notes) {
         my $id = $note->id;
         my $title = $note->title;
@@ -82,4 +69,71 @@ if( $list_notes ) {
         };
         print "$id - $display\n"
     };
+}
+
+my $client = App::mykeep::Client->new(
+    maybe config_file => $config_file
+);
+
+my @note_body = join " ", @ARGV;
+if( $edit_note ) {
+
+    my @notes;
+    if( @note_body or $label ) {
+        @notes = $client->list_items;
+        # Search title and body
+        my $search = join " ", @note_body;
+        @notes = find_notes( \@notes, $search, $label );
+    };
+
+    if( @notes == 1 ) {
+        # if we find (one) note, edit that one
+        # copy note text+body as yaml to a tempfile
+        # invoke $EDITOR
+        # read tempfile back, hopefully the syntax was not broken
+        my $note = $notes[0];
+        use Data::Dumper;
+        my $p = $note->payload;
+        my $t = delete $p->{text};
+        my $tfm = Text::FrontMatter::YAML->new(
+            frontmatter_hashref => $p,
+            data_text => $t,
+        );
+        my $yaml = $tfm->document_string;
+        $yaml =~ s!\n!\r\n!g if $^O =~ /mswin/i;
+
+        my $changed = Proc::InvokeEditor->edit( $yaml );
+        if( $changed ne $yaml ) {
+            # update $note
+            # save $note
+        };
+
+    } elsif( @notes == 0 ) {
+        # otherwise
+        # create a template note in a tempfile
+        # invoke $EDITOR
+        # read tempfile back
+
+    } else {
+        print "More than one note found\n";
+        display_notes( @notes );
+    };
 };
+
+# split out actions into separate packages, like all the cool kids do?
+if( $list_notes ) {
+    my @notes = $client->list_items;
+
+    if( @note_body or $label ) {
+        # Search title and body
+        my $search = join " ", @note_body;
+        @notes = find_notes( \@notes, $search, $label );
+    };
+
+    display_notes( @notes );
+
+};
+
+__END__
+
+=head1 USAGE
