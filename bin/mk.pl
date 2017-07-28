@@ -5,6 +5,10 @@ use Pod::Usage;
 use App::mykeep::Client;
 use PerlX::Maybe 'maybe';
 
+use Filter::signatures;
+use feature 'signatures';
+no warnings 'experimental::signatures';
+
 GetOptions(
     'h|help'     => \my $help,
 	'v|version'  => \my $version,
@@ -16,7 +20,7 @@ GetOptions(
     'edit:s'     => \my $edit_note,
     'l|list'     => \my $list_notes,
 
-    't|tag:s'    => \my $tag,
+    't|label:s'  => \my $label,
 
     'f|config:s' => \my $config_file,
 
@@ -39,27 +43,29 @@ if( $edit_note ) {
 
 # Should we have an "init" action that sets up a new note directory?
 
+sub find_notes( $notes, $searchtext, $labels ) {
+    my @search = split /\s+/, $searchtext;
+    grep {
+        my $text = join " ", $_->title, $_->text;
+        my $keep = 1;
+        for my $term (@search) {
+            if( $text !~ /\Q$term/i ) {
+                $keep = 0;
+                last;
+            };
+        };
+        $keep
+    } @$notes;
+}
+
 # split out actions into separate packages, like all the cool kids do?
 if( $list_notes ) {
     my @notes = $client->list_items;
-    if( defined $tag ) {
-        # @notes = grep {} @notes;
-    };
 
-    if( @note_body ) {
+    if( @note_body or $label ) {
         # Search title and body
-        my @search = split /\s+/, join " ", @note_body;
-        @notes = grep {
-            my $text = join " ", $_->title, $_->text;
-            my $keep = 1;
-            for my $term (@search) {
-                if( $text !~ /\Q$term/i ) {
-                    $keep = 0;
-                    last;
-                };
-            };
-            $keep
-        } @notes;
+        my $search = join " ", @note_body;
+        @notes = find_notes( \@notes, $search, $label );
     };
 
     for my $note (@notes) {
@@ -70,7 +76,8 @@ if( $list_notes ) {
         if( -t ) {
             my $width = $ENV{COLUMNS} || 80;
             if( length $display < $width ) {
-                $display .= $body; # well, be smarter here
+                my $sep = length $title ? " " : "";
+                $display .= $sep . $body; # well, be smarter here
             };
         };
         print "$id - $display\n"
