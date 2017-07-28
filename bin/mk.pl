@@ -10,13 +10,16 @@ GetOptions(
 	'v|version'  => \my $version,
     'sync:s'     => \my $sync_account,
     'n|dry-run'  => \my $dry_run,
+
+    # Commands
+    # Maybe these should become real commands, not switches
     'edit:s'     => \my $edit_note,
     'l|list'     => \my $list_notes,
 
     't|tag:s'    => \my $tag,
 
     'f|config:s' => \my $config_file,
-    
+
 )
 or pod2usage(2);
 
@@ -42,6 +45,23 @@ if( $list_notes ) {
     if( defined $tag ) {
         # @notes = grep {} @notes;
     };
+
+    if( @note_body ) {
+        # Search title and body
+        my @search = split /\s+/, join " ", @note_body;
+        @notes = grep {
+            my $text = join " ", $_->title, $_->text;
+            my $keep = 1;
+            for my $term (@search) {
+                if( $text !~ /\Q$term/i ) {
+                    $keep = 0;
+                    last;
+                };
+            };
+            $keep
+        } @notes;
+    };
+
     for my $note (@notes) {
         my $id = $note->id;
         my $title = $note->title;
