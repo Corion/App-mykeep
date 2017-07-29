@@ -78,7 +78,6 @@ if( $edit_note ) {
     } elsif( @notes == 0 ) {
         # create a template note in a tempfile
         my $blank = App::mykeep::Item->new();
-        # Need to set an UUID here...
         $client->edit_item( $blank );
 
     } else {
