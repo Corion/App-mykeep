@@ -64,10 +64,19 @@ sub list_items( $self, %options ) {
     if( defined $options{ text }) {
         @search = split /\s+/, $options{ text };
     };
+
+    if( ! $options{ search_fields }) {
+        $options{ search_fields } = $self->config->search_fields;
+    };
+
     grep {
         my $keep = 1;
         if( @search ) {
-            my $text = join " ", grep { defined $_ } $_->title, $_->text, $_->id;
+            my $note = $_;
+            my $text = join " ",
+                grep { defined $_ }
+                map { $note->$_ }
+                @{ $options{ search_fields }};
             for my $term (@search) {
                 if( $text !~ /\Q$term/i ) {
                     $keep = 0;

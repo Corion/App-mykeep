@@ -38,6 +38,11 @@ has note_editor => (
     is => 'ro',
 );
 
+has search_fields => (
+    is => 'lazy',
+    default => sub { [qw[title text id]] },
+);
+
 around BUILDARGS => sub( $orig, $class, @args ) {
     my $v = ref $args[0] && @args == 1 ? $args[0] : { @args };
     $v = { %$default, %$v };
