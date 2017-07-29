@@ -5,9 +5,6 @@ use Pod::Usage;
 use PerlX::Maybe 'maybe';
 use YAML qw( Dump Load );
 
-use Proc::InvokeEditor;
-use Text::FrontMatter::YAML;
-
 use App::mykeep::Client;
 
 use Filter::signatures;
@@ -38,19 +35,12 @@ GetOptions(
 )
 or pod2usage(2);
 
-my @userfields = qw(
-    text
-    title
-    bgcolor
-    labels
-    pinPosition
-);
-
 sub display_notes( @notes ) {
     for my $note (@notes) {
         my $id = $note->id;
         my $title = $note->title;
         my $body = $note->text;
+        $body =~ s!\s+! !g;
         my $display = $title;
         if( -t ) {
             my $width = $ENV{COLUMNS} || 80;
@@ -83,28 +73,7 @@ if( $edit_note ) {
         # invoke $EDITOR
         # read tempfile back, hopefully the syntax was not broken
         my $note = $notes[0];
-        my $p = $note->payload;
-        my $t = delete $p->{text};
-        my %edit; @edit{ @userfields } = @{$p}{ @userfields };
-        my $tfm = Text::FrontMatter::YAML->new(
-            frontmatter_hashref => \%edit,
-            data_text => $t,
-        );
-        my $yaml = $tfm->document_string;
-        $yaml =~ s!\n!\r\n!g if $^O =~ /mswin/i;
-
-        my $changed = Proc::InvokeEditor->edit( $yaml );
-        if( $changed ne $yaml ) {
-            # update $note
-            $changed = Text::FrontMatter::YAML->new( document_string => $changed );
-            my $h = $changed->frontmatter_hashref;
-            $h->{text} = $changed->data_text;
-            for my $field (@userfields) {
-                $note->$field( $h->{ $field })
-                    if exists $h->{ $field };
-            };
-            $note->save( $client->config );
-        };
+        $client->edit_item( $note );
 
     } elsif( @notes == 0 ) {
         # otherwise

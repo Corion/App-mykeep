@@ -10,6 +10,9 @@ use YAML 'Load';
 use Path::Class;
 use JSON::XS qw(decode_json encode_json);
 
+use Proc::InvokeEditor;
+use Text::FrontMatter::YAML;
+
 use App::mykeep::Client::Config;
 use App::mykeep::Item;
 
@@ -26,6 +29,14 @@ has transport => (
 has config_file => (
     is => 'ro',
     default => '~/.mykeep/mykeep.yml',
+);
+
+our @userfields = qw(
+    text
+    title
+    bgcolor
+    labels
+    pinPosition
 );
 
 sub read_config( $self, $config_file = $self->config_file ) {
@@ -69,10 +80,32 @@ sub add_item( $self, %data ) {
 }
 
 # Local
-sub edit_item( $self, $item_id ) {
-    my $item = App::mykeep::Item->load( $item_id );
+sub edit_item( $self, $item ) {
+    $item = App::mykeep::Item->load( $item )
+        if not ref $item;
     # magic
+    my $p = $item->payload;
+    my $t = delete $p->{text};
+    my %edit; @edit{ @userfields } = @{$p}{ @userfields };
+    my $tfm = Text::FrontMatter::YAML->new(
+        frontmatter_hashref => \%edit,
+        data_text => $t,
+    );
+    my $yaml = $tfm->document_string;
+    $yaml =~ s!\n!\r\n!g if $^O =~ /mswin/i;
 
+    my $changed = Proc::InvokeEditor->edit( $yaml );
+    if( $changed ne $yaml ) {
+        # update note
+        $changed = Text::FrontMatter::YAML->new( document_string => $changed );
+        my $h = $changed->frontmatter_hashref;
+        $h->{text} = $changed->data_text;
+        for my $field (@userfields) {
+            $item->$field( $h->{ $field })
+                if exists $h->{ $field };
+        };
+        $item->save( $self->config );
+    };
 }
 
 # Local
