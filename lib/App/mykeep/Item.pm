@@ -40,12 +40,16 @@ has id => (
     },
 );
 
+sub from_file( $class, $filename ) {
+    my $content = file( $filename )->slurp(iomode => '<:raw');
+    my $res = decode_json($content);
+    return $class->new( $res )
+}
+
 sub load( $class, $id, $config ) {
     my $fn = join "/", $config->note_directory, lc "$id.json";
     if( -f $fn ) {
-        my $content = file( $fn )->slurp();
-        my $res = decode_json($content);
-        return $class->new( $res )
+        return $class->from_file( $fn )
     } else {
         # Return a fresh, empty item
         return $class->new( { id => $id
@@ -56,16 +60,17 @@ sub load( $class, $id, $config ) {
     }
 }
 
+sub to_file( $self, $filename ) {
+    my $payload = $self->payload();
+    file( $filename )->spew(iomode => '>:raw', encode_json( $payload ));
+}
+
 sub save( $self, $config ) {
     my $id = $self->id;
-    my $payload = $self->payload();
-    
     die "Have no id for item?!"
         unless $id;
     my $fn = join "/", $config->note_directory, lc "$id.json";
-    open my $fh, '>:raw', $fn
-        or die "'$fn': $!";
-    print $fh encode_json( $payload )
+    $self->to_file( $fn )
 }
 
 # Bring a note to the most recent schema
@@ -77,6 +82,7 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     $upgraded{pinPosition}   ||= 0;
     $upgraded{createdAt}     ||= 0;
     $upgraded{modifiedAt}    ||= 0;
+    $upgraded{id}            = uc($upgraded{id} || uuid());
     return \%upgraded
 }
 
