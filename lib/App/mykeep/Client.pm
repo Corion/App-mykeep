@@ -35,6 +35,26 @@ sub read_config( $self, $config_file = $self->config_file ) {
 # Local
 sub list_items( $self, %options ) {
     my $c = $self->config;
+
+    # Set up our filter, if any
+    my @search;
+    if( defined $options{ text }) {
+        @search = split /\s+/, $options{ text };
+    };
+    grep {
+        my $keep = 1;
+        if( @search ) {
+            my $text = join " ", $_->title, $_->text;
+            for my $term (@search) {
+                if( $text !~ /\Q$term/i ) {
+                    $keep = 0;
+                    last;
+                };
+            };
+            # Also filter labels here, and whatnot
+        };
+        $keep
+    }
     map { App::mykeep::Item->load( $_, $c ) }
     map { /([-a-f0-9]+)\.json/i and $1 }
     grep { /\.json$/i }
@@ -52,7 +72,7 @@ sub add_item( $self, %data ) {
 sub edit_item( $self, $item_id ) {
     my $item = App::mykeep::Item->load( $item_id );
     # magic
-    
+
 }
 
 # Local

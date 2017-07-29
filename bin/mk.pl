@@ -38,21 +38,6 @@ GetOptions(
 )
 or pod2usage(2);
 
-# This should maybe even go into ::Client
-sub find_notes( $notes, $searchtext, $labels ) {
-    my @search = split /\s+/, $searchtext;
-    grep {
-        my $text = join " ", $_->title, $_->text;
-        my $keep = 1;
-        for my $term (@search) {
-            if( $text !~ /\Q$term/i ) {
-                $keep = 0;
-                last;
-            };
-        };
-        $keep
-    } @$notes;
-}
 
 sub display_notes( @notes ) {
     for my $note (@notes) {
@@ -80,10 +65,9 @@ if( $edit_note ) {
 
     my @notes;
     if( @note_body or $label ) {
-        @notes = $client->list_items;
-        # Search title and body
         my $search = join " ", @note_body;
-        @notes = find_notes( \@notes, $search, $label );
+        # Search title and body
+        @notes = $client->list_items( text => $search, label => $label );
     };
 
     if( @notes == 1 ) {
@@ -122,14 +106,8 @@ if( $edit_note ) {
 
 # split out actions into separate packages, like all the cool kids do?
 if( $list_notes ) {
-    my @notes = $client->list_items;
-
-    if( @note_body or $label ) {
-        # Search title and body
-        my $search = join " ", @note_body;
-        @notes = find_notes( \@notes, $search, $label );
-    };
-
+    my $search = join " ", @note_body;
+    my @notes = $client->list_items( text => $search, label => $label );
     display_notes( @notes );
 
 };
