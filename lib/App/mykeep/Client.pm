@@ -129,7 +129,8 @@ sub request($self, $url) {
     });
 }
 
-# Remote
+# Remote, this should become a separate role from the CLI parts
+# invoking the editor maybe
 sub sync_items( $self, %options ) {
     # list remote
     my $remote_items = $self->request('/notes/:account/list')->get;
