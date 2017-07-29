@@ -38,6 +38,13 @@ GetOptions(
 )
 or pod2usage(2);
 
+my @userfields = qw(
+    text
+    title
+    bgcolor
+    labels
+    pinPosition
+);
 
 sub display_notes( @notes ) {
     for my $note (@notes) {
@@ -76,11 +83,11 @@ if( $edit_note ) {
         # invoke $EDITOR
         # read tempfile back, hopefully the syntax was not broken
         my $note = $notes[0];
-        use Data::Dumper;
         my $p = $note->payload;
         my $t = delete $p->{text};
+        my %edit; @edit{ @userfields } = @{$p}{ @userfields };
         my $tfm = Text::FrontMatter::YAML->new(
-            frontmatter_hashref => $p,
+            frontmatter_hashref => \%edit,
             data_text => $t,
         );
         my $yaml = $tfm->document_string;
@@ -89,7 +96,14 @@ if( $edit_note ) {
         my $changed = Proc::InvokeEditor->edit( $yaml );
         if( $changed ne $yaml ) {
             # update $note
-            # save $note
+            $changed = Text::FrontMatter::YAML->new( document_string => $changed );
+            my $h = $changed->frontmatter_hashref;
+            $h->{text} = $changed->data_text;
+            for my $field (@userfields) {
+                $note->$field( $h->{ $field })
+                    if exists $h->{ $field };
+            };
+            $note->save( $client->config );
         };
 
     } elsif( @notes == 0 ) {
