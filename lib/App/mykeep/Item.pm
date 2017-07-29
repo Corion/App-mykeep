@@ -8,8 +8,8 @@ use Path::Class;
 
 use JSON::XS qw(decode_json encode_json);
 
-use vars qw( @note_keys $schemaVersion );
-@note_keys= qw(
+our $schemaVersion = '001.000.000';
+our @note_property_keys= qw(
     title
     text
     bgcolor
@@ -22,9 +22,10 @@ use vars qw( @note_keys $schemaVersion );
     schemaVersion
     syncSetting
 );
-$schemaVersion = '001.000.000';
 
-has [@note_keys, qw[
+our @note_keys = ('id', @note_property_keys );
+
+has [@note_property_keys, qw[
   status
 ]] => (
     is => 'rw',
@@ -56,7 +57,7 @@ sub load( $class, $id, $config ) {
 
 sub save( $self, $config ) {
     my $id = $self->id;
-    my $payload = $self->get_payload();
+    my $payload = $self->payload();
     
     die "Have no id for item?!"
         unless $id;
