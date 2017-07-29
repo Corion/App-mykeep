@@ -55,6 +55,9 @@ my %module = (
         'Filter::signatures' => 0,
         'Dancer::Template::Handlebars' => 0,
 
+        # For the note management itself
+        'UUID'                    => 0,
+
         # For the client
         'Future::HTTP'            => 0,
         'Moo'                     => 2,

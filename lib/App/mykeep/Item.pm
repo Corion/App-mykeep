@@ -7,6 +7,7 @@ no warnings 'experimental::signatures';
 use Path::Class;
 
 use JSON::XS qw(decode_json encode_json);
+use UUID 'uuid';
 
 our $schemaVersion = '001.000.000';
 our @note_property_keys= qw(
@@ -35,7 +36,7 @@ has id => (
     is => 'lazy',
     default => sub {
         # well, actually, we should generate an UUID
-        die "Need an id";
+        uc uuid()
     },
 );
 
