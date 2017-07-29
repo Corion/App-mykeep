@@ -67,7 +67,7 @@ sub list_items( $self, %options ) {
     grep {
         my $keep = 1;
         if( @search ) {
-            my $text = join " ", $_->title, $_->text;
+            my $text = join " ", grep { defined $_ } $_->title, $_->text, $_->id;
             for my $term (@search) {
                 if( $text !~ /\Q$term/i ) {
                     $keep = 0;
