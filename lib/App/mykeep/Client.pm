@@ -31,6 +31,18 @@ has config_file => (
     default => '~/.mykeep/mykeep.yml',
 );
 
+has editor => (
+    is => 'lazy',
+    default => sub( $self ) {
+        my $e = Proc::InvokeEditor->new();
+        $e->editors_env( ["MYKEEP_EDITOR"] );
+        if( my $edit = $self->config->note_editor ) {
+            $e->prepend( $edit );
+        };
+        return $e
+    }
+);
+
 our @userfields = qw(
     text
     title
@@ -79,7 +91,7 @@ sub add_item( $self, %data ) {
     $item
 }
 
-# Local
+# Local, interactive
 sub edit_item( $self, $item ) {
     $item = App::mykeep::Item->load( $item )
         if not ref $item;
@@ -95,7 +107,8 @@ sub edit_item( $self, $item ) {
     my $yaml = $tfm->document_string;
     $yaml =~ s!\n!\r\n!g if $^O =~ /mswin/i;
 
-    my $changed = Proc::InvokeEditor->edit( $yaml );
+    my $e = $self->editor;
+    my $changed = $e->edit( $yaml );
     if( $changed ne $yaml ) {
         # update note
         $changed = Text::FrontMatter::YAML->new( document_string => $changed );

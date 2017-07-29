@@ -34,6 +34,10 @@ has account => (
     is => 'ro',
 );
 
+has note_editor => (
+    is => 'ro',
+);
+
 around BUILDARGS => sub( $orig, $class, @args ) {
     my $v = ref $args[0] && @args == 1 ? $args[0] : { @args };
     $v = { %$default, %$v };
