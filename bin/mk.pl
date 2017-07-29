@@ -76,10 +76,10 @@ if( $edit_note ) {
         $client->edit_item( $note );
 
     } elsif( @notes == 0 ) {
-        # otherwise
         # create a template note in a tempfile
-        # invoke $EDITOR
-        # read tempfile back
+        my $blank = App::mykeep::Item->new();
+        # Need to set an UUID here...
+        $client->edit_item( $blank );
 
     } else {
         print "More than one note found\n";
