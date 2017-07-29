@@ -87,6 +87,7 @@ sub edit_item( $self, $item ) {
     my $p = $item->payload;
     my $t = delete $p->{text};
     my %edit; @edit{ @userfields } = @{$p}{ @userfields };
+    delete $edit{ text };
     my $tfm = Text::FrontMatter::YAML->new(
         frontmatter_hashref => \%edit,
         data_text => $t,
