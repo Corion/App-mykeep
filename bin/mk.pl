@@ -57,7 +57,10 @@ my $client = App::mykeep::Client->new(
     maybe config_file => $config_file
 );
 
-my @note_body = join " ", @ARGV;
+my @note_body;
+if( @ARGV ) {
+    @note_body = join " ", @ARGV;
+};
 if( $edit_note ) {
 
     my @notes;
