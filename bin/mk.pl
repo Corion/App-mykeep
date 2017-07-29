@@ -29,7 +29,8 @@ GetOptions(
 
     'l|list'     => \my $list_notes,
 
-    # Should we have an "init" action that sets up a new note directory?
+    # Should we have an "init" action that sets up
+    # a new note directory and config file?
 
     't|label:s'  => \my $label,
 )
