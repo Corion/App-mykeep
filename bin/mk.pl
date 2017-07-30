@@ -94,6 +94,8 @@ if( $edit_note ) {
 if( $list_notes ) {
     my $search = join " ", @note_body;
     my @notes = $client->list_items( text => $search, label => $label );
+    @notes = $client->sync_items;
+
     display_notes( @notes );
 
 };

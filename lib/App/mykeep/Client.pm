@@ -146,7 +146,7 @@ sub template_url( $self, $url ) {
 # Move into ::Transport?!
 sub request($self, $url) {
     my $remote = $self->template_url( $url );
-    $self->ua->get( $url )->then(sub( $body, $headers ) {
+    $self->transport->http_get( $remote )->then(sub( $body, $headers ) {
         Future->done( decode_json( $body ))
     });
 }
@@ -155,7 +155,7 @@ sub request($self, $url) {
 # invoking the editor maybe
 sub sync_items( $self, %options ) {
     # list remote
-    my $remote_items = $self->request('/notes/:account/list')->get;
+    my $remote_items = $self->request('/notes/:account/list')->get->{items};
     # list local
     my $local_items = [ $self->list_items ];
 
@@ -169,6 +169,7 @@ sub sync_items( $self, %options ) {
     if( $options{ update_remote }) {
     }
 
+    map { App::mykeep::Item->new( $_ ) } @$remote_items;
 }
 
 1;
