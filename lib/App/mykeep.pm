@@ -113,6 +113,10 @@ sub storage_dir {
     File::Spec->rel2abs( config->{mykeep}->{notes_dir}, config->{appdir} );
 }
 
+sub account_dir( $account ) {
+    join "/", storage_dir, $account->{directory}
+}
+
 # Bring a note to the most recent schema
 # Not the most efficient approach as we always make a copy
 sub upgrade_schema( $item, $schemaVersion = $schemaVersion ) {
@@ -204,9 +208,10 @@ get '/search.html' => sub {
 };
 
 get '/notes/:account/list' => sub {
-    headers( "Connection" => "close" );
+    #headers( "Connection" => "close" );
     if( my $account = verify_account( params->{account}, request )) {
-        my @files= map { basename $_ } glob join '/', storage_dir(), $account, '*.json';
+        my $dir = join "/", account_dir( $account ), '*.json';
+        my @files= map { basename $_ } glob $dir;
         # Consider paging here
         # Also, consider how to merge public and private notes here
         # Also, consider only changes since here...
@@ -246,7 +251,7 @@ sub verify_account( $account, $param ) {
     (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
     return unless $account_entry;
     
-    my $account_dir = join '/', storage_dir(), $account_entry->{directory};
+    my $account_dir = account_dir( $account_entry );
     -d $account_dir or return;
 
     $account_entry
@@ -260,7 +265,7 @@ sub verify_account( $account, $param ) {
 }
 
 sub load_item( $id, %options ) {
-    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
+    my $fn= join "/", account_dir( $options{ account }), "$id.json";
     if( -f $fn ) {
         my $content= slurp( $fn );
         my $res = decode_json($content);
@@ -283,7 +288,7 @@ sub save_item {
 
     die "Have no id for item?!"
         unless $item->{id};
-    my $fn= join "/", storage_dir(), $options{ account }, "$id.json";
+    my $fn= join "/", account_dir( $options{ account } ), "$id.json";
     open my $fh, '>:raw', $fn
         or die "'$fn': $!";
     print $fh encode_json( $item )
