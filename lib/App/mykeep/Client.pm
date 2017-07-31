@@ -91,6 +91,7 @@ sub list_items( $self, %options ) {
     map { /([-a-f0-9]+)\.json/i and $1 }
     grep { /\.json$/i }
         dir( $self->config->note_directory )->children()
+    ;
 }
 
 # Local
@@ -155,7 +156,10 @@ sub request($self, $url) {
 # invoking the editor maybe
 sub sync_items( $self, %options ) {
     # list remote
-    my $remote_items = $self->request('/notes/:account/list')->get->{items};
+    my $remote_items = [
+        map { App::mykeep::Item->new( $_ ) }
+        @{ $self->request('/notes/:account/list')->get->{items} }
+    ];
     # list local
     my $local_items = [ $self->list_items ];
 
@@ -169,7 +173,17 @@ sub sync_items( $self, %options ) {
     if( $options{ update_remote }) {
     }
 
-    map { App::mykeep::Item->new( $_ ) } @$remote_items;
+    @$remote_items;
+}
+
+sub sort_items( $self, @items ) {
+    sort {
+           $b->pinPosition <=> $a->pinPosition
+        || $b->modifiedAt  <=> $a->modifiedAt
+        || $b->createdAt   <=> $a->createdAt
+        || $a->title       cmp $b->title
+        || $a->text        cmp $b->text
+    } @items
 }
 
 1;

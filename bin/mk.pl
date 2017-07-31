@@ -36,7 +36,12 @@ GetOptions(
 )
 or pod2usage(2);
 
+my $client = App::mykeep::Client->new(
+    maybe config_file => $config_file
+);
+
 sub display_notes( @notes ) {
+    @notes = $client->sort_items( @notes );
     for my $note (@notes) {
         my $id = $note->id;
         my $title = $note->title;
@@ -53,10 +58,6 @@ sub display_notes( @notes ) {
         print "$id - $display\n"
     };
 }
-
-my $client = App::mykeep::Client->new(
-    maybe config_file => $config_file
-);
 
 my @note_body;
 if( @ARGV ) {
