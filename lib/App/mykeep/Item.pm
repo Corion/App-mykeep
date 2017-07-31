@@ -20,6 +20,7 @@ our @note_property_keys= qw(
     lastSyncedAt
     archivedAt
     deletedAt
+    createdAt
     schemaVersion
     syncSetting
 );
