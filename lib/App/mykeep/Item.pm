@@ -87,7 +87,8 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     return \%upgraded
 }
 
-sub delete( $self ) {
+sub delete( $self, $ts = gmtime() ) {
+    $self->deletedAt( $ts );
     $self->{status} = 'deleted';
 }
 
