@@ -142,7 +142,7 @@ sub git_release {
 }
 
 sub user_credentials( $account_name ) {
-    my $account = verify_account( $account_name, undef );
+    my $account = verify_session( $account_name, undef );
     return {
         user      => $account_name,
         directory => $account->{directory},
@@ -151,7 +151,7 @@ sub user_credentials( $account_name ) {
 }
 
 get '/' => sub {
-    redirect '/index.html';
+    redirect './index.html';
 };
 
 get '/index.html' => sub {
@@ -183,23 +183,28 @@ get '/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
-    return to_json +{
-        lastSynced => time,
-        url => '' . request->uri_base,
-        # Per-device settings - we shouldn't store them here?!
-        useFrontCamera => 0,
-        credentials => user_credentials($user),
+    if( my $account = verify_session( $user, request )) {
+        return to_json +{
+            lastSynced => time,
+            url => '' . request->uri_base,
+            # Per-device settings - we shouldn't store them here?!
+            useFrontCamera => 0,
+            credentials => user_credentials($user),
+        };
     };
 };
 
 post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
-    return to_json +{
-        lastSynced => time,
-        version => $VERSION,
-        url => request->uri_base,
-        # Per-device settings - we shouldn't store them here?!
-        useFrontCamera => 0,
+    my $user = session('user');
+    if( my $account = verify_session( $user, request )) {
+        return to_json +{
+            lastSynced => time,
+            version => $VERSION,
+            url => request->uri_base,
+            # Per-device settings - we shouldn't store them here?!
+            useFrontCamera => 0,
+        };
     };
 };
 
@@ -219,8 +224,8 @@ get '/notes/:account/list' => sub {
         my @result=
             sort {
                 ($b->{pinPosition} || 0) <=> ($a->{pinPosition} || 0)
-             || $b->{modifiedAt} <=> $a->{modifiedAt}
-             || $b->{createdAt} <=> $a->{createdAt}
+             || ($b->{modifiedAt}  || 0) <=> ($a->{modifiedAt}  || 0)
+             || ($b->{createdAt}   || 0) <=> ($a->{createdAt}   || 0)
             }
             map { my $i= load_item($_, account => $account );
                   $i
@@ -229,12 +234,26 @@ get '/notes/:account/list' => sub {
             ;
         content_type 'application/json; charset=utf-8';
         return to_json { more => undef, items => \@result };
+    } else {
+        warning "No account found for listing stuff";
     };
 };
 
+=head2 C<< clean_id >>
+
+Makes sure that an ID is somewhat well-formed and somewhat looks like an UUID.
+Only allowed character are "-", "A" to "F" (any case) and "0"-"9".
+The length of the string must be shorter or equal to 100 characters.
+
+=cut
+
 sub clean_id {
     my( $id )= @_;
-    $id=~ tr/-A-Fa-f0-9//cdr;
+    if( length($id) > 100 ) {
+        substr($id,100) = ''
+    };
+    $id=~ tr/-A-Fa-f0-9//cd;
+    $id
 }
 
 sub slurp( $fn ) {
@@ -244,16 +263,23 @@ sub slurp( $fn ) {
     <$fh>
 }
 
-sub verify_account( $account, $param ) {
+sub verify_session( $account, $request ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
-    
-    (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
+    if( ! session->{user}) {
+        $account = 'public';
+        session('user' => $account);
+        warning "Forcing account to '$account'";
+    };
+    (session->{user} && (session->{user} eq $account))
+        or return;
+
+    (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
     return unless $account_entry;
     
     my $account_dir = account_dir( $account_entry );
     -d $account_dir or return;
-
+    
     $account_entry
     #-f "$account_dir/.account" or return;
     # Well, maybe later move that to JSON, and sign it, and hand it to the
@@ -265,7 +291,8 @@ sub verify_account( $account, $param ) {
 }
 
 sub load_item( $id, %options ) {
-    my $fn= join "/", account_dir( $options{ account }), "$id.json";
+    my $dir = $options{ account }->{directory};
+    my $fn= join "/", storage_dir(), $dir, "$id.json";
     if( -f $fn ) {
         my $content= slurp( $fn );
         my $res = decode_json($content);
@@ -295,7 +322,7 @@ sub save_item {
 }
 
 get '/notes/:account/:note' => sub {
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my $id= clean_id( params->{note} );
         headers( "Connection"             => "close",
                  "Content-Disposition"    => "attachment; filename=${id}.json",
@@ -342,8 +369,7 @@ post '/notes/:account/:note' => sub {
         return;
     };
 
-
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my $ct = request->content_type;
         my $charset = 'utf-8';
         if( $ct =~ /;\s*charset=(["']?)(.*)\1/ ) {
@@ -365,7 +391,7 @@ post '/notes/:account/:note' => sub {
 
         # Set "last-synced" timestamp
         $item->{lastSyncedAt}= time();
-        save_item( $item );
+        save_item( $item, account => $account );
 
         # Do we really want to do an external redirect here
         # instead of serving an internal redirect to the client?
@@ -388,7 +414,7 @@ post '/notes/:account/:note/delete' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
     
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         # Maybe archive the item
         # We shouldn't delete anyway, because deleting means
         # breaking synchronization
@@ -396,12 +422,14 @@ post '/notes/:account/:note/delete' => sub {
 
         my $item = load_item($id, account => $account );
         $item->{status} = 'deleted';
-        save_item( $item );
+        save_item( $item, account => $account );
 
         # Cleanup should be done in a cron job, and later in a real DB
         #unlink $fn; # boom
 
         return "";
+    } else {
+        warning "Unknown account '$account'"
     }
 };
 
@@ -411,5 +439,41 @@ sub within_request_size_limits {
         return 1;
     };
 }
+
+get '/login' => sub {
+    my $user = session('user');
+    template 'login', {
+        user => $user,
+    };
+};
+
+post '/login' => sub {
+    my $user = params->{user};
+    my $password = params->{password};
+    
+    my $ok;
+    if( my $account = verify_session( $user, request )) {
+        # We know that user
+        # Verify their password
+        if( $account->{password} eq $password ) {
+            session('user', $user);
+            $ok = 1;
+        } else {
+            warning "Known user [$user] but wrong password";
+        };
+    } else {
+        warning "Unknown user [$user]";
+    };
+    if( ! $ok ) {
+        return
+            template 'login', {
+                user => $user,
+            };
+    } else {
+        return
+            redirect
+                './index.html';
+    }
+};
 
 true;

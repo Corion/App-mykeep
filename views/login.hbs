@@ -1,0 +1,16 @@
+<div id="container">
+  <!-- app-bar -->
+    <div id="topbar"><div class="location">Login</div>
+    <form action="./login" method="POST">
+        <input id="user" name="user" type="input" size="30" placeholder="Username" value="{{name}}" />
+        <input id="password" name="password" type="password" size="30" placeholder="Password" />
+        <input type="submit" name="submit" value="Login" />
+    </form>
+    <br />
+    <form action="./login" method="POST">
+        <input id="user" name="user" type="hidden" size="30" placeholder="Username" value="public" />
+        <input id="password" name="password" type="hidden" size="30" placeholder="Password" value="" />
+        <input type="submit" name="submit" value="Demo login" />
+    </form>
+  </div>
+</div>

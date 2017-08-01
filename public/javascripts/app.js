@@ -7,10 +7,10 @@ API:
   GET /notes/list
       [{ id, modifiedAt }, ...  ]
 
-  POST /notes/{uuid}
+  POST /notes/:user/{uuid}
   Store/merge note {uuid}, redirect to GET
 
-  GET /notes/{uuid}
+  GET /notes/:user/{uuid}
   Return current (server)state of {uuid}
   Should have+respect If-Newer-Than headers!
 
@@ -96,7 +96,7 @@ function defaultOrder(items) {
     return items
 };
 
-var settings;
+var settings = { "credentials" : { "user": "public" }};
 var serverVersion;
 
 // Returns a Promise which resolves to the persistence state of storage
@@ -117,7 +117,9 @@ function loadSettings() {
           , "url":"./settings.json"
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(e){
+        console.log("Uhoh",e);
+    });
 }
 
 function loadServerVersion() {
@@ -150,9 +152,19 @@ function UIsaveSettingsAndReturn() {
     });
 }
 
+/*
 loadSettings().then(function(s) {
-    settings = s;
+    if( ! typeof( settings ) === 'object' ) {
+        console.log("Weird settings problem");
+        console.log(settings);
+        settings = { user: "public" }
+    } else {
+        settings = s;
+    }
+}).catch(function(e) {
+    console.log(e);
 });
+*/
 
 function UIcontainer(element) {
     return $(element).closest(".note");
@@ -383,7 +395,11 @@ function updateModel(element) {
 // Hacky url template implementation
 // Lacks for example %-escaping
 function urlTemplate( tmpl, vars ) {
-  return tmpl.replace(/:(\w+)/, function(m,name){ return vars[name] || ":"+name }, 'y')
+  return tmpl.replace(/:(\w+)/g, function(m,name) {
+    return vars[name]
+        || settings["credentials"][name]
+        || ":"+name
+  }, 'y')
 };
 
 function elementFromItem(item) {
@@ -411,10 +427,11 @@ function repaintItems(items) {
 };
 
 function listItems() {
-    console.log("Fetching './notes/"+settings.user+"/list' via jQuery");
+    var url = urlTemplate("./notes/:user/list", {});
+    console.log("Fetching '"+url+"' via jQuery");
     var res =
-        Promise.resolve($.get('./notes/'+settings.user+'/list', null)).then(function(json) {
-            console.log("Fetched");
+        Promise.resolve($.get(url, null)).then(function(json) {
+            console.log("Fetched", json);
             json['notes'] = json['items'];
             notes = defaultOrder( json['notes']);
         }, function(r1,r2) {
@@ -457,11 +474,11 @@ function UIaddItem() {
 function saveItem(item) {
     // We should only set the timestamp if we actually changed somethig...
     item.modifiedAt= Math.floor((new Date).getTime() / 1000);
-    var target = urlTemplate( "./notes/:id", item );
-    //console.log("page: POST to ",target, item);
+    var target = urlTemplate( "./notes/:user/:id", item );
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
+    console.log("saving to", target, item);
     return Promise.resolve($.ajax({
             "type":"POST"
           , "url":target
@@ -476,7 +493,7 @@ function deleteItem(item) {
         return el.id != item.id
     });
 
-    var target = urlTemplate( "./notes/:id/delete", item );
+    var target = urlTemplate( "./notes/:user/:id/delete", item );
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
     delete item['text'];
@@ -557,7 +574,8 @@ function UIsettingsPage(element) {
 // properly fold international characters for comparison
 function foldCaseContained(haystack,needles) {
     var matched = 0;
-    needles.forEach(function(i,v) {
+    needles.forEach(function(v,i) {
+        var needle = v;
         var quotemeta = needle.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
         var re = new RegExp(quotemeta,"i");
         if( re.test(haystack)) {
@@ -572,7 +590,7 @@ var criteriaMatch = {
     "background" : function(i,v) { return i.background == v },
     "label"      : function(i,v) { return i.labels && i.labels.filter(function(i) { return foldCaseContained(i,v) }).length > 0 },
     "text"       : function(i,v) {
-        var parts = /\s+/.split( v );
+        var parts = v.split(/\s+/);
         return    v.length <= 2                // Only search with length >= 3
                || foldCaseContained(i.text + " " + i.title,parts)  // Text
                || criteriaMatch['label'](i,v)                      // Label
