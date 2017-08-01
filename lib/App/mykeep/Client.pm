@@ -118,7 +118,7 @@ sub edit_item( $self, $item ) {
     $yaml =~ s!\n!\r\n!g if $^O =~ /mswin/i;
 
     my $e = $self->editor;
-    my $changed = $e->edit( $yaml );
+    my $changed = $e->edit( $yaml, '.yml' );
     if( $changed ne $yaml ) {
         # update note
         $changed = Text::FrontMatter::YAML->new( document_string => $changed );
