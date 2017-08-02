@@ -8,6 +8,7 @@ no warnings 'experimental::signatures';
 use Future::HTTP;
 use YAML 'Load';
 use Path::Class;
+use File::HomeDir;
 use JSON::XS qw(decode_json encode_json);
 
 use Proc::InvokeEditor;
@@ -27,8 +28,8 @@ has transport => (
 );
 
 has config_file => (
-    is => 'ro',
-    default => '~/.mykeep/mykeep.yml',
+    is => 'lazy',
+    default => sub { file( File::HomeDir->my_data(), '.mykeep', 'mykeep.yml') },
 );
 
 has editor => (

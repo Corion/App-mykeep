@@ -68,6 +68,7 @@ my %module = (
         'File::Basename'          => 0,
         'Proc::CallEditor'        => 0,
         'Text::FrontMatter::YAML' => 0,
+        'File::HomeDir'           => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'App-mykeep-*' },
