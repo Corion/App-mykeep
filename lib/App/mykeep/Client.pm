@@ -153,8 +153,44 @@ sub request($self, $url) {
     });
 }
 
-# Remote, this should become a separate role from the CLI parts
-# invoking the editor maybe
+# Very simple merge strategy
+sub last_edit_wins( $self, $item, $body ) {
+
+    my %result = (
+        item => $item,
+        save_local => undef,
+        save_remote => undef,
+    );
+
+    # Really crude "last edit wins" approach
+    # We should really check if both items were changed after the last sync
+    # and then try a merge of all fields,
+    # and the method should return which sides need to be notified
+    if( ($body->modifiedAt > ($item->modifiedAt) {
+        for my $key (@userfields) {
+            # Detect conflicts
+            my $val = $body->$key();
+            if( $item->$key ne $val ) {
+                $item->$key( $val );
+                $result{ save_local } = 1;
+            };
+        };
+    } else {
+        # We might have changes that the server doesn't have
+        for my $key (@userfields) {
+            # Detect conflicts
+            my $val = $body->$key();
+            if( $item->$key ne $val ) {
+                $result{ save_remote } = 1;
+            };
+        };
+    };
+
+    return \%result;
+};
+
+# Remote, this should become a separate role from the CLI
+# parts that invoke the editor
 sub sync_items( $self, %options ) {
     # list remote
     my $remote_items = [
@@ -165,13 +201,39 @@ sub sync_items( $self, %options ) {
     my $local_items = [ $self->list_items ];
 
     # merge remote to local
+    my %local = map { $_->id => $_ } @$local_items;
+    my %remote = map { $_->id => $_ } @$remote_items;
+    
+    my @not_uploaded = grep { ! exists $remote{ $_->id } } @$local_items;
+    my @save_local;
+    
+    for my $r (@$remote_items) {
+        if( my $l = $local{ $r }) {
+            my $res = $self->last_edit_wins( $l, $r );
+            if( $res->{save_local}) {
+                push @save_local , $res->{item};
+            };
+            if( $res->{save_remote}) {
+                push @not_uploaded, $res->{item};
+            };
+        } else {
+            push @save_local, $r;
+        };
+    };
 
     # write local changes
     if( $options{ update_local }) {
+        for my $i (@save_local) {
+            $i->save();
+        };
     }
 
     # send newer/local to server
     if( $options{ update_remote }) {
+        for my $i (@not_uploaded) {
+            # Upload to server
+            # potentially as background daemon instead of blocking the user
+        };
     }
 
     @$remote_items;
