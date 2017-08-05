@@ -5,6 +5,7 @@ use Filter::signatures;
 use feature 'signatures';
 no warnings 'experimental::signatures';
 use Path::Class;
+use Storable 'dclone';
 
 use JSON::XS qw(decode_json encode_json);
 use UUID 'uuid';
@@ -72,6 +73,16 @@ sub save( $self, $config ) {
         unless $id;
     my $fn = join "/", $config->note_directory, lc "$id.json";
     $self->to_file( $fn )
+}
+
+=head2 C<< $item->clone >>
+
+Returns a deep copy
+
+=cut
+
+sub clone( $self ) {
+    $self->new( dclone $self->payload );
 }
 
 # Bring a note to the most recent schema
