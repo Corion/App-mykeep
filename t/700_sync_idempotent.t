@@ -9,11 +9,13 @@ my $start = time;
 my $item = App::mykeep::Item->new({
     text => 'test item 1',
 	modifiedAt => $start,
+	labels => ['l1', 'l2'],
 });
 
 my $item2 = App::mykeep::Item->new({
     text => 'test item 2',
 	modifiedAt => $start,
+	labels => ['l2', 'l1'],
 });
 
 my $client = App::mykeep::Client->new();

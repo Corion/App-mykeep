@@ -170,7 +170,12 @@ sub last_edit_wins( $self, $item, $body ) {
         for my $key (@userfields) {
             # Detect conflicts
             my $val = $body->$key();
-            if( $item->$key ne $val ) {
+            if( ref $item->$key eq 'ARRAY' ) {
+                if( join "\0", sort @{$item->$key} ne join "\0", sort @$val ) {
+                    $item->$key( $val );
+                    $result{ save_local } = 1;
+                };
+            } elsif( ($item->$key // '') ne ($val // '')) {
             warn "$key:" . join " <- ", $item->$key, $val;
                 $item->$key( $val );
                 $result{ save_local } = 1;
@@ -181,7 +186,12 @@ sub last_edit_wins( $self, $item, $body ) {
         for my $key (@userfields) {
             # Detect conflicts
             my $val = $body->$key();
-            if( $item->$key ne $val ) {
+            if( ref $item->$key eq 'ARRAY') {
+                if(join( "\0", sort @{$item->$key}) ne join( "\0", sort @$val )) {
+                    warn "$key:" . join " -> ", @{$item->$key}, @$val;
+                    $result{ save_remote } = 1;
+                }
+            } elsif( ($item->$key // '') ne ($val // '')) {
             warn "$key:" . join " -> ", $item->$key, $val;
                 $result{ save_remote } = 1;
             };
