@@ -85,8 +85,18 @@ sub clone( $self ) {
     $self->new( dclone $self->payload );
 }
 
-# Bring a note to the most recent schema
-# Not the most efficient approach as we always make a copy
+=head2 C<< $item->payload >>
+
+  my $payload = $item->payload;
+  write_to_file( $payload );
+
+Brings a note to the most recent schema and returns that as an unblessed hashref
+fit for saving.
+
+Not the most efficient approach as we always make a copy.
+
+=cut
+
 sub payload( $self, $schemaVersion = $schemaVersion ) {
     my %upgraded; @upgraded{ @note_keys } = @{$self}{ @note_keys };
     $upgraded{status}        ||= 'active';
