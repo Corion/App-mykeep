@@ -162,37 +162,47 @@ sub last_edit_wins( $self, $item, $body ) {
         save_remote => undef,
     );
 
+
     # Really crude "last edit wins" approach
     # We should really check if both items were changed after the last sync
     # and then try a merge of all fields,
     # and the method should return which sides need to be notified
     if( $body->modifiedAt > ($item->modifiedAt)) {
+        my $copy;
         for my $key (@userfields) {
             # Detect conflicts
             my $val = $body->$key();
             if( ref $item->$key eq 'ARRAY' ) {
                 if( join "\0", sort @{$item->$key} ne join "\0", sort @$val ) {
-                    $item->$key( $val );
+                    $copy ||= $item->clone;
+                    $copy->$key( $val );
+                    $copy->modifiedAt( $body->modifiedAt );
+                    $result{ item } = $copy;
                     $result{ save_local } = 1;
                 };
             } elsif( ($item->$key // '') ne ($val // '')) {
-            warn "$key:" . join " <- ", $item->$key, $val;
-                $item->$key( $val );
+                $copy ||= $item->clone;
+                $copy->$key( $val );
+                $copy->modifiedAt( $body->modifiedAt );
+                $result{ item } = $copy;
                 $result{ save_local } = 1;
             };
         };
     } else {
         # We might have changes that the server doesn't have
+        my $copy;
         for my $key (@userfields) {
             # Detect conflicts
             my $val = $body->$key();
             if( ref $item->$key eq 'ARRAY') {
                 if(join( "\0", sort @{$item->$key}) ne join( "\0", sort @$val )) {
-                    warn "$key:" . join " -> ", @{$item->$key}, @$val;
+                    $copy ||= $item->clone;
+                    $result{ item } = $copy;
                     $result{ save_remote } = 1;
                 }
             } elsif( ($item->$key // '') ne ($val // '')) {
-            warn "$key:" . join " -> ", $item->$key, $val;
+                $copy ||= $item->clone;
+                $result{ item } = $copy;
                 $result{ save_remote } = 1;
             };
         };
@@ -243,7 +253,7 @@ sub sync_actions( $self, %options ) {
             push @save_local, $r;
         };
     };
-    
+
     my %results = (
         save_local => \@save_local,
         upload_remote => \@not_uploaded
@@ -264,7 +274,7 @@ sub sync_items( $self, %options ) {
     #for(@$local_items) {
     #    print sprintf "%s - %s\n", $_->id, $_->oneline_preview;
     #};
-    
+
     my %actions = $self->sync_actions(
         local => $local_items,
         remote => $remote_items,
