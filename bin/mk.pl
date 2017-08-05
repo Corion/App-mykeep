@@ -44,17 +44,12 @@ sub display_notes( @notes ) {
     @notes = $client->sort_items( @notes );
     for my $note (@notes) {
         my $id = $note->id;
-        my $title = $note->title;
-        my $body = $note->text;
-        $body =~ s!\s+! !g;
-        my $display = $title;
+        my $width;
         if( -t ) {
-            my $width = $ENV{COLUMNS} || 80;
-            if( length $display < $width ) {
-                my $sep = length $title ? " " : "";
-                $display .= $sep . $body; # well, be smarter here
-            };
+            $width = $ENV{COLUMNS} || 80;
+            $width -= 1+length( $id ) +3;
         };
+        my $display = $note->oneline_preview( $width );
         print "$id - $display\n"
     };
 }
@@ -95,7 +90,7 @@ if( $edit_note ) {
 if( $list_notes ) {
     my $search = join " ", @note_body;
     my @notes = $client->list_items( text => $search, label => $label );
-    @notes = $client->sync_items;
+    @notes = $client->sync_items( update_local => 1, update_remote => 1 );
 
     display_notes( @notes );
 

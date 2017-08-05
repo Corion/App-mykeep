@@ -92,4 +92,21 @@ sub delete( $self, $ts = gmtime() ) {
     $self->{status} = 'deleted';
 }
 
+sub oneline_preview( $self, $max_width = 80 ) {
+    my $title = $self->title;
+    my $body = $self->text;
+    $body =~ s!\s+! !g;
+    my $display = $title;
+
+    if( length $display < $max_width ) {
+        my $sep = length $title ? " " : "";
+        $display .= $sep . $body; # well, be smarter here
+    };
+
+    if( length $display > $max_width ) {
+        substr( $display, $max_width-3 ) = '...';
+    };
+    $display
+}
+
 1;
