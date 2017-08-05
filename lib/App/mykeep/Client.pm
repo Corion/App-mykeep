@@ -171,6 +171,7 @@ sub last_edit_wins( $self, $item, $body ) {
             # Detect conflicts
             my $val = $body->$key();
             if( $item->$key ne $val ) {
+            warn "$key:" . join " <- ", $item->$key, $val;
                 $item->$key( $val );
                 $result{ save_local } = 1;
             };
@@ -181,6 +182,7 @@ sub last_edit_wins( $self, $item, $body ) {
             # Detect conflicts
             my $val = $body->$key();
             if( $item->$key ne $val ) {
+            warn "$key:" . join " -> ", $item->$key, $val;
                 $result{ save_remote } = 1;
             };
         };
@@ -189,26 +191,37 @@ sub last_edit_wins( $self, $item, $body ) {
     return \%result;
 };
 
-# Remote, this should become a separate role from the CLI
-# parts that invoke the editor
-sub sync_items( $self, %options ) {
-    # list remote
-    my $remote_items = [
-        map { App::mykeep::Item->new( $_ ) }
-        @{ $self->request('/notes/:account/list')->get->{items} }
-    ];
-    # list local
-    my $local_items = [ $self->list_items ];
+=head2 C<< $client->sync_actions >>
+
+    my %actions = $client->sync_actions(
+        local => \@local_items,
+        remote => \@remote_items,
+    );
+
+Returns a hash of arrays with the actions that should be performed to bring the
+two datasets to the same state.
+
+The returned arrayrefs are items that need to be saved or uploaded to the other
+side.
+
+=cut
+
+sub sync_actions( $self, %options ) {
+    my $local_items = $options{ local };
+    my $remote_items = $options{ remote };
 
     # merge remote to local
     my %local = map { $_->id => $_ } @$local_items;
     my %remote = map { $_->id => $_ } @$remote_items;
-    
-    my @not_uploaded = grep { ! exists $remote{ $_->id } } @$local_items;
+
+    my @not_uploaded = grep {
+        ! exists $remote{ $_->id } and print $_->id . " doesn't exist remotely\n";
+        ! exists $remote{ $_->id }
+    } @$local_items;
     my @save_local;
-    
+
     for my $r (@$remote_items) {
-        if( my $l = $local{ $r }) {
+        if( my $l = $local{ $r->id }) {
             my $res = $self->last_edit_wins( $l, $r );
             if( $res->{save_local}) {
                 push @save_local , $res->{item};
@@ -220,23 +233,55 @@ sub sync_items( $self, %options ) {
             push @save_local, $r;
         };
     };
+    
+    my %results = (
+        save_local => \@save_local,
+        upload_remote => \@not_uploaded
+    );
+}
+
+# Remote, this should become a separate role from the CLI
+# parts that invoke the editor
+sub sync_items( $self, %options ) {
+    # list remote
+    my $remote_items = [
+        map { App::mykeep::Item->new( $_ ) }
+        @{ $self->request('/notes/:account/list')->get->{items} }
+    ];
+    # list local
+    my $local_items = [ $self->list_items ];
+    #print "local items\n";
+    #for(@$local_items) {
+    #    print sprintf "%s - %s\n", $_->id, $_->oneline_preview;
+    #};
+    
+    my %actions = $self->sync_actions(
+        local => $local_items,
+        remote => $remote_items,
+    );
 
     # write local changes
-    if( $options{ update_local }) {
-        for my $i (@save_local) {
-            $i->save();
+    if( $options{ update_local } and @{ $actions{ save_local }}) {
+        print "Would merge to local:\n";
+        for my $i (@{ $actions{ save_local }}) {
+            print sprintf "<- %s - %s\n", $i->id, $i->oneline_preview;
+            #$i->save();
         };
     }
 
     # send newer/local to server
-    if( $options{ update_remote }) {
-        for my $i (@not_uploaded) {
+    if( $options{ update_remote } and @{ $actions{ upload_remote }}) {
+            print "Would merge to remote:\n";
+            for my $i (@{ $actions{ upload_remote }}) {
+                print sprintf "-> %s - %s\n", $i->id, $i->oneline_preview;
+            ##$i->save();
             # Upload to server
             # potentially as background daemon instead of blocking the user
         };
     }
 
-    @$remote_items;
+    # Show the new/updated items
+    @{$actions{ save_local }};
 }
 
 sub sort_items( $self, @items ) {
