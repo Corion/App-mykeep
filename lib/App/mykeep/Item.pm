@@ -98,6 +98,26 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     return \%upgraded
 }
 
+=head2 C<< $item->normalize >>
+
+  $item->normalize;
+
+Brings a note up to date with the current schema. The note should be saved
+afterwards.
+
+=cut
+
+sub normalize( $self, $schemaVersion = $schemaVersion ) {
+    my $p = $self->payload($schemaVersion);
+    for my $k (@note_keys) {
+        if( $k eq 'id' ) {
+            $self->{ id } = $p->{id};
+        } else {
+            $self->$k( $p->{$k} );
+        };
+    };
+}
+
 sub delete( $self, $ts = gmtime() ) {
     $self->deletedAt( $ts );
     $self->{status} = 'deleted';
