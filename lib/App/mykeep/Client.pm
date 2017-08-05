@@ -166,7 +166,7 @@ sub last_edit_wins( $self, $item, $body ) {
     # We should really check if both items were changed after the last sync
     # and then try a merge of all fields,
     # and the method should return which sides need to be notified
-    if( ($body->modifiedAt > ($item->modifiedAt) {
+    if( $body->modifiedAt > ($item->modifiedAt)) {
         for my $key (@userfields) {
             # Detect conflicts
             my $val = $body->$key();
