@@ -10,12 +10,54 @@ Currently we have the following fields
     title
     text
     bgcolor
+    labels
     modifiedAt
     archivedAt
     lastSyncedAt
+    deletedAt
+    status
+    schemaVersion
+    pinPosition
+    syncSetting
 
 Maybe this should be moved to its own module. Later.
 
 Future keys might become
 
     hasReminder / reminderICal - for reminders and their ICal calendar entry
+
+## syncSetting
+
+- deviceOnly - never share this note with the upstream
+- accountOnly - only share this note with the same account upstream
+- public - this note is visible to the general public
+
+Maybe a note should also get a list of allowed writers and resource
+administrators to make changing of information restrictable.
+
+# SECURITY
+
+We should limit the size of incoming HTTP requests as early as possible, that
+is, ideally, in the Plack handler that reads the request
+
+# ACCOUNTS
+
+A user account consists of three parts:
+
+- #
+
+    The user account - this is a uuid, likely
+
+- #
+
+    The storage directory - this is that same uuid again, likely
+
+- #
+
+    The account secret - this is used for authentification of the user
+
+## `clean_id`
+
+Makes sure that an ID is somewhat well-formed and somewhat looks like an UUID.
+Only allowed character are "-", "A" to "F" (upper case) and "0"-"9".
+The length of the string must be shorter or equal to 100 characters.
