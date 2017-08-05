@@ -65,7 +65,7 @@ my $pid = spawn_app( $port );
 Dancer::config()->{mykeep}->{notes_dir} = tempdir();
 
 my $mech = WWW::Mechanize::Chrome->new(
-    launch_exe => 'C:\\Users\\Corion\\Projekte\\WWW-Mechanize-Chrome\\chrome-versions\\chrome-61.0.3120.0\\chrome.exe',
+    launch_exe => 'C:\\Users\\Corion\\Projekte\\WWW-Mechanize-Chrome\\chrome-versions\\chrome-win32-61.0.3141.0\\chrome.exe',
 );
 
 my $url = "http://localhost:$port/";
