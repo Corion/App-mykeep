@@ -459,7 +459,7 @@ function UIaddItem() {
       , lastSyncedAt: undefined
       , archivedAt: undefined
       , status: "active"
-      , "id": Math.uuid()
+      , "id": Math.uuid().toUpper()
       , "displayStyle" : "display"
     };
     saveItem(item).then(function(item) {

@@ -53,7 +53,7 @@ sub load( $class, $id, $config ) {
         return $class->from_file( $fn )
     } else {
         # Return a fresh, empty item
-        return $class->new( { id => $id
+        return $class->new( { id => uc $id
                , modifiedAt => undef
                , status => 'active'
                , pinPostion => 0
