@@ -66,7 +66,7 @@ my %module = (
         'Getopt::Long'            => 0,
         'Pod::Usage'              => 0,
         'File::Basename'          => 0,
-        'Proc::CallEditor'        => 0,
+        'Proc::InvokeEditor'      => 0,
         'Text::FrontMatter::YAML' => 0,
         'File::HomeDir'           => 0,
     },
