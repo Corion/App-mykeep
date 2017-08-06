@@ -14,6 +14,8 @@ use JSON::XS qw(decode_json encode_json);
 use Proc::InvokeEditor;
 use Text::FrontMatter::YAML;
 
+use URI;
+
 use App::mykeep::Client::Config;
 use App::mykeep::Item;
 
@@ -140,14 +142,17 @@ sub delete_item( $self, $item_id ) {
     $item->save();
 }
 
-sub template_url( $self, $url ) {
+sub template_url( $self, $url, $params={} ) {
     $url =~ s!:(\w+)\b!$self->config->$1!ge;
+    $url = URI->new( $url );
+    $url->query_form( $params, ';' );
     $self->config->server_url . $url;
 }
 
 # Move into ::Transport?!
-sub request($self, $url) {
-    my $remote = $self->template_url( $url );
+sub request($self, $url, $params={}) {
+    $params->{ password } ||= $self->config->password;
+    my $remote = $self->template_url( $url, $params );
     $self->transport->http_get( $remote )->then(sub( $body, $headers ) {
         Future->done( decode_json( $body ))
     });
@@ -161,7 +166,6 @@ sub last_edit_wins( $self, $item, $body ) {
         save_local => undef,
         save_remote => undef,
     );
-
 
     # Really crude "last edit wins" approach
     # We should really check if both items were changed after the last sync
@@ -264,9 +268,10 @@ sub sync_actions( $self, %options ) {
 # parts that invoke the editor
 sub sync_items( $self, %options ) {
     # list remote
+    my $pass = $options{ password };
     my $remote_items = [
         map { App::mykeep::Item->new( $_ ) }
-        @{ $self->request('/notes/:account/list')->get->{items} }
+        @{ $self->request('/notes/:account/list', { password => $pass } )->get->{items} }
     ];
     # list local
     my $local_items = [ $self->list_items ];

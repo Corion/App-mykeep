@@ -34,6 +34,10 @@ has account => (
     is => 'ro',
 );
 
+has password => (
+    is => 'ro',
+);
+
 has note_editor => (
     is => 'ro',
 );
