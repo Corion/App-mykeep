@@ -214,7 +214,7 @@ get '/search.html' => sub {
 
 get '/notes/:account/list' => sub {
     #headers( "Connection" => "close" );
-    if( my $account = verify_account( params->{account}, request )) {
+    if( my $account = verify_session( params->{account}, request )) {
         my $dir = join "/", account_dir( $account ), '*.json';
         my @files= map { basename $_ } glob $dir;
         # Consider paging here
@@ -235,7 +235,7 @@ get '/notes/:account/list' => sub {
         content_type 'application/json; charset=utf-8';
         return to_json { more => undef, items => \@result };
     } else {
-        warning "No account found for listing stuff";
+        warning sprintf "No account '%s' found for listing stuff", params->{account};
     };
 };
 
