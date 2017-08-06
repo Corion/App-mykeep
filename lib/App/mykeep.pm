@@ -264,8 +264,7 @@ sub slurp( $fn ) {
 }
 
 sub find_login( $account ) {
-    use Data::Dumper;
-    (my $account_entry) = grep { warning Dumper $_; $_->{user} eq $account } @{ config->{accounts} };
+    (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
     $account_entry
  }
 
@@ -288,6 +287,8 @@ sub verify_login( $account, $password ) {
 sub verify_session( $account, $request ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
+
+    # No session cookie but user+password
     if( ! session->{user} and my $pass = request->params->{'password'}) {
         verify_login($account, $pass)
             or return;
