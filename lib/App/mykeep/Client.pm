@@ -150,10 +150,10 @@ sub template_url( $self, $url, $params={} ) {
 }
 
 # Move into ::Transport?!
-sub request($self, $url, $params={}) {
+sub request($self, $method, $url, $params={}, $body=undef) {
     $params->{ password } ||= $self->config->password;
     my $remote = $self->template_url( $url, $params );
-    $self->transport->http_get( $remote )->then(sub( $body, $headers ) {
+    $self->transport->http_request( $method, $remote, body => $body )->then(sub( $body, $headers ) {
         Future->done( decode_json( $body ))
     });
 }
@@ -264,15 +264,23 @@ sub sync_actions( $self, %options ) {
     );
 }
 
+sub remote_items( $self, %options ) {
+    my $pass = $options{ password };
+    map { App::mykeep::Item->new( $_ ) }
+    @{ $self->request('GET', '/notes/:account/list', { password => $pass } )->get->{items} }
+}
+
+sub send_remote( $self, $item, %options ) {
+    my $pass = $options{ password };
+    my $payload = encode_json( $item->payload );
+    $self->request('POST', '/notes/:account/' . $item->id, { password => $pass }, $payload )->get;
+};
+
 # Remote, this should become a separate role from the CLI
 # parts that invoke the editor
 sub sync_items( $self, %options ) {
     # list remote
-    my $pass = $options{ password };
-    my $remote_items = [
-        map { App::mykeep::Item->new( $_ ) }
-        @{ $self->request('/notes/:account/list', { password => $pass } )->get->{items} }
-    ];
+    my $remote_items = [ $self->remote_items( %options ) ];
     # list local
     my $local_items = [ $self->list_items ];
 
@@ -296,7 +304,9 @@ sub sync_items( $self, %options ) {
                 print sprintf "-> %s - %s\n", $i->id, $i->oneline_preview;
             ##$i->save($self->config);
             # Upload to server
+                $self->send_remote( $i, %options );
             # potentially as background daemon instead of blocking the user
+            # Update the lastsynced time
         };
     }
 
