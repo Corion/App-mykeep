@@ -100,7 +100,7 @@ sub list_items( $self, %options ) {
 # Local
 sub add_item( $self, %data ) {
     my $item = App::mykeep::Item->new( %data );
-    $item->save;
+    $item->save( $self->config );
     $item
 }
 
@@ -139,7 +139,7 @@ sub edit_item( $self, $item ) {
 sub delete_item( $self, $item_id ) {
     my $item = App::mykeep::Item->load( $item_id );
     $item->delete();
-    $item->save();
+    $item->save( $self->config );
 }
 
 sub template_url( $self, $url, $params={} ) {
@@ -275,10 +275,6 @@ sub sync_items( $self, %options ) {
     ];
     # list local
     my $local_items = [ $self->list_items ];
-    #print "local items\n";
-    #for(@$local_items) {
-    #    print sprintf "%s - %s\n", $_->id, $_->oneline_preview;
-    #};
 
     my %actions = $self->sync_actions(
         local => $local_items,
@@ -287,10 +283,9 @@ sub sync_items( $self, %options ) {
 
     # write local changes
     if( $options{ update_local } and @{ $actions{ save_local }}) {
-        print "Would merge to local:\n";
         for my $i (@{ $actions{ save_local }}) {
             print sprintf "<- %s - %s\n", $i->id, $i->oneline_preview;
-            #$i->save();
+            $i->save( $self->config );
         };
     }
 
@@ -299,7 +294,7 @@ sub sync_items( $self, %options ) {
             print "Would merge to remote:\n";
             for my $i (@{ $actions{ upload_remote }}) {
                 print sprintf "-> %s - %s\n", $i->id, $i->oneline_preview;
-            ##$i->save();
+            ##$i->save($self->config);
             # Upload to server
             # potentially as background daemon instead of blocking the user
         };
