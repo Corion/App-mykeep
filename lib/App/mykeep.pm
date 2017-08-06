@@ -263,9 +263,37 @@ sub slurp( $fn ) {
     <$fh>
 }
 
+sub find_login( $account ) {
+    use Data::Dumper;
+    (my $account_entry) = grep { warning Dumper $_; $_->{user} eq $account } @{ config->{accounts} };
+    $account_entry
+ }
+
+sub verify_login( $account, $password ) {
+    if( ! $account ) {
+        warning "No account given";
+        return;
+    };
+
+    my $account_entry = find_login( $account );
+    warning "Checking password for '$account' ($password)";
+    if( $account_entry->{password} eq $password ) {
+        warning "$account valid (password match)";
+        return $account_entry
+    }
+    warning "$account invalid (password mismatch)";
+    return;
+}
+
 sub verify_session( $account, $request ) {
     $account =~ m!\A([A-Za-z0-9-]+)\z!
         or return;
+    if( ! session->{user} and my $pass = request->params->{'password'}) {
+        verify_login($account, $pass)
+            or return;
+        session('user', $account);
+    };
+
     if( ! session->{user}) {
         $account = 'public';
         session('user' => $account);
@@ -274,12 +302,12 @@ sub verify_session( $account, $request ) {
     (session->{user} && (session->{user} eq $account))
         or return;
 
-    (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
+    my $account_entry = find_login( session->{user} );
     return unless $account_entry;
-    
+
     my $account_dir = account_dir( $account_entry );
     -d $account_dir or return;
-    
+
     $account_entry
     #-f "$account_dir/.account" or return;
     # Well, maybe later move that to JSON, and sign it, and hand it to the
@@ -413,7 +441,7 @@ post '/notes/:account/:note' => sub {
 post '/notes/:account/:note/delete' => sub {
     headers( "Connection" => "close" );
     my $id= clean_id( request->params("route")->{note} );
-    
+
     if( my $account = verify_session( params->{account}, request )) {
         # Maybe archive the item
         # We shouldn't delete anyway, because deleting means
@@ -450,17 +478,12 @@ get '/login' => sub {
 post '/login' => sub {
     my $user = params->{user};
     my $password = params->{password};
-    
+
     my $ok;
-    if( my $account = verify_session( $user, request )) {
-        # We know that user
-        # Verify their password
-        if( $account->{password} eq $password ) {
-            session('user', $user);
-            $ok = 1;
-        } else {
-            warning "Known user [$user] but wrong password";
-        };
+    if( my $account = verify_login( $user, $password )) {
+        session('user', $account);
+        # Set their last valid password-login in the account here
+        $ok = 1
     } else {
         warning "Unknown user [$user]";
     };
