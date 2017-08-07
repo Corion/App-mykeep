@@ -61,30 +61,48 @@ sub display_notes( @notes ) {
 
 my @note_body;
 if( @ARGV ) {
-    @note_body = join " ", @ARGV;
+    @note_body = @ARGV;
 };
-if( $edit_note ) {
+
+if( $edit_note or $append_note ) {
 
     my @notes;
     if( @note_body or $label ) {
-        my $search = join " ", @note_body;
+        my $search;
+        if( $edit_note ) {
+            $search = join " ", @note_body;
+        } elsif( $append_note ) {
+            $search = shift @note_body;
+        };
         # Search title and body
         @notes = $client->list_items( text => $search, label => $label );
     };
 
     if( @notes == 1 ) {
-        # if we find (one) note, edit that one
-        # copy note text+body as yaml to a tempfile
-        # invoke $EDITOR
-        # read tempfile back, hopefully the syntax was not broken
         my $note = $notes[0];
-        $client->edit_item( $note );
+
+        if( $edit_note ) {
+            $client->edit_item( $note );
+        } elsif( $append_note ) {
+            my $t = $note->text;
+            $t =~ s!\s*$!!;
+            $t .= "\n" . join "\n", @note_body;
+            $t .= "\n";
+            $note->text( $t );
+            $note->save( $client->config );
+        };
 
     } elsif( @notes == 0 ) {
         # create a template note in a tempfile
         my $blank = App::mykeep::Item->new();
         $blank->text( @note_body );
-        $client->edit_item( $blank );
+        if( $edit_note ) {
+            $client->edit_item( $blank );
+        } elsif( $append_note ) {
+        warn "Creating new item";
+            # Should appending to a non-existent note work?!
+            $blank->save( $client->config );
+        };
 
     } else {
         print "More than one note found\n";
@@ -96,7 +114,7 @@ if( $edit_note ) {
 if( $list_notes ) {
     my $search = join " ", @note_body;
     my @notes = $client->list_items( text => $search, label => $label );
-    @notes = $client->sync_items( update_local => 1, update_remote => 1 );
+    #@notes = $client->sync_items( update_local => 1, update_remote => 1 );
 
     display_notes( @notes );
 
