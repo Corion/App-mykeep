@@ -24,7 +24,8 @@ GetOptions(
 
     # Edit note in $EDITOR
     'edit'       => \my $edit_note,
-    # Append STDIN to note
+    # Append the rest of the arguments to note, without further interaction
+    # note selection is the first argument
     'append'     => \my $append_note,
 
     'l|list'     => \my $list_notes,
