@@ -209,6 +209,8 @@ sub last_edit_wins( $self, $item, $body ) {
                 $copy ||= $item->clone;
                 $result{ item } = $copy;
                 $result{ save_remote } = 1;
+            } else {
+                # No change, no action needed
             };
         };
     };
