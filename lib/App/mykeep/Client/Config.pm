@@ -8,6 +8,18 @@ use YAML 'LoadFile';
 use File::Basename 'dirname';
 use Path::Class;
 
+=head1 NAME
+
+App::mykeep::Client::Config - client configuration holder
+
+=head1 SYNOPSIS
+
+  my $config = App::mykeep::Client::Config->read_file(
+      'path/to/config.yml',
+  );
+
+=cut
+
 our $default = {
     note_directory  => '~/.mykeep/notes',
     server_settings => '~/.mykeep/corion.net.yml',
