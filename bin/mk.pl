@@ -114,7 +114,7 @@ if( $edit_note or $append_note ) {
 # split out actions into separate packages, like all the cool kids do?
 if( $list_notes ) {
     my $search = join " ", @note_body;
-    my @notes = $client->list_items( text => $search, label => @label );
+    my @notes = $client->list_items( text => $search, label => \@label );
     #@notes = $client->sync_items( update_local => 1, update_remote => 1 );
 
     display_notes( @notes );
