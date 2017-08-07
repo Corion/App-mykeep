@@ -70,6 +70,7 @@ sub read_file( $class, $file ) {
         my $base = dir( $c->{ base_directory } );
         if( $base->is_relative ) {
             $base = dir( $d, $base );
+            $c->{ base_directory } = "$base";
         };
     };
     $class->new( $c ) 
