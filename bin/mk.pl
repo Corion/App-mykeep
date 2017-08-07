@@ -82,6 +82,7 @@ if( $edit_note ) {
     } elsif( @notes == 0 ) {
         # create a template note in a tempfile
         my $blank = App::mykeep::Item->new();
+        $blank->text( @note_body );
         $client->edit_item( $blank );
 
     } else {
@@ -103,3 +104,7 @@ if( $list_notes ) {
 __END__
 
 =head1 USAGE
+
+  mk.pl -e "Just a note"
+
+=cut
