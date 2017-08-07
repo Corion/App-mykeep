@@ -87,6 +87,7 @@ sub list_items( $self, %options ) {
                 };
             };
             # Also filter labels here, and whatnot
+            # We will also want to filter on the status here
         };
         $keep
     }

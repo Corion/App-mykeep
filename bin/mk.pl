@@ -34,6 +34,7 @@ GetOptions(
     # a new note directory and config file?
 
     't|label:s'  => \my @label,      # show only this label
+    's|status:s' => \my @status,     # show only notes in this status
 )
 or pod2usage(2);
 
