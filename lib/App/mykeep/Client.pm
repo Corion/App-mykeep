@@ -19,20 +19,69 @@ use URI;
 use App::mykeep::Client::Config;
 use App::mykeep::Item;
 
+=head1 NAME
+
+App::mykeep::Client - local client for App::mykeep
+
+=head1 SYNOPSIS
+
+  my $client = App::mykeep::Client->new(
+      config_file => $config_file
+  );
+
+=head1 ACCESSORS
+
+=head2 config_file
+
+The name of the config file.
+
+The default is C<.mykeep/mykeep.yml> in the home directory as determined
+by L<File::HomeDir>.
+
+=cut
+
+has config_file => (
+    is => 'lazy',
+    default => sub { file( File::HomeDir->my_data(), '.mykeep', 'mykeep.yml') },
+);
+
+=head2 config
+
+Holds the client configuration as a L<App::mykeep::Client::Config> object.
+
+The default is to read from the config file.
+
+=cut
+
 has config => (
     is => 'lazy',
     default => \&read_config,
 );
+
+=head2 transport
+
+Holds the transport to talk to the server.
+
+The default is to use L<Future::HTTP> as transport.
+
+=cut
 
 has transport => (
     is => 'lazy',
     default => sub { Future::HTTP->new() },
 );
 
-has config_file => (
-    is => 'lazy',
-    default => sub { file( File::HomeDir->my_data(), '.mykeep', 'mykeep.yml') },
-);
+=head2 editor
+
+The invoker for the interactive editor.
+
+The default is to use L<Proc::InvokeEditor>, which will use
+C<$ENV{VISUAL}>, C<$ENV{EDITOR}> or C<vi> or C<ed> in that preference
+if they are found.
+
+On Windows, the default will be C<notepad.exe>.
+
+=cut
 
 has editor => (
     is => 'lazy',
@@ -54,11 +103,24 @@ our @userfields = qw(
     pinPosition
 );
 
+=head1 METHODS
+
+=head2 C<< $c->read_config( $config_file )
+
+Reads the configuration from a file
+
+=cut
+
 sub read_config( $self, $config_file = $self->config_file ) {
     App::mykeep::Client::Config->read_file( $config_file )
 }
 
-# Local
+=head2 C<< $c->list_items( %options )
+
+Lists the local notes
+
+=cut
+
 sub list_items( $self, %options ) {
     my $c = $self->config;
 
@@ -98,14 +160,25 @@ sub list_items( $self, %options ) {
     ;
 }
 
-# Local
+=head2 C<< $c->add_item( %data )
+
+Creates a new item from the properties passed in and saves it. Returns the
+newly created item.
+
+=cut
+
 sub add_item( $self, %data ) {
     my $item = App::mykeep::Item->new( %data );
     $item->save( $self->config );
     $item
 }
 
-# Local, interactive
+=head2 C<< $c->edit_item( $item )
+
+Interactively edits an item and saves it if it was changed.
+
+=cut
+
 sub edit_item( $self, $item ) {
     $item = App::mykeep::Item->load( $item )
         if not ref $item;
