@@ -6,6 +6,7 @@ use feature 'signatures';
 no warnings 'experimental::signatures';
 use YAML 'LoadFile';
 use File::Basename 'dirname';
+use Path::Class;
 
 our $default = {
     note_directory  => '~/.mykeep/notes',
@@ -53,19 +54,23 @@ around BUILDARGS => sub( $orig, $class, @args ) {
     
     # Adjust directories relative to base_directory:
     for( qw( note_directory server_settings )) {
-        $v->{$_} =~ s!^\.!$v->{base_directory}!;
+        $v->{$_} =~ s!^\.([^\.]?)!$v->{base_directory}$1!;
     };
     
     $class->$orig( $v );
 };
 
 sub read_file( $class, $file ) {
-    my $d = dirname( $file );
     
     my $c = {};
     if( -f $file ) {
+        my $d = dirname( $file );
         $c = LoadFile( $file );
-        $c->{ base_directory } = $d;
+        $c->{ base_directory } ||= '.';
+        my $base = dir( $c->{ base_directory } );
+        if( $base->is_relative ) {
+            $base = dir( $d, $base );
+        };
     };
     $class->new( $c ) 
 }
