@@ -320,11 +320,11 @@ sub sync_items( $self, %options ) {
 
 sub sort_items( $self, @items ) {
     sort {
-           $b->pinPosition <=> $a->pinPosition
-        || $b->modifiedAt  <=> $a->modifiedAt
-        || $b->createdAt   <=> $a->createdAt
-        || $a->title       cmp $b->title
-        || $a->text        cmp $b->text
+           ($b->pinPosition || 0 ) <=> ($a->pinPosition || 0 )
+        || ($b->modifiedAt  || 0 ) <=> ($a->modifiedAt  || 0 )
+        || ($b->createdAt   || 0 ) <=> ($a->createdAt   || 0 )
+        || ($a->title       || '') cmp ($b->title       || '')
+        || ($a->text        || '') cmp ($b->text        || '')
     } @items
 }
 
