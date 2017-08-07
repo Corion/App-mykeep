@@ -85,6 +85,7 @@ if( $edit_note or $append_note ) {
         if( $edit_note ) {
             $client->edit_item( $note );
         } elsif( $append_note ) {
+            # This should also go completely into ::Client
             my $t = $note->text;
             $t =~ s!\s*$!!;
             $t .= "\n" . join "\n", @note_body;
@@ -100,7 +101,6 @@ if( $edit_note or $append_note ) {
         if( $edit_note ) {
             $client->edit_item( $blank );
         } elsif( $append_note ) {
-        warn "Creating new item";
             # Should appending to a non-existent note work?!
             $blank->save( $client->config );
         };
