@@ -413,10 +413,10 @@ post '/notes/:account/:note' => sub {
 
         $body = upgrade_schema( $body );
 
-        if( ($item->{status} || '') ne 'deleted' ) {
+        #if( ($item->{status} || '') ne 'deleted' ) {
             # Really crude "last edit wins" approach
             $item= last_edit_wins( $item, $body );
-        };
+        #};
 
         # Set "last-synced" timestamp
         $item->{lastSyncedAt}= time();
