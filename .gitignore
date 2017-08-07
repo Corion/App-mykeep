@@ -11,6 +11,7 @@ MYMETA.*
 .releaserc
 cover_db
 /config.yml
+/.mykeeprc.yml
 MYMETA.*
 README
 notes/
