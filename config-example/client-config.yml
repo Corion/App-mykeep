@@ -1,0 +1,8 @@
+note_directory: '.'
+
+# Should we maybe support more than one server?!
+#server_settings: 'localhost.yml'
+server_url: https://localhost:5000
+account: corion
+password: "secret"
+base_directory: '.'
