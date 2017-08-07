@@ -123,8 +123,44 @@ if( $list_notes ) {
 
 __END__
 
-=head1 USAGE
+=head1 NAME
 
-  mk.pl -e "Just a note"
+mk.pl - keep notes in mykeep from the command line
+
+=head1 SYNOPSIS
+
+  mk.pl -e "my note" ...
+
+  Options:
+    -help            brief help message
+    -man             full documentation
+
+=head1 OPTIONS
+
+=over 4
+
+=item --list
+
+List all local notes
+
+If arguments are given on the command line, they are used as search words
+and only notes matching the search words will be listed.
+
+=item --sync
+
+Synchronize notes between the local storage and the uplink.
+
+This happens in both directions automatically.
+
+=item --edit
+
+Edit a note found by the text after the switch
+
+=item --append
+
+Find a note identified by the first argument and append the rest of the
+command line arguments to the note body.
+
+=back
 
 =cut
