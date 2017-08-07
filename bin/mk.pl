@@ -36,6 +36,10 @@ GetOptions(
 )
 or pod2usage(2);
 
+if( defined $config_file and ! -f $config_file) {
+    die "Config file '$config_file' not found.\n";
+};
+
 my $client = App::mykeep::Client->new(
     maybe config_file => $config_file
 );
