@@ -135,7 +135,9 @@ sub delete( $self, $ts = gmtime() ) {
 
 sub oneline_preview( $self, $max_width = 80 ) {
     my $title = $self->title;
+    $title = '' unless defined $title;
     my $body = $self->text;
+    $body = '' unless defined $body;
     $body =~ s!\s+! !g;
     my $display = $title;
 
