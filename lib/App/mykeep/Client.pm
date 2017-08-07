@@ -286,7 +286,7 @@ sub sync_items( $self, %options ) {
     # list remote
     my $remote_items = [ $self->remote_items( %options ) ];
     # list local
-    my $local_items = [ $self->list_items ];
+    my $local_items = [ $self->list_items( %options ) ];
 
     my %actions = $self->sync_actions(
         local => $local_items,
