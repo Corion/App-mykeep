@@ -131,6 +131,7 @@ sub edit_item( $self, $item ) {
             $item->$field( $h->{ $field })
                 if exists $h->{ $field };
         };
+        $item->modifiedAt( time());
         $item->save( $self->config );
     };
 }
