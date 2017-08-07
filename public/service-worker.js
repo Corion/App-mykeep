@@ -41,10 +41,12 @@ const precacheFiles = [
 self.toolbox.precache(precacheFiles);
 
 // Fake the settings until I figure out how to do login etc.
-// Why have them in the backend instead of the frontend?!
+// We need them in the backend instead of the frontend for the requests we
+// do down below. We should read them from storage though.
 var settings = {
     "credentials": {
         user : 'public'
+      , password : 'public'
     },
     uplink : '', // this should be the URL of our uplink server, basically the
     // URL we fetched this page from(?!)
