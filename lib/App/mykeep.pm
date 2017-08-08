@@ -264,7 +264,7 @@ sub slurp( $fn ) {
 }
 
 sub find_login( $account ) {
-    (my $account_entry) = grep { $_->{user} eq $account } @{ config->{accounts} };
+    (my $account_entry) = grep { $_->{name} eq $account } @{ config->{accounts} };
     $account_entry
  }
 
