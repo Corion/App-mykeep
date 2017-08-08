@@ -14,7 +14,7 @@ no warnings 'experimental::signatures';
 GetOptions(
     'h|help'     => \my $help,
 	'v|version'  => \my $version,
-    'sync:s'     => \my $sync_account,
+    #'sync:s'     => \my $sync_account,
     'n|dry-run'  => \my $dry_run,
 
     'f|config:s' => \my $config_file,
