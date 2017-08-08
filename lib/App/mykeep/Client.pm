@@ -122,8 +122,6 @@ Lists the local notes
 =cut
 
 sub list_items( $self, %options ) {
-    my $c = $self->config;
-
     # Set up our filter, if any
     my @search;
     if( defined $options{ text }) {
@@ -134,6 +132,15 @@ sub list_items( $self, %options ) {
         $options{ search_fields } = $self->config->search_fields;
     };
 
+    if( ! $options{ status }) {
+        $options{ status } = ['active'];
+    };
+
+    my %wanted_status = map { $_ => 1 }
+                        map { $_ eq 'all' ? ('active','deleted','archived') : $_ }
+                        @{ $options{ status } };
+    my @items = $options{ items } ? @{$options{ items }} : $self->_all_items;
+    return
     grep {
         my $keep = 1;
         if( @search ) {
@@ -387,31 +394,35 @@ sub sync_items( $self, %options ) {
     # list remote
     my $remote_items = [ $self->remote_items( %options ) ];
     # list local
-    my $local_items = [ $self->list_items( %options ) ];
+    my $local_items = [ $self->list_items( %options, sync_status => 'modified' ) ];
 
     my %actions = $self->sync_actions(
         local => $local_items,
         remote => $remote_items,
     );
 
+    my $syncts = time;
+
     # write local changes
     if( $options{ update_local } and @{ $actions{ save_local }}) {
         for my $i (@{ $actions{ save_local }}) {
             print sprintf "<- %s - %s\n", $i->id, $i->oneline_preview;
+            $i->lastSyncedAt( $syncts );
             $i->save( $self->config );
         };
     }
 
     # send newer/local to server
     if( $options{ update_remote } and @{ $actions{ upload_remote }}) {
-            print "Would merge to remote:\n";
-            for my $i (@{ $actions{ upload_remote }}) {
-                print sprintf "-> %s - %s\n", $i->id, $i->oneline_preview;
+        for my $i (@{ $actions{ upload_remote }}) {
+            #print sprintf "-> %s - %s\n", $i->id, $i->oneline_preview;
             ##$i->save($self->config);
             # Upload to server
-                $self->send_remote( $i, %options );
+            $self->send_remote( $i, %options );
             # potentially as background daemon instead of blocking the user
             # Update the lastsynced time
+            $i->lastSyncedAt($syncts);
+            $i->save($self->config);
         };
     }
 
