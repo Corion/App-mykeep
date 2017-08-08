@@ -24,13 +24,12 @@ our @note_property_keys= qw(
     createdAt
     schemaVersion
     syncSetting
+    status
 );
 
 our @note_keys = ('id', @note_property_keys );
 
-has [@note_property_keys, qw[
-  status
-]] => (
+has [@note_property_keys] => (
     is => 'rw',
 );
 
@@ -128,9 +127,11 @@ sub normalize( $self, $schemaVersion = $schemaVersion ) {
     };
 }
 
-sub delete( $self, $ts = gmtime() ) {
-    $self->deletedAt( $ts );
-    $self->{status} = 'deleted';
+sub delete( $self, $ts = time() ) {
+    if( $self->status ne 'deleted' ) {
+        $self->deletedAt( $ts );
+        $self->status( 'deleted' );
+    }
 }
 
 sub oneline_preview( $self, $max_width = 80 ) {
