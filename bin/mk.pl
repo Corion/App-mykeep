@@ -27,6 +27,7 @@ GetOptions(
     # Append the rest of the arguments to note, without further interaction
     # note selection is the first argument
     'append'     => \my $append_note,
+    'delete'     => \my $delete_note,
 
     'l|list'     => \my $list_notes,
     'sync'       => \my $sync_notes,
@@ -66,18 +67,18 @@ if( @ARGV ) {
     @note_body = @ARGV;
 };
 
-if( $edit_note or $append_note ) {
+if( $edit_note or $append_note or $delete_note) {
 
     my @notes;
     if( @note_body or @label ) {
         my $search;
-        if( $edit_note ) {
+        if( $edit_note or $delete_note) {
             $search = join " ", @note_body;
         } elsif( $append_note ) {
             $search = shift @note_body;
         };
         # Search title and body
-        @notes = $client->list_items( text => $search, label => @label );
+        @notes = $client->list_items( text => $search, label => \@label );
     };
 
     if( @notes == 1 ) {
@@ -93,6 +94,9 @@ if( $edit_note or $append_note ) {
             $t .= "\n";
             $note->text( $t );
             $note->save( $client->config );
+        } elsif( $delete_note ) {
+            $note->delete;
+            $note->save( $client->config );
         };
 
     } elsif( @notes == 0 ) {
@@ -104,6 +108,8 @@ if( $edit_note or $append_note ) {
         } elsif( $append_note ) {
             # Should appending to a non-existent note work?!
             $blank->save( $client->config );
+        } elsif( $delete_note ) {
+            print "No note found\n";
         };
 
     } else {
