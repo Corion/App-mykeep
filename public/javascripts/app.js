@@ -431,7 +431,7 @@ function listItems() {
     console.log("Fetching '"+url+"' via jQuery");
     var res =
         Promise.resolve($.get(url, null)).then(function(json) {
-            console.log("Fetched", json);
+            console.log("Fetched from " + url, json);
             json['notes'] = json['items'];
             notes = defaultOrder( json['notes']);
         }, function(r1,r2) {
