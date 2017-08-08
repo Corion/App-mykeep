@@ -148,16 +148,44 @@ sub list_items( $self, %options ) {
                     last;
                 };
             };
-            # Also filter labels here, and whatnot
-            # We will also want to filter on the status here
         };
         $keep
     }
+    # Filter on the quick stuff here before searching the text further up
+    grep {
+        # Also filter labels here, and whatnot
+        # filter on the status here
+        $wanted_status{ $_->status }
+    }
+    grep {
+        # Also filter labels here, and whatnot
+        # filter on the status here
+        if(( $options{ sync_status } || '' ) eq 'modified' ) {
+               ($_->lastSyncedAt || 0 ) < ($_->modifiedAt || 0)
+            or ($_->lastSyncedAt || 0 ) < ($_->deletedAt  || 0)
+        } else {
+            1
+        }
+    }
+    @items
+}
+
+=head2 C<< $c->_all_items( %options )
+
+Lists all local notes. This is mostly an internal method of the storage backend
+and should not be called from the outside. It is intended to be used for
+storage cleanup and for backends that do not have filtering built in,
+like the file system.
+
+=cut
+
+sub _all_items( $self ) {
+    my $c = $self->config;
+    return
     map { App::mykeep::Item->load( $_, $c ) }
     map { /([-a-f0-9]+)\.json/i and $1 }
     grep { /\.json$/i }
         dir( $self->config->note_directory )->children()
-    ;
 }
 
 =head2 C<< $c->add_item( %data )
