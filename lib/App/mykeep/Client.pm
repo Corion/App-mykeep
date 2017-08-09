@@ -10,6 +10,7 @@ use YAML 'Load';
 use Path::Class;
 use File::HomeDir;
 use JSON::XS qw(decode_json encode_json);
+use Storable 'dclone';
 
 use Proc::InvokeEditor;
 use Text::FrontMatter::YAML;
@@ -289,7 +290,7 @@ sub last_edit_wins( $self, $item, $body ) {
             if( ref $item->$key eq 'ARRAY' ) {
                 if( join "\0", sort @{$item->$key} ne join "\0", sort @$val ) {
                     $copy ||= $item->clone;
-                    $copy->$key( $val );
+                    $copy->$key( dclone $val );
                     $copy->modifiedAt( $body->modifiedAt );
                     $result{ item } = $copy;
                     $result{ save_local } = 1;
