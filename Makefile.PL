@@ -88,29 +88,6 @@ if( ! caller ) {
     WriteMakefile1(get_module_info);
 };
 
-sub regen_README {
-    eval {
-        require Pod::Readme;
-        Pod::Readme->VERSION('1.0.2'); #0.11 may hang
-
-        my $parser = Pod::Readme->new();
-
-        # Read POD from Module.pm and write to README
-        $parser->parse_from_file($_[0], 'README');
-    };
-    eval {
-        require Pod::Markdown;
-
-        my $parser = Pod::Markdown->new();
-
-        # Read POD from Module.pm and write to README
-        $parser->parse_from_file($_[0]);
-        open my $fh, '>', 'README.mkdn'
-            or die "Couldn't open 'README.mkdn': $!";
-        print $fh $parser->as_markdown;
-    };
-}
-
 sub WriteMakefile1 {  #Written by Alexandr Ciornii, version 0.21. Added by eumm-upgrade.
     my %params=@_;
     my $eumm_version=$ExtUtils::MakeMaker::VERSION;
@@ -136,6 +113,108 @@ sub WriteMakefile1 {  #Written by Alexandr Ciornii, version 0.21. Added by eumm-
     delete $params{BINARY_LOCATION} if $] < 5.005;
     
     WriteMakefile(%params);
+}
+
+sub regen_README {
+    # README is the short version that just tells people what this is
+    # and how to install it
+    eval {
+        # Get description
+        my $readme = join "\n",
+            grep { /\S/ }
+            pod_section($_[0], 'NAME', 'no heading' ),
+            pod_section($_[0], 'DESCRIPTION' ),
+            <<INSTALL,
+
+INSTALLATION
+
+This is a Perl module distribution. It should be installed with whichever
+tool you use to manage your installation of Perl, e.g. any of
+
+  cpanm .
+  cpan  .
+  cpanp -i .
+
+Consult http://www.cpan.org/modules/INSTALL.html for further instruction.
+Should you wish to install this module manually, the procedure is
+
+  perl Makefile.PL
+  make
+  make test
+  make install
+
+INSTALL
+            pod_section($_[0], 'REPOSITORY'),
+            pod_section($_[0], 'SUPPORT'),
+            pod_section($_[0], 'BUG TRACKER'),
+            pod_section($_[0], 'AUTHOR'),
+            pod_section($_[0], 'LICENSE' ),
+            pod_section($_[0], 'COPYRIGHT' ),
+    ;
+        update_file( 'README', $readme );
+    };
+    # README.mkdn is the documentation that will be shown as the main
+    # page of the repository on Github. Hence we recreate the POD here
+    # as Markdown
+    eval {
+        require Pod::Markdown;
+
+        my $parser = Pod::Markdown->new();
+
+        # Read POD from Module.pm and write to README
+        $parser->parse_from_file($_[0]);
+        my $readme_mkdn = <<STATUS . $parser->as_markdown;
+
+[![Build Status](https://travis-ci.org/Corion/WWW-Mechanize-Chrome.svg?branch=master)](https://github.com/Corion/WWW-Mechanize-Chrome)
+
+STATUS
+        update_file( 'README.mkdn', $readme_mkdn );
+    };
+}
+
+sub pod_section {
+    my( $filename, $section, $remove_heading ) = @_;
+    open my $fh, '<', $filename
+        or die "Couldn't read '$filename': $!";
+
+    my @section =
+        grep { defined }
+        grep { /^=head1\s+$section/.../^=/ } <$fh>;
+    pop @section if @section and $section[-1] =~ /^=/;
+    shift @section if $remove_heading;
+
+    # Trim the section
+    if( @section ) {
+        pop @section
+            while $section[-1] =~ /^\s*$/;
+        shift @section
+            while $section[0] =~ /^\s*$/;
+    };
+
+    @section = map { $_ =~ s!^=\w+\s+!!; $_ } @section;
+    return join "", @section;
+}
+
+sub update_file {
+    my( $filename, $new_content ) = @_;
+    my $content;
+    if( -f $filename ) {
+        open my $fh, '<', $filename
+            or die "Couldn't read '$filename': $!";
+        binmode $fh;
+        local $/;
+        $content = <$fh>;
+    };
+    $content ||= '';
+
+    if( $content ne $new_content ) {
+        if( open my $fh, '>', $filename ) {
+            binmode $fh;
+            print $fh $new_content;
+        } else {
+            warn "Couldn't (re)write '$filename': $!";
+        };
+    };
 }
 
 1;

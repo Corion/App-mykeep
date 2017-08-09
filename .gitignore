@@ -12,8 +12,6 @@ MYMETA.*
 cover_db
 /config.yml
 /.mykeeprc.yml
-MYMETA.*
-README
 notes/
 local-notes/
 sessions/
