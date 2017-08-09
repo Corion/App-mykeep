@@ -407,7 +407,6 @@ sub sync_items( $self, %options ) {
     # write local changes
     if( $options{ update_local } and @{ $actions{ save_local }}) {
         for my $i (@{ $actions{ save_local }}) {
-            print sprintf "<- %s - %s\n", $i->id, $i->oneline_preview;
             $i->lastSyncedAt( $syncts );
             $i->save( $self->config );
         };
