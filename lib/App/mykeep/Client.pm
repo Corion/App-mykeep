@@ -381,6 +381,26 @@ sub sync_actions( $self, %options ) {
     );
 }
 
+=head2 C<< $c->last_sync_ts >>
+
+  my $last_seen = $c->last_sync_ts()
+
+Returns the last time when synchronizsation with a server was done. This is
+the maximum of the C<lastSyncedAt> values of all local items.
+
+=cut
+
+sub last_sync_ts( $self, %options ) {
+    $options{ items } ||= [ $self->_all_items( %options ) ];
+    my $last_ts = 0;
+    for my $i ( @{ $options{ items }}) {
+        my $lastSyncedAt = $i->lastSyncedAt;
+        $last_ts = $lastSyncedAt
+            if $last_ts < ($lastSyncedAt || 0)
+    }
+    $last_ts
+}
+
 sub remote_items( $self, %options ) {
     my $pass = $options{ password };
     $options{ since } ||= 0;
@@ -401,10 +421,14 @@ sub send_remote( $self, $item, %options ) {
 # Remote, this should become a separate role from the CLI
 # parts that invoke the editor
 sub sync_items( $self, %options ) {
-    # list remote
-    my $remote_items = [ $self->remote_items( %options ) ];
     # list local
     my $local_items = [ $self->list_items( %options, sync_status => 'modified' ) ];
+    if( ! exists $options{ since }) {
+        $options{since} ||= $self->last_sync_ts( items => $local_items );
+    }
+
+    # list remote
+    my $remote_items = [ $self->remote_items( %options ) ];
 
     my %actions = $self->sync_actions(
         local => $local_items,
