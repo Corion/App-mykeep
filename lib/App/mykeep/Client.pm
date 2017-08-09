@@ -378,8 +378,13 @@ sub sync_actions( $self, %options ) {
 
 sub remote_items( $self, %options ) {
     my $pass = $options{ password };
+    $options{ since } ||= 0;
+    grep {
+        # Filter for stuff for timestamps also locally
+        $_->lastChangedAt > $options{ since }
+    }
     map { App::mykeep::Item->new( $_ ) }
-    @{ $self->request('GET', '/notes/:account/list', { password => $pass } )->get->{items} }
+    @{ $self->request('GET', '/notes/:account/list', { password => $pass, since => $options{since} } )->get->{items} }
 }
 
 sub send_remote( $self, $item, %options ) {
