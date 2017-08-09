@@ -37,6 +37,17 @@ $schemaVersion = '001.000.000';
 
 App::mykeep - notes kitchen
 
+=head1 ABOUT
+
+This is an online / offline note taking application.
+
+It contains a server and a browser client and a command line
+client. The application works with an online onnection and also works without a
+connection to the server.
+
+Synchrnoizsation happens in the background and currently uses a "last edit wins"
+approach to conflict resolution.
+
 =head1 Data model
 
 Currently we have the following fields
@@ -219,7 +230,7 @@ get '/notes/:account/list' => sub {
         my @files= map { basename $_ } glob $dir;
         # Consider paging here
         # Also, consider how to merge public and private notes here
-        # Also, consider only changes since here...
+        # Also, consider only "changes since" here...
 
         my @result=
             sort {

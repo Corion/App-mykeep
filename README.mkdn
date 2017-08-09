@@ -2,6 +2,17 @@
 
 App::mykeep - notes kitchen
 
+# ABOUT
+
+This is an online / offline note taking application.
+
+It contains a server and a browser client and a command line
+client. The application works with an online onnection and also works without a
+connection to the server.
+
+Synchrnoizsation happens in the background and currently uses a "last edit wins"
+approach to conflict resolution.
+
 # Data model
 
 Currently we have the following fields
