@@ -6,6 +6,7 @@ use feature 'signatures';
 no warnings 'experimental::signatures';
 use Path::Class;
 use Storable 'dclone';
+use List::Util 'max';
 
 use JSON::XS qw(decode_json encode_json);
 use UUID 'uuid';
@@ -151,6 +152,17 @@ sub oneline_preview( $self, $max_width = 80 ) {
         substr( $display, $max_width-3 ) = '...';
     };
     $display
+}
+
+=head2 C<< $i->lastChangedAt >>
+
+Returns the timestamp of the last change to this note. The last change
+might be a modification, a deletion or something like that.
+
+=cut
+
+sub lastChangedAt( $self ) {
+    max grep { defined $_ } $self->modifiedAt, $self->deletedAt, $self->archivedAt
 }
 
 1;
