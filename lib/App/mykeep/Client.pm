@@ -351,7 +351,7 @@ sub sync_actions( $self, %options ) {
     my %remote = map { $_->id => $_ } @$remote_items;
 
     my @not_uploaded = grep {
-        ! exists $remote{ $_->id } and print $_->id . " doesn't exist remotely\n";
+    #    ! exists $remote{ $_->id } and print $_->id . " doesn't exist remotely\n";
         ! exists $remote{ $_->id }
     } @$local_items;
     my @save_local;
