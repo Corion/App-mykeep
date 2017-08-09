@@ -46,6 +46,8 @@ t/004_settings_etc.t
 t/005_default_public_notes.t
 t/500_no_js_errors.t
 t/700_sync_idempotent.t
+t/701-item-delete.t
+t/702_list_status.t
 views/app.hbs
 views/index.hbs
 views/labels.hbs
