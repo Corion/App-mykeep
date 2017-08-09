@@ -104,6 +104,7 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     $upgraded{pinPosition}   ||= 0;
     $upgraded{createdAt}     ||= 0;
     $upgraded{modifiedAt}    ||= 0;
+    $upgraded{lastSyncedAt}  ||= 0;
     $upgraded{id}            = uc($upgraded{id} || uuid());
     return \%upgraded
 }
