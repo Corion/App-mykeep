@@ -281,6 +281,7 @@ sub last_edit_wins( $self, $item, $body ) {
     # We should really check if both items were changed after the last sync
     # and then try a merge of all fields,
     # and the method should return which sides need to be notified
+    my @changes; # for debugging
     if( $body->modifiedAt > ($item->modifiedAt)) {
         my $copy;
         for my $key (@userfields) {
@@ -293,6 +294,7 @@ sub last_edit_wins( $self, $item, $body ) {
                     $copy->modifiedAt( $body->modifiedAt );
                     $result{ item } = $copy;
                     $result{ save_local } = 1;
+                    push @changes, { field => $key, from => $item->$key(), to => $val };
                 };
             } elsif( ($item->$key // '') ne ($val // '')) {
                 $copy ||= $item->clone;
@@ -300,6 +302,7 @@ sub last_edit_wins( $self, $item, $body ) {
                 $copy->modifiedAt( $body->modifiedAt );
                 $result{ item } = $copy;
                 $result{ save_local } = 1;
+                push @changes, { field => $key, from => $item->$key(), to => $val };
             };
         };
     } else {
@@ -313,11 +316,13 @@ sub last_edit_wins( $self, $item, $body ) {
                     $copy ||= $item->clone;
                     $result{ item } = $copy;
                     $result{ save_remote } = 1;
+                    push @changes, { field => $key, from => $body->$key(), to => $val };
                 }
             } elsif( ($item->$key // '') ne ($val // '')) {
                 $copy ||= $item->clone;
                 $result{ item } = $copy;
                 $result{ save_remote } = 1;
+                push @changes, { field => $key, from => $body->$key(), to => $val };
             } else {
                 # No change, no action needed
             };
