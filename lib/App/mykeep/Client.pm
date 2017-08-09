@@ -169,8 +169,7 @@ sub list_items( $self, %options ) {
         # Also filter labels here, and whatnot
         # filter on the status here
         if(( $options{ sync_status } || '' ) eq 'modified' ) {
-               ($_->lastSyncedAt || 0 ) < ($_->modifiedAt || 0)
-            or ($_->lastSyncedAt || 0 ) < ($_->deletedAt  || 0)
+               ($_->lastSyncedAt || 0 ) < ($_->lastChangedAt || 0)
         } else {
             1
         }
