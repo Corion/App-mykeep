@@ -108,6 +108,8 @@ our @userfields = qw(
 
 =head2 C<< $c->read_config( $config_file )
 
+  $c->read_config( $config_file );
+
 Reads the configuration from a file
 
 =cut
@@ -117,6 +119,8 @@ sub read_config( $self, $config_file = $self->config_file ) {
 }
 
 =head2 C<< $c->list_items( %options )
+
+  my @items = $c->list_items();
 
 Lists the local notes
 
@@ -210,6 +214,8 @@ sub add_item( $self, %data ) {
 
 =head2 C<< $c->edit_item( $item )
 
+  $c->edit_item( $item );
+
 Interactively edits an item and saves it if it was changed.
 
 =cut
@@ -245,7 +251,14 @@ sub edit_item( $self, $item ) {
     };
 }
 
-# Local
+=head2 C<< $c->delete_item( $item )
+
+  $c->delete_item( $item );
+
+Sets the status of an item to "deleted".
+
+=cut
+
 sub delete_item( $self, $item_id ) {
     my $item = App::mykeep::Item->load( $item_id );
     $item->delete();
