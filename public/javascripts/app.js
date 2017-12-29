@@ -479,7 +479,8 @@ function addItem(item) {
 
 function UIaddItem() {
     var entry = $('#newNoteBody');
-    var item= {
+    var id = Math.uuid().toUpperCase();
+    var item = {
         text: entry.val()
       , title: ""
       , labels: []
@@ -489,7 +490,7 @@ function UIaddItem() {
       , lastSyncedAt: undefined
       , archivedAt: undefined
       , status: "active"
-      , "id": Math.uuid().toUpper()
+      , "id": id
       , "displayStyle" : "display"
     };
     addItem(item);
