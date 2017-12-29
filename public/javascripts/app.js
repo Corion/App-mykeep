@@ -2,6 +2,17 @@
 
 /*
 
+Consider moving to SW Workbox
+
+https://developers.google.com/web/tools/workbox/
+
+It's the new hot shit, but needs Node.js and a lot of manual configuration
+before you can even start. Also, it is 3x the size of sw-toolbox.
+
+*/
+
+/*
+
 API:
 
   GET /notes/list
