@@ -446,8 +446,14 @@ function listItems() {
     var res =
         Promise.resolve($.get(url, null)).then(function(json) {
             console.log("Fetched from " + url, json);
-            json['notes'] = json['items'];
-            notes = defaultOrder( json['notes']);
+            if( typeof( json ) === 'string' ) {
+                if( !notes ) {
+                        notes = [];
+                }
+            } else {
+                json['notes'] = json['items'];
+                notes = defaultOrder( json['notes']);
+            };
         }, function(r1,r2) {
             console.log("jQuery error",[r1,r2]);
         });
