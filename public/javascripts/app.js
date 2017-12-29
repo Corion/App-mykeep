@@ -461,6 +461,16 @@ function UIlistItems() {
     })
 }
 
+function addItem(item) {
+    // XXX Should we save this promise here somewhere?!
+    saveItem(item).then(function(item) {
+        // ...
+        // console.log("Item saved");
+    });
+    // New items go to top, immediately
+    notes.unshift(item);
+}
+
 function UIaddItem() {
     var entry = $('#newNoteBody');
     var item= {
@@ -476,11 +486,7 @@ function UIaddItem() {
       , "id": Math.uuid().toUpper()
       , "displayStyle" : "display"
     };
-    saveItem(item).then(function(item) {
-        // ...
-    });
-    // New items go to top
-    notes.unshift(item);
+    addItem(item);
     entry.val('');
     repaintItems({"notes": notes});
 };
