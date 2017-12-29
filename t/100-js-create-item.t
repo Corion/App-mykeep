@@ -22,8 +22,8 @@ Dancer::config()->{mykeep}->{notes_dir} = tempdir(
 
 use WWW::Mechanize::Chrome;
 use Log::Log4perl qw(:easy);
-#Log::Log4perl->easy_init($ERROR);  # Set priority of root logger to ERROR
-Log::Log4perl->easy_init($TRACE);  # Set priority of root logger to ERROR
+Log::Log4perl->easy_init($ERROR);  # Set priority of root logger to ERROR
+#Log::Log4perl->easy_init($TRACE);  # Set priority of root logger to ERROR
 
 my @cleanup_directories;
 my $tempdir = tempdir( CLEANUP => 1 );
@@ -38,7 +38,7 @@ $mech = WWW::Mechanize::Chrome->new(
 $mech->get("http://127.0.0.1:$port");
 $mech->sleep(1);
 
-use Test::More tests => 13;
+use Test::More tests => 15;
 use Data::Dumper;
 
 # Check that the app has no errors:
@@ -91,6 +91,12 @@ $mech->emulateNetworkConditions(
     #connectionType => 'offline', # cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other.
 );
 
+$mech->clear_js_errors();
+
+my $console = $mech->add_listener('Runtime.consoleAPICalled', sub {
+    diag $_[0]->{params}->{args}->[0]->{value} || Dumper \@_;
+});
+
 ( $res, $type ) = $mech->eval_in_page(<<'JS');
     var item = {
         title : "Test title 2"
@@ -101,13 +107,20 @@ $mech->emulateNetworkConditions(
     };
     addItem( item );
     // Update the UI, just in case we run interactively
-    UIlistItems();
 JS
 is $type, 'undefined';
 @console_log = $mech->js_errors();
 is 0+@console_log, 0, "No errors in the browser console"
     or diag Dumper \@console_log;
 
+( $res, $type ) = $mech->eval_in_page(<<'JS');
+    UIlistItems();
+JS
+is $type, 'undefined';
+@console_log = $mech->js_errors();
+is 0+@console_log, 0, "No errors in the browser console"
+    or diag Dumper \@console_log;
+    
 ($res, $type) = $mech->eval_in_page("notes");
 is ref $res, 'ARRAY', "We get a list";
 is 0+@$res, 2, "... and that list has two elements"

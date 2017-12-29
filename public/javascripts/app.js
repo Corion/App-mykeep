@@ -142,7 +142,9 @@ function loadServerVersion() {
           , "url":"./version.json"
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(err) {
+        console.log("loadServerVersion:",err)
+    });
 }
 
 function saveSettings(newSettings) {
@@ -153,7 +155,9 @@ function saveSettings(newSettings) {
           , "data":JSON.stringify(newSettings)
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(err) {
+        console.log("saveSettings:",err)
+    });
 }
 
 // Settings.html
@@ -443,33 +447,36 @@ function repaintItems(items) {
 function listItems() {
     var url = urlTemplate("./notes/:user/list", {});
     console.log("Fetching '"+url+"' via jQuery");
-    var res =
-        Promise.resolve($.get(url, null)).then(function(json) {
+    return Promise.resolve($.get(url,null)).then(function(json) {
             console.log("Fetched from " + url, json);
-            if( typeof( json ) === 'string' ) {
-                if( !notes ) {
-                        notes = [];
-                }
-            } else {
-                json['notes'] = json['items'];
-                notes = defaultOrder( json['notes']);
-            };
-        }, function(r1,r2) {
-            console.log("jQuery error",[r1,r2]);
-        });
-    console.log(res);
-    return res
+            try {
+                if( typeof( json ) === 'string' ) {
+                    if( !notes ) {
+                            notes = [];
+                    }
+                } else {
+                    json['notes'] = json['items'];
+                    notes = defaultOrder( json['notes']);
+                };
+            } catch(err) {
+                console.log("Caught",err);
+            }
+    }).catch(function(r1,r2) {
+        console.log("jQuery error",[r1,r2]);
+    });
 };
 
+var p;
 function UIlistItems() {
-    listItems().then(function(json) {
+    p = listItems().then(function(json) {
         repaintItems({ "notes": notes });
-    })
+    }, function(err) { console.log("Caught UIlistItems",err)})
 }
 
+var s;
 function addItem(item) {
     // XXX Should we save this promise here somewhere?!
-    saveItem(item).then(function(item) {
+    s = saveItem(item).then(function(item) {
         // ...
         // console.log("Item saved");
     });
@@ -505,14 +512,16 @@ function saveItem(item) {
 
     // We unconditionally overwrite here and hope that the server will resolve
     // any conflicts, later
-    console.log("saving to", target, item);
+    console.log("saving to " + target, item);
     return Promise.resolve($.ajax({
             "type":"POST"
           , "url":target
           , "data":JSON.stringify(item)
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(err) {
+        // console.log("Caught error while saving, offline?", err);
+    });
 };
 
 function deleteItem(item) {
@@ -532,7 +541,9 @@ function deleteItem(item) {
           , "data":JSON.stringify(item)
           , "contentType": "application/json"
           , "processData":false
-    }));
+    })).catch(function(err) {
+        console.log("deleteItem:",err)
+    });
 }
 
 function UIswitchPage(url, parameters) {
@@ -554,6 +565,8 @@ function UIswitchPage(url, parameters) {
         // Push the URL onto the browser history
         // Call whatever initialization JS there is on the page
         // Or maybe there shouldn't be any!
+    }).catch(function(err) {
+        console.log("UIswitchPage:",err)
     });
     return nextPage
 }
