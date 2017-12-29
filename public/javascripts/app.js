@@ -27,6 +27,9 @@ API:
 
   That's all
 
+  In the future, keep a websocket open for Desktops and poll every five minutes
+  (or whenever) for changes on mobile.
+
 */
 
 var schemaVersion = '001.000.000';
