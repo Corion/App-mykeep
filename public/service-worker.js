@@ -38,7 +38,7 @@ const precacheFiles = [
 ];
 
 // Precache the files
-self.toolbox.precache(precacheFiles);
+//self.toolbox.precache(precacheFiles);
 
 // Fake the settings until I figure out how to do login etc.
 // We need them in the backend instead of the frontend for the requests we
