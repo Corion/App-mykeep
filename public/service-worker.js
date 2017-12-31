@@ -323,7 +323,9 @@ self.toolbox.router.post("./notes/:user/:id", function(request, values,options) 
     // What about partial uploads?! Or do we only do these here, not
     // in the client?!
     request.json().then( function(item) {
+        console.log("(sw) storing note");
         return storeItem(item).then(function( item ) {
+            console.log("(sw) stored");
             // stored, now trigger a sync event resp. mark for sync so the
             // mothership also learns of our changes
             markForSync(item, values);
@@ -381,7 +383,7 @@ self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
 self.toolbox.router.default = function(request, values,options) {
-    console.log("(sw) Default fetch called");
+    console.log("(sw) Default fetch called",request);
     return fetch(request);
 };
 
