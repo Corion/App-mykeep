@@ -291,7 +291,7 @@ function fetchNotes(values, options) {
 // in localforage.
 // Also, we shouldn't interpolate the user here
 self.toolbox.router.get("./notes/:user/list", function(request, values,options) {
-    console.log("(sw) fetch notes list called");
+    console.log("(sw) fetch notes list called for user", values);
 
     // XXX determine this from the headers or the query part of the URL
     //     or whatever
