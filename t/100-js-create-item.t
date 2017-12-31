@@ -41,6 +41,10 @@ $mech = WWW::Mechanize::Chrome->new(
 $mech->get("http://127.0.0.1:$port");
 $mech->sleep(1);
 
+my $console = $mech->add_listener('Runtime.consoleAPICalled', sub {
+    diag $_[0]->{params}->{args}->[0]->{value} || Dumper \@_;
+});
+
 
 # Check that the app has no errors:
 my @console_log = $mech->js_errors();
@@ -93,11 +97,6 @@ $mech->emulateNetworkConditions(
 );
 
 $mech->clear_js_errors();
-
-my $console = $mech->add_listener('Runtime.consoleAPICalled', sub {
-    diag $_[0]->{params}->{args}->[0]->{value} || Dumper \@_;
-});
-
 ( $res, $type ) = $mech->eval_in_page(<<'JS');
     var item = {
         title : "Test title 2"
