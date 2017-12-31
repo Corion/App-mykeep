@@ -27,7 +27,6 @@ Dancer::config()->{mykeep}->{notes_dir} = tempdir(
     CLEANUP => 1,
 );
 
-
 my @cleanup_directories;
 my $tempdir = tempdir( CLEANUP => 1 );
 
@@ -38,13 +37,14 @@ $mech = WWW::Mechanize::Chrome->new(
     #headless => 1,
 );
 
-$mech->get("http://127.0.0.1:$port");
-$mech->sleep(1);
+$mech->clear_js_errors();
 
 my $console = $mech->add_listener('Runtime.consoleAPICalled', sub {
     diag $_[0]->{params}->{args}->[0]->{value} || Dumper \@_;
 });
 
+$mech->get("http://127.0.0.1:$port");
+$mech->sleep(5); # boot up service worker
 
 # Check that the app has no errors:
 my @console_log = $mech->js_errors();
@@ -96,7 +96,6 @@ $mech->emulateNetworkConditions(
     #connectionType => 'offline', # cellular2g, cellular3g, cellular4g, bluetooth, ethernet, wifi, wimax, other.
 );
 
-$mech->clear_js_errors();
 ( $res, $type ) = $mech->eval_in_page(<<'JS');
     var item = {
         title : "Test title 2"
@@ -127,6 +126,8 @@ is 0+@$res, 2, "... and that list has two elements"
     or diag Dumper $res;
 is $res->[0]->{title}, 'Test title 2', "We find our inserted item at the top";
 
+# Now, look that we wrote stuff to the database
+
 # This part hangs somewhere...
 ## now, reload the page and find both items still there from the local copy
 #$mech->get("http://127.0.0.1:$port");
@@ -138,6 +139,8 @@ is $res->[0]->{title}, 'Test title 2', "We find our inserted item at the top";
 #    or diag Dumper $res;
 #is $res->[0]->{title}, 'Test title 2', "We find our inserted item at the top";
 #is $res->[1]->{title}, 'Test title', "We find the first item as well";
+
+
 
 undef $mech;
 sleep 1;
