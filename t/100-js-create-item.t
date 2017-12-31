@@ -3,6 +3,13 @@ use strict;
 use Twiggy::Server;
 use Dancer::Test;
 use File::Temp 'tempdir';
+use WWW::Mechanize::Chrome;
+use Log::Log4perl qw(:easy);
+use Data::Dumper;
+use Test::More tests => 15;
+
+Log::Log4perl->easy_init($ERROR);  # Set priority of root logger to ERROR
+#Log::Log4perl->easy_init($TRACE);  # Set priority of root logger to ERROR
 
 my $port = 5099;
 my $server = Twiggy::Server->new(
@@ -20,10 +27,6 @@ Dancer::config()->{mykeep}->{notes_dir} = tempdir(
     CLEANUP => 1,
 );
 
-use WWW::Mechanize::Chrome;
-use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($ERROR);  # Set priority of root logger to ERROR
-#Log::Log4perl->easy_init($TRACE);  # Set priority of root logger to ERROR
 
 my @cleanup_directories;
 my $tempdir = tempdir( CLEANUP => 1 );
@@ -38,8 +41,6 @@ $mech = WWW::Mechanize::Chrome->new(
 $mech->get("http://127.0.0.1:$port");
 $mech->sleep(1);
 
-use Test::More tests => 15;
-use Data::Dumper;
 
 # Check that the app has no errors:
 my @console_log = $mech->js_errors();
