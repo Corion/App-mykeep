@@ -40,7 +40,9 @@ $mech = WWW::Mechanize::Chrome->new(
 $mech->clear_js_errors();
 
 my $console = $mech->add_listener('Runtime.consoleAPICalled', sub {
-    diag $_[0]->{params}->{args}->[0]->{value} || Dumper \@_;
+    diag join ", ",
+        map { $_->{value} // $_->{description} }
+        @{ $_[0]->{params}->{args} };
 });
 
 $mech->get("http://127.0.0.1:$port");
