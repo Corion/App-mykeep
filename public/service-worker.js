@@ -1,11 +1,17 @@
 // https://bitsofco.de/bitsofcode-pwa-part-1-offline-first-with-service-worker/
 // Import the Service Worker Toolbox file
-'use strict';
+"use strict";
 importScripts(
-    './javascripts/sw-toolbox.js',
+    './javascripts/workbox-sw/workbox-sw.js',
     './javascripts/localforage.js'
 );
-self.toolbox.options.debug = true;
+const workbox = new WorkboxSW({
+    skipWaiting : true
+  , clientsClaim : true
+});
+
+//workbox.setConfig({
+//});
 
 // In the long run, fill the cache ourselves and request/match up the
 // digests between the local version and the live version
@@ -14,31 +20,40 @@ self.toolbox.options.debug = true;
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto
 // If we are online and at least 24 hours have passed, we should check
 // the checksums to see if we need to upgrade
+// The idea of workbox is to run yet another deployment step to recalculate
+// the hashes of all cached files and use that...
+// We just use a static file for the time being
+
+const revisionHash = new Date();
 
 const precacheFiles = [
-/*
-    './favicon.ico',
-    './index.html',
-    './search.html',
-    './settings.html',
-    './settings.json',
-    './version.json',
-    './javascripts/jquery-3.1.1.min.js',
-    './javascripts/handlebars-v4.0.5.js',
-    './javascripts/localforage.js',
-    './javascripts/morphdom-v2.3.2.js',
-    './javascripts/Math.uuid.js',
-    './service-worker.js',
-    './javascripts/sw-companion.js',
-    './javascripts/app.js',
-    './css/app.css',
-    './css/error.css',
-    './css/style.css'
+    // This will later be the md5 of each file, or something instead of this
+    // cache-busting approach of supplying a fresh hash every time:
+    /*
+      { url: './favicon.ico', revision: revisionHash }
+    , { url: './index.html', revision: revisionHash }
+    , { url: './search.html', revision: revisionHash }
+    , { url: './settings.html', revision: revisionHash }
+    , { url: './settings.json', revision: revisionHash }
+    , { url: './version.json', revision: revisionHash }
+    
+    // libraries
+    , { url: './javascripts/jquery-3.1.1.min.js', revision: revisionHash }
+    , { url: './javascripts/handlebars-v4.0.5.js', revision: revisionHash }
+    , { url: './javascripts/localforage.js', revision: revisionHash }
+    , { url: './javascripts/morphdom-v2.3.2.js', revision: revisionHash }
+    , { url: './javascripts/Math.uuid.js', revision: revisionHash }
+    // workbox-sw stuff, needs the whole directory
+    , { url: './javascripts/workbox-sw/workbox-sw.js', revision: revisionHash }
+    
+    // app
+    , { url: './service-worker.js', revision: revisionHash }
+    , { url: './javascripts/app.js', revision: revisionHash }
+    , { url: './css/app.css', revision: revisionHash }
+    , { url: './css/error.css', revision: revisionHash }
+    , { url: './css/style.css', revision: revisionHash }
     */
 ];
-
-// Precache the files
-//self.toolbox.precache(precacheFiles);
 
 // Fake the settings until I figure out how to do login etc.
 // We need them in the backend instead of the frontend for the requests we
@@ -85,12 +100,16 @@ self.addEventListener('activate', function(event) {
 // This is not an elegant way of upgrading. Ideally, we would download
 // _all_ of the new URLs and then switch to them atomically. Oh well.
 // Also, we would only update the changed parts and not everything. Oh well.
+// Maybe Workbox handles this better than Toolbox with its "broadcast" approach
+// for precached stuff
 function update() {
     var url;
+    /*
     precacheFiles.forEach( function( url, i ) {
         self.toolbox.uncache( url );
         self.toolbox.cache( url );
     });
+    */
 }
 
 localforage.config({
@@ -287,25 +306,29 @@ function fetchNotes(values, options) {
 
 // Consider storing as blobs, always, as we need to decode manually anyway
 
-// Uuh - we shouldn't use the toolbox here but do our own cache lookup
+// Uuh - we shouldn't use the workbox here but do our own cache lookup
 // in localforage.
 // Also, we shouldn't interpolate the user here
-self.toolbox.router.get("./notes/:user/list", function(request, values,options) {
-    console.log("(sw) fetch notes list called for user", values);
+const listNotes = new workboxSW.routing.ExpressRoute({
+    path : "./notes/:user/list",
+    handler : function(event, params) {
+        console.log("(sw) fetch notes list called for user", event, params);
 
-    // XXX determine this from the headers or the query part of the URL
-    //     or whatever
-    var options = {remote: true};
+        // XXX determine this from the headers or the query part of the URL
+        //     or whatever
+        var options = {remote: true};
 
-    // Return the local list first, and later update it
-    return fetchNotes(values, options).then(function(cannedNotes) {
-        var payload = JSON.stringify({ "items" : cannedNotes });
-        return new Response(payload, {
-            "status": 200,
-            "headers": { 'Content-Type': 'application/json' }
+        // Return the local list first, and later update it
+        return fetchNotes(values, options).then(function(cannedNotes) {
+            var payload = JSON.stringify({ "items" : cannedNotes });
+            return new Response(payload, {
+                "status": 200,
+                "headers": { 'Content-Type': 'application/json' }
+            });
         });
-    });
+    }
 });
+workbox.router.registerRoute({ "route" : route });
 
 function storeItem(item) {
     console.log("(sw) Storing " + item.id + " locally");
@@ -314,6 +337,7 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
+/*
 self.toolbox.router.post("./notes/:user/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
@@ -354,6 +378,7 @@ self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,op
     // Nothing to say here
     return new Response();
 });
+*/
 
 // Hacky url template implementation
 // Lacks for example %-escaping
@@ -378,15 +403,18 @@ function httpPost(item, values) {
 
 // Maybe later reduce this so that the network request gets made only once
 // per 24 hours or something configurable
+/*
 self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
+*/
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
+/*
 self.toolbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called",request);
     return fetch(request);
 };
-
+*/
 // toolbox.router.default = toolbox.cacheFirst;
 
 // Mark an item as to-be-synced
@@ -424,7 +452,6 @@ function markForSync(item, values) {
       }).catch(function(e) {
           console.log("POST failed, maybe we are offline?")
       });
-    //}
 }
 
 // onsync handler
@@ -441,5 +468,9 @@ self.addEventListener('sync', function(event) {
               // our local copy if necessary, and update the UI if necessary
           })
       );
-  }
+    }
 });
+
+// your custom service worker logic here
+
+workbox.precache([]);
