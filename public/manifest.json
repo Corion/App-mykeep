@@ -22,4 +22,18 @@
   "display":"standalone",
   "background":"#7F7F7F",
   "theme_color":"#FFE040"
+  "related_applications": [
+      {
+        "platform": "Web"
+      }
+      /*, {
+        "platform": "play",
+        "url": "https://play.google.com/store/apps/details?id=cheeaun.hackerweb"
+      }
+      , {
+        "platform": "itunes",
+        "url": "https://play.google.com/store/apps/details?id=cheeaun.hackerweb"
+      }
+      */
+  ]
 }
