@@ -462,7 +462,7 @@ function listItems() {
                 console.log("Caught",err);
             }
     }).catch(function(r1,r2) {
-        console.log("jQuery error",[r1,r2]);
+        console.log("Caught jQuery error",[r1,r2]);
     });
 };
 
