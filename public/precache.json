@@ -1,0 +1,24 @@
+{ precache: [
+      { url: "./favicon.ico", revision: "0" }
+    , { url: "./index.html", revision: "0" }
+    , { url: "./search.html", revision: "0" }
+    , { url: "./settings.html", revision: "0" }
+    , { url: "./settings.json", revision: "0" }
+    , { url: "./version.json", revision: "0" }
+    
+    // libraries
+    , { url: "./javascripts/jquery-3.1.1.min.js", revision: "0" }
+    , { url: "./javascripts/handlebars-v4.0.5.js", revision: "0" }
+    , { url: "./javascripts/localforage.js", revision: "0" }
+    , { url: "./javascripts/morphdom-v2.3.2.js", revision: "0" }
+    , { url: "./javascripts/Math.uuid.js", revision: "0" }
+    // workbox-sw stuff, needs the whole directory
+    , { url: "./javascripts/workbox-sw/workbox-sw.js", revision: "0" }
+    
+    // app
+    , { url: "./service-worker.js", revision: "0" }
+    , { url: "./javascripts/app.js", revision: "0" }
+    , { url: "./css/app.css", revision: "0" }
+    , { url: "./css/error.css", revision: "0" }
+    , { url: "./css/style.css", revision: "0" }
+]}
