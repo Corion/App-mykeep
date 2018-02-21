@@ -8,13 +8,11 @@ importScripts(
     './javascripts/workbox-sw/workbox-routing.dev.js',
     './javascripts/localforage.js'
 );
-const workbox = new WorkboxSW({
+
+self.workbox.setConfig({
     skipWaiting : true
   , clientsClaim : true
 });
-
-//workbox.setConfig({
-//});
 
 // In the long run, fill the cache ourselves and request/match up the
 // digests between the local version and the live version
@@ -312,9 +310,12 @@ function fetchNotes(values, options) {
 // Uuh - we shouldn't use the workbox here but do our own cache lookup
 // in localforage.
 // Also, we shouldn't interpolate the user here
-const listNotes = new workboxSW.routing.ExpressRoute({
-    path : "./notes/:user/list",
-    handler : function(event, params) {
+
+const WBrouting = self.workbox.routing;
+const base = self.location.origin;
+const listNotes = WBrouting.registerRoute(
+    base + "/notes/:user/list",
+    function(event, params) {
         console.log("(sw) fetch notes list called for user", event, params);
 
         // XXX determine this from the headers or the query part of the URL
@@ -330,8 +331,8 @@ const listNotes = new workboxSW.routing.ExpressRoute({
             });
         });
     }
-});
-workbox.router.registerRoute({ "route" : route });
+    , 'GET'
+);
 
 function storeItem(item) {
     console.log("(sw) Storing " + item.id + " locally");
@@ -340,8 +341,7 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-/*
-self.toolbox.router.post("./notes/:user/:id", function(request, values,options) {
+WBrouting.registerRoute(base+"/notes/:user/:id", function(request, values,options) {
     console.log("(sw) save note called");
     //var payload = JSON.stringify(cannedNotes);
 
@@ -361,9 +361,9 @@ self.toolbox.router.post("./notes/:user/:id", function(request, values,options) 
 
     // Nothing to say here
     return new Response();
-});
+},'POST');
 
-self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,options) {
+WBrouting.registerRoute(base+"/notes/:user/:id/delete", function(request, values,options) {
     console.log("(sw) delete note called");
 
     // Store locally as object
@@ -380,8 +380,7 @@ self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,op
 
     // Nothing to say here
     return new Response();
-});
-*/
+},'POST');
 
 // Hacky url template implementation
 // Lacks for example %-escaping
@@ -407,18 +406,18 @@ function httpPost(item, values) {
 // Maybe later reduce this so that the network request gets made only once
 // per 24 hours or something configurable
 /*
-self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
+self.workbox.router.get("./version.json", work.fastest, { debug: true});
 */
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
 /*
-self.toolbox.router.default = function(request, values,options) {
+self.workbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called",request);
     return fetch(request);
 };
 */
-// toolbox.router.default = toolbox.cacheFirst;
+// workbox.router.default = toolbox.cacheFirst;
 
 // Mark an item as to-be-synced
 // The item must have been stored completely in localforage because we don't
@@ -428,7 +427,9 @@ function markForSync(item, values) {
     // https://developers.google.com/web/updates/2015/12/background-sync
     // This seems to be intended for the page, not for the service worker
     // but I don't want to split the communication logic in two parts, again
-    /*
+    
+    // This should be workbox.BackgroundSync.Queue
+    // See https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-background-sync.Queue
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
       navigator.serviceWorker.ready.then(function(reg) {
           console.log("Background-sync event launched", item.id);
@@ -444,7 +445,6 @@ function markForSync(item, values) {
       console.log("No service worker sync events available, using direct comm");
       // serviceworker/sync not supported
       // postDataFromThePage();
-    */
       return httpPost(item, values).then(function(r){
           // item.lastSyncedAt = Math.floor((new Date).getTime() / 1000);
           // And update our local copy as well
@@ -455,10 +455,11 @@ function markForSync(item, values) {
       }).catch(function(e) {
           console.log("POST failed, maybe we are offline?")
       });
+    }
 }
-
 // onsync handler
 // compare the two items and revert to the newer
+
 self.addEventListener('sync', function(event) {
     var match = event.tag.match(/^mykeep-sync-(.*)/);
     if (match) {
@@ -475,5 +476,3 @@ self.addEventListener('sync', function(event) {
 });
 
 // your custom service worker logic here
-
-workbox.precache([]);
