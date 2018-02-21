@@ -312,15 +312,17 @@ function fetchNotes(values, options) {
 // Also, we shouldn't interpolate the user here
 
 const WBrouting = self.workbox.routing;
-const base = self.location.origin;
+const base = self.location.origin.replace(/[.]/, "\\.");
+
 const listNotes = WBrouting.registerRoute(
-    base + "/notes/:user/list",
-    function(event, params) {
-        console.log("(sw) fetch notes list called for user", event, params);
+    new RegExp(base+"/notes\/(\\w+)/list$"),
+    function(event) {
+        console.log("(sw) fetch notes list called for user", event);
 
         // XXX determine this from the headers or the query part of the URL
         //     or whatever
         var options = {remote: true};
+        var values = {user:event.params[0]};
 
         // Return the local list first, and later update it
         return fetchNotes(values, options).then(function(cannedNotes) {
@@ -341,9 +343,14 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-WBrouting.registerRoute(base+"/notes/:user/:id", function(request, values,options) {
-    console.log("(sw) save note called");
+// http://localhost:5000/notes/public/4014E362-C188-428B-A25B-9A3815504AEF 
+console.log(new RegExp(base+"/notes/(\\w+)/([-a-fA-F0-9]+)$"));
+WBrouting.registerRoute(new RegExp(base+"/notes/(\\w+)/([-a-fA-F0-9]+)$"), function(args) {
+    console.log("(sw) save not  e called", args);
     //var payload = JSON.stringify(cannedNotes);
+    var params = args.params;
+    var values = { user: params[0], note : params[1] };
+    var request = args.event.request;
 
     // Store locally as object
     // What about attachments like images?!
@@ -363,7 +370,7 @@ WBrouting.registerRoute(base+"/notes/:user/:id", function(request, values,option
     return new Response();
 },'POST');
 
-WBrouting.registerRoute(base+"/notes/:user/:id/delete", function(request, values,options) {
+WBrouting.registerRoute(base+"/notes/(\\w+)/([a-fA-F0-9-]+)/delete", function(request, values,options) {
     console.log("(sw) delete note called");
 
     // Store locally as object
