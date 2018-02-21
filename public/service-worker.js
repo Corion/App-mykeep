@@ -25,7 +25,7 @@ self.workbox.setConfig({
 // the hashes of all cached files and use that...
 // We just use a static file for the time being
 
-const revisionHash = new Date();
+//const revisionHash = new Date();
 
 const precacheFiles = [
     // This will later be the md5 of each file, or something instead of this
@@ -64,7 +64,7 @@ var settings = {
         user : 'public'
       , password : 'public'
     },
-    uplink : '', // this should be the URL of our uplink server, basically the
+    uplink : '' // this should be the URL of our uplink server, basically the
     // URL we fetched this page from(?!)
 }
 
