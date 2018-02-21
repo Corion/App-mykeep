@@ -1,8 +1,11 @@
 // https://bitsofco.de/bitsofcode-pwa-part-1-offline-first-with-service-worker/
 // Import the Service Worker Toolbox file
 "use strict";
+
 importScripts(
     './javascripts/workbox-sw/workbox-sw.js',
+    './javascripts/workbox-sw/workbox-core.dev.js',
+    './javascripts/workbox-sw/workbox-routing.dev.js',
     './javascripts/localforage.js'
 );
 const workbox = new WorkboxSW({
