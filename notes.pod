@@ -67,6 +67,11 @@ Sync with IMAP server-side for iDevice import/sync magic
 
 Export all data as one JSON file (from /notes/list, duh)
 
+=item *
+
+Move to deeper structured notes like Google Keep. Especially allow
+(single-level) nested lists.
+
 =back
 
 =head1 FEATURES
