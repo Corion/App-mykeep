@@ -226,6 +226,9 @@ sub edit_item( $self, $item ) {
     # magic
     my $p = $item->payload;
     my $t = delete $p->{text} || '';
+
+    # XXX convert $item to markdown for editing instead
+
     my %edit; @edit{ @userfields } = @{$p}{ @userfields };
     delete $edit{ text };
     my $tfm = Text::FrontMatter::YAML->new(
