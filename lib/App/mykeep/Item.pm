@@ -26,6 +26,9 @@ our @note_property_keys= qw(
     schemaVersion
     syncSetting
     status
+
+    superListItemId
+    superListItemServerId
 );
 
 our @note_keys = ('id', @note_property_keys );
