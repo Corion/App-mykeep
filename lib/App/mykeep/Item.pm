@@ -27,6 +27,8 @@ our @note_property_keys= qw(
     syncSetting
     status
 
+    parentId
+    parentServerId
     superListItemId
     superListItemServerId
 );
