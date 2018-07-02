@@ -67,6 +67,14 @@ Sync with IMAP server-side for iDevice import/sync magic
 
 Export all data as one JSON file (from /notes/list, duh)
 
+=item *
+
+Use C<Cache-Control: immutable> on the Javascript assets, once we're stable
+enough
+
+This means that the browser won't even try to ask for assets as long as their
+expiration hasn't passed yet.
+
 =back
 
 =head1 FEATURES
