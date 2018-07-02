@@ -70,6 +70,9 @@ my %module = (
         'Text::FrontMatter::YAML' => 0,
         'File::HomeDir'           => 0,
     },
+    TEST_REQUIRES => {
+        'Twiggy' => 0,
+    },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'App-mykeep-*' },
     test                => { TESTS => join( ' ', @tests ) },
