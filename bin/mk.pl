@@ -176,6 +176,10 @@ Edit a note found by the text after the switch
 Find a note identified by the first argument and append the rest of the
 command line arguments to the note body.
 
+=item --serve
+
+Start a local web server to edit the local notes
+
 =back
 
 =cut
