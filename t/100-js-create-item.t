@@ -142,7 +142,5 @@ is $res->[0]->{title}, 'Test title 2', "We find our inserted item at the top";
 #is $res->[0]->{title}, 'Test title 2', "We find our inserted item at the top";
 #is $res->[1]->{title}, 'Test title', "We find the first item as well";
 
-
-
 undef $mech;
 sleep 1;

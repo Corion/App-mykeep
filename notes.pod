@@ -75,6 +75,11 @@ enough
 This means that the browser won't even try to ask for assets as long as their
 expiration hasn't passed yet.
 
+=item *
+
+Move to deeper structured notes like Google Keep. Especially allow
+(single-level) nested lists.
+
 =back
 
 =head1 FEATURES

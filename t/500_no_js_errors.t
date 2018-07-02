@@ -22,6 +22,7 @@ my $server = helper::spawn_app( $port );
 Dancer::config()->{mykeep}->{notes_dir} = tempdir();
 
 my $mech = helper::spawn_chrome(
+    headless => 1,
 );
 
 my $url = "http://localhost:$port/";

@@ -1,17 +1,18 @@
 // https://bitsofco.de/bitsofcode-pwa-part-1-offline-first-with-service-worker/
 // Import the Service Worker Toolbox file
 "use strict";
+
 importScripts(
     './javascripts/workbox-sw/workbox-sw.js',
+    './javascripts/workbox-sw/workbox-core.dev.js',
+    './javascripts/workbox-sw/workbox-routing.dev.js',
     './javascripts/localforage.js'
 );
-const workbox = new WorkboxSW({
+
+self.workbox.setConfig({
     skipWaiting : true
   , clientsClaim : true
 });
-
-//workbox.setConfig({
-//});
 
 // In the long run, fill the cache ourselves and request/match up the
 // digests between the local version and the live version
@@ -24,7 +25,7 @@ const workbox = new WorkboxSW({
 // the hashes of all cached files and use that...
 // We just use a static file for the time being
 
-const revisionHash = new Date();
+//const revisionHash = new Date();
 
 const precacheFiles = [
     // This will later be the md5 of each file, or something instead of this
@@ -63,7 +64,7 @@ var settings = {
         user : 'public'
       , password : 'public'
     },
-    uplink : '', // this should be the URL of our uplink server, basically the
+    uplink : '' // this should be the URL of our uplink server, basically the
     // URL we fetched this page from(?!)
 }
 
@@ -309,14 +310,19 @@ function fetchNotes(values, options) {
 // Uuh - we shouldn't use the workbox here but do our own cache lookup
 // in localforage.
 // Also, we shouldn't interpolate the user here
-const listNotes = new workboxSW.routing.ExpressRoute({
-    path : "./notes/:user/list",
-    handler : function(event, params) {
-        console.log("(sw) fetch notes list called for user", event, params);
+
+const WBrouting = self.workbox.routing;
+const base = self.location.origin.replace(/[.]/, "\\.");
+
+const listNotes = WBrouting.registerRoute(
+    new RegExp(base+"/notes\/(\\w+)/list$"),
+    function(event) {
+        console.log("(sw) fetch notes list called for user", event);
 
         // XXX determine this from the headers or the query part of the URL
         //     or whatever
         var options = {remote: true};
+        var values = {user:event.params[0]};
 
         // Return the local list first, and later update it
         return fetchNotes(values, options).then(function(cannedNotes) {
@@ -327,8 +333,8 @@ const listNotes = new workboxSW.routing.ExpressRoute({
             });
         });
     }
-});
-workbox.router.registerRoute({ "route" : route });
+    , 'GET'
+);
 
 function storeItem(item) {
     console.log("(sw) Storing " + item.id + " locally");
@@ -337,10 +343,14 @@ function storeItem(item) {
 
 // Uuh - we shouldn't use the toolbox here but do our own cache lookup
 // in localforage.
-/*
-self.toolbox.router.post("./notes/:user/:id", function(request, values,options) {
-    console.log("(sw) save note called");
+// http://localhost:5000/notes/public/4014E362-C188-428B-A25B-9A3815504AEF 
+console.log(new RegExp(base+"/notes/(\\w+)/([-a-fA-F0-9]+)$"));
+WBrouting.registerRoute(new RegExp(base+"/notes/(\\w+)/([-a-fA-F0-9]+)$"), function(args) {
+    console.log("(sw) save not  e called", args);
     //var payload = JSON.stringify(cannedNotes);
+    var params = args.params;
+    var values = { user: params[0], note : params[1] };
+    var request = args.event.request;
 
     // Store locally as object
     // What about attachments like images?!
@@ -358,9 +368,9 @@ self.toolbox.router.post("./notes/:user/:id", function(request, values,options) 
 
     // Nothing to say here
     return new Response();
-});
+},'POST');
 
-self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,options) {
+WBrouting.registerRoute(base+"/notes/(\\w+)/([a-fA-F0-9-]+)/delete", function(request, values,options) {
     console.log("(sw) delete note called");
 
     // Store locally as object
@@ -377,8 +387,7 @@ self.toolbox.router.post("./notes/:user/:id/delete", function(request, values,op
 
     // Nothing to say here
     return new Response();
-});
-*/
+},'POST');
 
 // Hacky url template implementation
 // Lacks for example %-escaping
@@ -404,18 +413,18 @@ function httpPost(item, values) {
 // Maybe later reduce this so that the network request gets made only once
 // per 24 hours or something configurable
 /*
-self.toolbox.router.get("./version.json", toolbox.fastest, { debug: true});
+self.workbox.router.get("./version.json", work.fastest, { debug: true});
 */
 
 // Automatically store all notes we download in the cache
 // Even incomplete items, so we know what to fetch later
 /*
-self.toolbox.router.default = function(request, values,options) {
+self.workbox.router.default = function(request, values,options) {
     console.log("(sw) Default fetch called",request);
     return fetch(request);
 };
 */
-// toolbox.router.default = toolbox.cacheFirst;
+// workbox.router.default = toolbox.cacheFirst;
 
 // Mark an item as to-be-synced
 // The item must have been stored completely in localforage because we don't
@@ -425,7 +434,9 @@ function markForSync(item, values) {
     // https://developers.google.com/web/updates/2015/12/background-sync
     // This seems to be intended for the page, not for the service worker
     // but I don't want to split the communication logic in two parts, again
-    /*
+    
+    // This should be workbox.BackgroundSync.Queue
+    // See https://developers.google.com/web/tools/workbox/reference-docs/latest/module-workbox-background-sync.Queue
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
       navigator.serviceWorker.ready.then(function(reg) {
           console.log("Background-sync event launched", item.id);
@@ -441,7 +452,6 @@ function markForSync(item, values) {
       console.log("No service worker sync events available, using direct comm");
       // serviceworker/sync not supported
       // postDataFromThePage();
-    */
       return httpPost(item, values).then(function(r){
           // item.lastSyncedAt = Math.floor((new Date).getTime() / 1000);
           // And update our local copy as well
@@ -452,10 +462,11 @@ function markForSync(item, values) {
       }).catch(function(e) {
           console.log("POST failed, maybe we are offline?")
       });
+    }
 }
-
 // onsync handler
 // compare the two items and revert to the newer
+
 self.addEventListener('sync', function(event) {
     var match = event.tag.match(/^mykeep-sync-(.*)/);
     if (match) {
@@ -472,5 +483,3 @@ self.addEventListener('sync', function(event) {
 });
 
 // your custom service worker logic here
-
-workbox.precache([]);

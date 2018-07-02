@@ -39,6 +39,11 @@ has [@note_property_keys] => (
     is => 'rw',
 );
 
+has _entries => (
+    is => 'ro',
+    default => sub { [] },
+);
+
 has id => (
     is => 'lazy',
     default => sub {
@@ -111,6 +116,11 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     $upgraded{modifiedAt}    ||= 0;
     $upgraded{lastSyncedAt}  ||= 0;
     $upgraded{id}            = uc($upgraded{id} || uuid());
+    
+    # XXX also append the items in a proper manner
+    # How can/will we keep the subitem metadata when converting to/from
+    # markdown?!
+    
     return \%upgraded
 }
 
