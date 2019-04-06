@@ -10,6 +10,16 @@ Use Damerau-Levensthein-search instead of (just) simple substring search
 
 =item *
 
+Add language field for each note
+
+=item *
+
+Use stemming search instead of (just) simple substring search
+
+See L<Lingua::Stem::Any>
+
+=item *
+
 Use L<HTTP::Upload::FlowJs> for sync, with web worker
 
 This would help with flaky connections and large images. Currently each
