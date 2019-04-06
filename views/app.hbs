@@ -28,6 +28,15 @@
           \{\{#ifCond title "||" edit}}
           <h2 contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{title}}</h2>
           \{\{/ifCond}}
+          <!-- Rendering of the note content -->
+          <!-- Render any image -->
+          <!-- Render any list -->
+    <ul class="note-part-list">
+        <li class="list-top"><span class="draghandle"></span><input type="checkbox">Top-level item 1</li>
+        <li class="list-child"><span class="draghandle"/></span><input type="checkbox">Child item 1.3</li>
+        <li class="list-child"><span class="draghandle"/></span><input type="checkbox">Child item 1.2</li>
+        <li class="list-top"><span class="draghandle"/></span><input type="checkbox">Child item 2</li>
+    </ul>
           <!-- Render any text/html content -->
           \{\{#if text}}
           <div class="note-part-text">\{\{text}}</div>
@@ -73,6 +82,16 @@
         \{\{/if}}
     </div>
     <h2 contenteditable="true">\{\{title}}</h2>
+
+          <!-- Rendering of the note content -->
+          <!-- Render any image -->
+          <!-- Render any list -->
+    <ul class="note-part-list">
+        <li class="list-top"><span class="draghandle"></span><input type="checkbox">Top-level item 1</li>
+        <li class="list-child"><span class="draghandle"/></span><input type="checkbox">Child item 1.3</li>
+        <li class="list-child"><span class="draghandle"/></span><input type="checkbox">Child item 1.2</li>
+        <li class="list-top"><span class="draghandle"/></span><input type="checkbox">Child item 2</li>
+    </ul>
           <!-- Render any text/html content -->
           \{\{#if text}}
           <div class="note-part-text" contenteditable="true">\{\{text}}</div>

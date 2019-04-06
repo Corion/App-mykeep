@@ -72,6 +72,12 @@ span[contentEditable] {
     transition:         width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
 }
 
+.note-part-list {
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+}
+
 span.draghandle {
     content: "....";
     width: 10px;
@@ -88,6 +94,14 @@ span.draghandle {
 
 span.draghandle::after {
     content: '.. .. .. ..';
+}
+
+li.list-top {
+    padding-left: 0px;
+}
+
+li.list-child {
+    padding-left: 16px;
 }
 
 .note-edit {
