@@ -317,7 +317,7 @@ sub verify_session( $account, $request ) {
     };
 
     if( ! session->{user}) {
-        $account = 'public';
+        $account = find_login('public');
         session('user' => $account);
         warning "Forcing account to '$account'";
     };
