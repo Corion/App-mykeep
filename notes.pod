@@ -6,6 +6,10 @@ App::mykeep
 
 =item *
 
+Use Damerau-Levensthein-search instead of (just) simple substring search
+
+=item *
+
 Use L<HTTP::Upload::FlowJs> for sync, with web worker
 
 This would help with flaky connections and large images. Currently each
