@@ -1,6 +1,6 @@
 package App::mykeep::Item;
 use strict;
-use Moo;
+use Moo 2;
 use Filter::signatures;
 use feature 'signatures';
 no warnings 'experimental::signatures';
