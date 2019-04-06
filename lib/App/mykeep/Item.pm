@@ -8,6 +8,8 @@ use Path::Class;
 use Storable 'dclone';
 use List::Util 'max';
 
+use Lingua::Identify::CLD;
+
 use JSON::XS qw(decode_json encode_json);
 use UUID 'uuid';
 
@@ -33,6 +35,8 @@ our @note_property_keys= qw(
     superListItemId
     superListItemServerId
 );
+
+our $cld;
 
 our @note_keys = ('id', @note_property_keys );
 
@@ -118,6 +122,10 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     $upgraded{id}            = uc($upgraded{id} || uuid());
 
     # 001.001.000, adding "language"
+    $cld ||= Lingua::Identify::CLD->new();
+    my $text = $upgraded{text};
+    $upgraded{language}      ||= $cld->identify($text);
+
     $upgraded{schemaVersion} ||= $schemaVersion;
 
     # XXX also append the items in a proper manner
