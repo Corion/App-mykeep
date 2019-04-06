@@ -194,6 +194,9 @@ get '/settings.json' => sub {
     # Should we sign the credentials, JWT-style?!
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
+    if( ref $user ) {
+        $user = $user->{user};
+    };
     if( my $account = verify_session( $user, request )) {
         return to_json +{
             lastSynced => time,
@@ -202,6 +205,9 @@ get '/settings.json' => sub {
             useFrontCamera => 0,
             credentials => user_credentials($user),
         };
+    } else {
+        warning "Unknown user '$user'";
+        status 404;
     };
 };
 
@@ -209,6 +215,7 @@ post '/settings.json' => sub {
     content_type 'application/json; charset=utf-8';
     my $user = session('user');
     if( my $account = verify_session( $user, request )) {
+    warning "Settings for $user";
         return to_json +{
             lastSynced => time,
             version => $VERSION,
@@ -216,6 +223,9 @@ post '/settings.json' => sub {
             # Per-device settings - we shouldn't store them here?!
             useFrontCamera => 0,
         };
+    } else {
+        warning "Unknown user '$user'";
+        status 404;
     };
 };
 
@@ -311,10 +321,11 @@ sub verify_session( $account, $request ) {
         session('user' => $account);
         warning "Forcing account to '$account'";
     };
-    (session->{user} && (session->{user} eq $account))
+
+    (session->{user} && (session->{user}->{user} eq $account))
         or return;
 
-    my $account_entry = find_login( session->{user} );
+    my $account_entry = find_login( session->{user}->{user} );
     return unless $account_entry;
 
     my $account_dir = account_dir( $account_entry );
