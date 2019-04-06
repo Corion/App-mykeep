@@ -1,0 +1,62 @@
+=head1 Note rendering
+
+=head2 Displaying multiple notes
+
+There are two modes of displaying multiple notes:
+
+=over incremental
+
+=item Widget View
+
+The widget view only exists on mobile and lists all items. It
+has no editing features and launches into the single item (edit) view
+directly on click.
+
+=item Grid view
+
+The grid view displays a (two or more column) list of items.
+A click on any item launches the edit view.
+
+=back
+
+=head2 Displaying a single notes
+
+A note can be displayed in two modes, display view and edit view. The
+default view is display view.
+
+=head3 Display view
+
+The display view allows only superficial changes to the node structure.
+It does not allow content changes. The following things can be changed
+in the display view:
+
+=over incremental
+
+=item *
+
+List item level
+
+=item *
+
+List item position
+
+=item *
+
+List item checkmark
+
+=back
+
+=head3 Edit view
+
+This might be the same as the display view?! It allows editing of the text
+content of the various parts of an item.
+
+=head2 Parts / order of the display view
+
+    [Image(s)]
+    [List]
+        [List Item]
+    [Body]
+    [Embedded links preview]
+
+=cut
