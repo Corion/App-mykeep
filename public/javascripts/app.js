@@ -483,7 +483,7 @@ function UIlistItems() {
         gotSettings = Promise.resolve(settings);
     };
 
-    p = gotSettings.then( listItems()).then(function(json) {
+    p = gotSettings.then( function() { listItems() }).then(function(json) {
         console.log("Repainting");
         repaintItems({ "notes": notes });
     }, function(err) { console.log("Caught UIlistItems",err)})
