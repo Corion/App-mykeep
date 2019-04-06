@@ -21,7 +21,7 @@
   "start_url": "index.html",
   "display":"standalone",
   "background":"#7F7F7F",
-  "theme_color":"#FFE040"
+  "theme_color":"#FFE040",
   "related_applications": [
       {
         "platform": "Web"
