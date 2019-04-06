@@ -11,7 +11,7 @@ use List::Util 'max';
 use JSON::XS qw(decode_json encode_json);
 use UUID 'uuid';
 
-our $schemaVersion = '001.000.000';
+our $schemaVersion = '001.001.000';
 our @note_property_keys= qw(
     title
     text
@@ -26,6 +26,7 @@ our @note_property_keys= qw(
     schemaVersion
     syncSetting
     status
+    language
 
     parentId
     parentServerId
@@ -110,18 +111,20 @@ Not the most efficient approach as we always make a copy.
 sub payload( $self, $schemaVersion = $schemaVersion ) {
     my %upgraded; @upgraded{ @note_keys } = @{$self}{ @note_keys };
     $upgraded{status}        ||= 'active';
-    $upgraded{schemaVersion} ||= $schemaVersion;
     $upgraded{pinPosition}   ||= 0;
     $upgraded{createdAt}     ||= 0;
     $upgraded{modifiedAt}    ||= 0;
     $upgraded{lastSyncedAt}  ||= 0;
     $upgraded{id}            = uc($upgraded{id} || uuid());
-    
+
+    # 001.001.000, adding "language"
+    $upgraded{schemaVersion} ||= $schemaVersion;
+
     # XXX also append the items in a proper manner
     # How can/will we keep the subitem metadata when converting to/from
     # markdown?!
     # Stuff the whole metadata mirror structure into the frontmatter?!
-    
+
     return \%upgraded
 }
 
