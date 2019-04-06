@@ -65,11 +65,43 @@ span[contentEditable] {
 }
 
 .note {
-    -ms-transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+    -ms-transition:     width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
     -webkit-transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
     -moz-transition:    width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
     -o-transition:      width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
     transition:         width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
+}
+
+.note-part-list {
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+}
+
+span.draghandle {
+    content: "....";
+    width: 10px;
+    height: 20px;
+    overflow: hidden;
+    line-height: 5px;
+    letter-spacing: 2px;
+    padding-left: -48px;
+    margin-right: 8px;
+    display: inline-block;
+    cursor: move;
+    vertical-align: middle;
+}
+
+span.draghandle::after {
+    content: '.. .. .. ..';
+}
+
+li.list-top {
+    padding-left: 0px;
+}
+
+li.list-child {
+    padding-left: 16px;
 }
 
 .note-edit {
@@ -134,6 +166,11 @@ iconPin {
     height: 20px;
     display: inline;
 }
+
+video {
+    margin: 0px;
+    width: 600px;
+};
 
 .note-labels .label {
     padding-top: 1px;

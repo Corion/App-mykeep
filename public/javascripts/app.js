@@ -272,7 +272,7 @@ function UIcaptureImageDialog(element) {
     var container = UIcontainer(element);
     var tmplCaptureImage = templates['tmplCaptureImage'];
     var dialog = tmplCaptureImage();
-    $(dialog).appendTo($(".note-text",container)); // Well, that one better exist
+    $(dialog).appendTo($(".note-part-text",container)); // Well, that one better exist
 
     var front = settings.useFrontCamera;
 
@@ -311,7 +311,7 @@ function UIcaptureImage(event) {
       , height = videoElement.videoHeight;
 
     var img = $('<img>');
-    $("#edit-container .note-text").append(img);
+    $("#edit-container .note-part-text").append(img);
     var canvas = $('<canvas>');
     canvas.width(width);
     canvas.height(height);
@@ -372,7 +372,9 @@ function htmlToModel(element) {
     var new_item = {
         "id" : $('*[name="id"]', container).val(),
         "title" : $('h2', container).text(),
-        "text" : $('div.note-text', container).html(),
+        "text" : $('div.note-part-text', container).html(),
+        // Save images
+        // Save list items and list order
         "labels" : [],
         // bgColor
         // pinned
