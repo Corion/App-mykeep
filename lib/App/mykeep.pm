@@ -296,7 +296,7 @@ sub verify_login( $account, $password ) {
     };
 
     my $account_entry = find_login( $account );
-    warning "Checking password for '$account' ($password)";
+    warning "Checking password for '$account'";
     if( $account_entry->{password} eq $password ) {
         warning "$account valid (password match)";
         return $account_entry
