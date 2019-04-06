@@ -72,6 +72,24 @@ span[contentEditable] {
     transition:         width 0.2s, height 0.2s, top 0.2s, left 0.2s, margin 0.2s ease-in;
 }
 
+span.draghandle {
+    content: "....";
+    width: 10px;
+    height: 20px;
+    overflow: hidden;
+    line-height: 5px;
+    letter-spacing: 2px;
+    padding-left: -48px;
+    margin-right: 8px;
+    display: inline-block;
+    cursor: move;
+    vertical-align: middle;
+}
+
+span.draghandle::after {
+    content: '.. .. .. ..';
+}
+
 .note-edit {
     width: 600px;
 
