@@ -28,7 +28,11 @@
           \{\{#ifCond title "||" edit}}
           <h2 contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{title}}</h2>
           \{\{/ifCond}}
-    <div class="note-text" contenteditable="\{\{#if edit}}true\{\{else}}false\{\{/if}}">\{\{\{text}}}</div>
+          <!-- Render any text/html content -->
+          \{\{#if text}}
+          <div class="note-part-text">\{\{text}}</div>
+          \{\{/if}}
+
     <div class="note-labels">
     <!-- the labels should link to a filter for that label -->
     \{\{#each labels}}
@@ -69,7 +73,11 @@
         \{\{/if}}
     </div>
     <h2 contenteditable="true">\{\{title}}</h2>
-    <div class="note-text" contenteditable="true">\{\{\{text}}}</div>
+          <!-- Render any text/html content -->
+          \{\{#if text}}
+          <div class="note-part-text" contenteditable="true">\{\{text}}</div>
+          \{\{/if}}
+
     <div class="note-toolbar-bottom">
               <!-- These URLs should be made no-Javascript-friendly -->
               <a href="#" class="uiItem" onclick="UIarchiveItem(this,event); return false;">x</a>
