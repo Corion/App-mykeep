@@ -110,7 +110,7 @@ function defaultOrder(items) {
     return items
 };
 
-var settings = { "credentials" : { "user": "public" }};
+var settings;// = { "credentials" : { "user": "public" }};
 var serverVersion;
 
 // Returns a Promise which resolves to the persistence state of storage
@@ -133,6 +133,8 @@ function loadSettings() {
           , "processData":false
     })).catch(function(e){
         console.log("Uhoh",e);
+    }).finally(function(){
+        console.log("Retrieved settings");
     });
 }
 
@@ -169,20 +171,6 @@ function UIsaveSettingsAndReturn() {
         console.log(e);
     });
 }
-
-/*
-loadSettings().then(function(s) {
-    if( ! typeof( settings ) === 'object' ) {
-        console.log("Weird settings problem");
-        console.log(settings);
-        settings = { user: "public" }
-    } else {
-        settings = s;
-    }
-}).catch(function(e) {
-    console.log(e);
-});
-*/
 
 function UIcontainer(element) {
     return $(element).closest(".note");
@@ -415,6 +403,7 @@ function updateModel(element) {
 // Hacky url template implementation
 // Lacks for example %-escaping
 function urlTemplate( tmpl, vars ) {
+    console.log(tmpl,vars);
   return tmpl.replace(/:(\w+)/g, function(m,name) {
     return vars[name]
         || settings["credentials"][name]
@@ -469,8 +458,33 @@ function listItems() {
 };
 
 var p;
+var gotSettings;
 function UIlistItems() {
-    p = listItems().then(function(json) {
+    console.log("UIlistItems: Settings: ", settings);
+    if( typeof( settings ) !== 'object') {
+        console.log("Fetching");
+        if(! gotSettings) {
+            gotSettings = loadSettings().then(function(s) {
+                if( typeof( s ) !== 'object' ) {
+                    console.log("Weird settings problem");
+                    console.log(settings);
+                    // Create default settings
+                    settings = { user: "public" }
+                } else {
+                    console.log("Retrieved settings",s);
+                    settings = s;
+                }
+            }).catch(function(e) {
+                console.log(e);
+            });
+        };
+    } else {
+        console.log("Got settings already");
+        gotSettings = Promise.resolve(settings);
+    };
+
+    p = gotSettings.then( listItems()).then(function(json) {
+        console.log("Repainting");
         repaintItems({ "notes": notes });
     }, function(err) { console.log("Caught UIlistItems",err)})
 }
