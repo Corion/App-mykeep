@@ -294,7 +294,6 @@ sub verify_login( $account, $password ) {
         warning "No account given";
         return;
     };
-
     my $account_entry = find_login( $account );
     warning "Checking password for '$account'";
     if( $account_entry->{password} eq $password ) {
@@ -310,10 +309,12 @@ sub verify_session( $account, $request ) {
         or return;
 
     # No session cookie but user+password
-    if( ! session->{user} and my $pass = request->params->{'password'}) {
-        verify_login($account, $pass)
+    if( my $pass = request->params->{'password'}) {
+        my $account_obj = verify_login($account, $pass)
             or return;
-        session('user', $account);
+        $account = $account_obj->{name};
+        warning "Setting user '$account'";
+        session('user' => $account_obj);
     };
 
     if( ! session->{user}) {
