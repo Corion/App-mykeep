@@ -120,6 +120,7 @@ sub payload( $self, $schemaVersion = $schemaVersion ) {
     # XXX also append the items in a proper manner
     # How can/will we keep the subitem metadata when converting to/from
     # markdown?!
+    # Stuff the whole metadata mirror structure into the frontmatter?!
     
     return \%upgraded
 }
