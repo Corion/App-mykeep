@@ -153,6 +153,11 @@ iconPin {
     display: inline;
 }
 
+video {
+    margin: 0px;
+    width: 600px;
+};
+
 .note-labels .label {
     padding-top: 1px;
     padding-left: 2px;
